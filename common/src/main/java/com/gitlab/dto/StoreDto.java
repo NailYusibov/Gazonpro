@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 @Data
@@ -16,7 +15,9 @@ public class StoreDto {
 
     private Set<Long> managersId;
 
-    @NotNull(message = "Owner's dueDate should not be empty")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Set<Long> productsId;
+
     private Long ownerId;
 }
 

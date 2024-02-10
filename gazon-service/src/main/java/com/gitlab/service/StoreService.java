@@ -13,9 +13,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,10 +32,18 @@ public class StoreService {
         return findAll()
                 .stream()
                 .map(storeMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    public Optional<StoreDto> findById(Long id) {
+    public Optional<Store> findById(Long id) {
+        Optional<Store> optionalStore = storeRepository.findById(id);
+        if (optionalStore.isPresent() && optionalStore.get().getEntityStatus().equals(EntityStatus.DELETED)) {
+            return Optional.empty();
+        }
+        return optionalStore;
+    }
+
+    public Optional<StoreDto> findByIdDto(Long id) {
         Optional<Store> optionalStore = storeRepository.findById(id);
         if (optionalStore.isPresent() && optionalStore.get().getEntityStatus().equals(EntityStatus.DELETED)) {
             return Optional.empty();
@@ -74,7 +82,7 @@ public class StoreService {
         Page<Store> storePage = storeRepository.findAll(pageRequest);
         return storePage.map(storeMapper::toDto);
     }
-    
+
     @Transactional
     public StoreDto save(StoreDto storeDto) {
         Store store = storeMapper.toEntity(storeDto);
@@ -84,35 +92,39 @@ public class StoreService {
     }
 
     @Transactional
-    public StoreDto update(Long id, StoreDto storeDto) {
+    public Optional<StoreDto> update(Long id, StoreDto storeDto) {
         Optional<Store> optionalSavedStore = storeRepository.findById(id);
-        if (optionalSavedStore.isEmpty() || optionalSavedStore.get().getEntityStatus().equals(EntityStatus.DELETED)) {
-            return null;
+        if (optionalSavedStore.isEmpty()) {
+            return Optional.empty();
         }
         Store savedStore = optionalSavedStore.get();
+        savedStore.setEntityStatus(EntityStatus.ACTIVE);
+        if (storeDto.getOwnerId() != null) {
+            savedStore.setOwner(storeMapper.mapOwnerIdToUser(storeDto.getOwnerId()));
+        }
+        if (storeDto.getManagersId() != null) {
+            savedStore.setManagers(storeMapper.map(storeDto.getManagersId()));
+        }
 
-        updateStoreFields(savedStore, storeDto);
         Store updatedStore = storeRepository.save(savedStore);
-        return storeMapper.toDto(updatedStore);
+        updatedStore.setEntityStatus(EntityStatus.ACTIVE);
+
+        return Optional.of(storeMapper.toDto(updatedStore));
     }
 
     @Transactional
-    public StoreDto delete(Long id) {
+    public Optional<StoreDto> delete(Long id) {
         Optional<Store> optionalDeletedStore = storeRepository.findById(id);
         if (optionalDeletedStore.isEmpty() || optionalDeletedStore.get().getEntityStatus().equals(EntityStatus.DELETED)) {
-            return null;
+            return Optional.empty();
         }
         Store deletedStore = optionalDeletedStore.get();
         deletedStore.setEntityStatus(EntityStatus.DELETED);
+        deletedStore.setManagers(Collections.emptySet());
+
         storeRepository.save(deletedStore);
 
-        return storeMapper.toDto(optionalDeletedStore.get());
+        return Optional.of(storeMapper.toDto(optionalDeletedStore.get()));
     }
 
-    private Store updateStoreFields(Store savedStore, StoreDto storeDto) {
-        savedStore.setOwner(storeMapper.mapOwnerIdToUser(storeDto.getOwnerId()));
-        savedStore.setManagers(storeMapper.map(storeDto.getManagersId()));
-
-        return savedStore;
-    }
 }

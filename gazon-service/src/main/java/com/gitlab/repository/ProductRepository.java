@@ -1,6 +1,5 @@
 package com.gitlab.repository;
 
-import com.gitlab.model.Example;
 import com.gitlab.model.Product;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
@@ -18,18 +17,19 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Override
     @NonNull
-    @EntityGraph(value = "Product.productImages")
+    @EntityGraph(value = "product")
     @Query("SELECT p FROM Product p WHERE p.id = ?1 AND p.entityStatus = 'ACTIVE'")
     Optional<Product> findById(@NonNull Long id);
 
     @Override
     @NonNull
-    @EntityGraph(value = "Product.productImages")
+    @EntityGraph(value = "product")
     @Query("SELECT p FROM Product p WHERE p.entityStatus = 'ACTIVE'")
     List<Product> findAll();
 
     @Override
     @NonNull
+    @EntityGraph(value = "product")
     @Query("SELECT p FROM Product p WHERE p.entityStatus = 'ACTIVE'")
     Page<Product> findAll(Pageable pageable);
 

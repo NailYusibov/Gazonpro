@@ -26,11 +26,10 @@ public class Store {
     @Id
     private Long id;
 
-    @OneToMany
-    @JoinColumn(name = "id")
+    @OneToMany(mappedBy = "store")
     private Set<Product> products;
 
-    @ManyToMany
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
     @JoinTable(
             name = "store_managers",
             joinColumns = @JoinColumn(name = "store_id"),

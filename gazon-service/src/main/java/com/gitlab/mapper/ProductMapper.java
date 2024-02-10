@@ -4,12 +4,15 @@ import com.gitlab.dto.ProductDto;
 import com.gitlab.model.Product;
 import com.gitlab.model.ProductImage;
 import com.gitlab.model.Review;
+import com.gitlab.model.Store;
 import com.gitlab.service.ProductImageService;
+import com.gitlab.service.StoreService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,10 +25,30 @@ public abstract class ProductMapper {
 
     @Autowired
     private ProductImageService productImageService;
+    @Autowired
+    @Lazy
+    private StoreService storeService;
 
     @Mapping(source = "productImages", target = "imagesId")
     @Mapping(source = "review", target = "rating")/*product.*/
+    @Mapping(source = "store", target = "storeId")
     public abstract ProductDto toDto(Product product);
+
+    public Long map(Store store) {
+        if (store == null) {
+            return null;
+        } else {
+            return store.getId();
+        }
+    }
+    public Store map(Long storeId) {
+        if (storeId == null) {
+            return null;
+        } else {
+            Optional<Store> storeServiceById = storeService.findById(storeId);
+            return storeServiceById.orElse(null);
+        }
+    }
 
     public Long[] mapProductImagesToImagesId(Set<ProductImage> productImages) {
         if (productImages == null || productImages.isEmpty()) {
