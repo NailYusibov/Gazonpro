@@ -38,8 +38,9 @@ class ProductServiceTest {
 
     @Test
     void should_find_product_by_id() {
-        long id = 1L;
+
         Product expectedResult = generateProduct();
+        Long id = expectedResult.getId();
         when(productRepository.findById(id)).thenReturn(Optional.of(expectedResult));
 
         Optional<Product> actualResult = productService.findById(id);
@@ -59,8 +60,8 @@ class ProductServiceTest {
 
     @Test
     void should_update_product() {
-        long id = 4L;
         Product productToUpdateWith = generateProduct();
+        Long id = productToUpdateWith.getId();
 
         Product productBeforeUpdate = new Product();
         productBeforeUpdate.setId(id);
@@ -96,15 +97,12 @@ class ProductServiceTest {
     @Test
     void should_delete_product() {
         long id = 1L;
-        Product deletedProduct = generateProduct(id);
-
-        deletedProduct.setEntityStatus(EntityStatus.DELETED);
 
         when(productRepository.findById(id)).thenReturn(Optional.of(generateProduct()));
 
         productService.delete(id);
 
-        verify(productRepository).save(deletedProduct);
+        verify(productRepository).deleteById(id);
     }
 
     @Test

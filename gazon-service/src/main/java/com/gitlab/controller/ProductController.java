@@ -50,13 +50,9 @@ public class ProductController implements ProductRestApi {
 
     @Override
     public ResponseEntity<ProductDto> update(Long id, ProductDto productDto) {
-        Optional<ProductDto> updatedProductDtoOptional = productService.updateDto(id, productDto);
+        Optional<ProductDto> updatedProductDtoOptional = Optional.ofNullable(productService.updateDto(id, productDto));
 
-        if (updatedProductDtoOptional.isPresent()) {
-            return ResponseEntity.ok(updatedProductDtoOptional.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return updatedProductDtoOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Override
@@ -65,7 +61,6 @@ public class ProductController implements ProductRestApi {
         return product.isEmpty() ?
                 ResponseEntity.notFound().build() :
                 ResponseEntity.ok().build();
-
     }
 
     @Override
@@ -116,12 +111,4 @@ public class ProductController implements ProductRestApi {
         return ResponseEntity.ok().build();
     }
 
-    @Override
-    public ResponseEntity<List<ProductDto>> searchProductsByText(String searchText) throws InterruptedException {
-        List<ProductDto> foundProducts = productService.findByNameIgnoreCaseContaining(searchText);
-
-        return foundProducts.isEmpty() ?
-                ResponseEntity.noContent().build() :
-                ResponseEntity.ok(foundProducts);
-    }
 }

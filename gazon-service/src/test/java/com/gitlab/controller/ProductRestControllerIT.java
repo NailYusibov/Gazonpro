@@ -8,8 +8,6 @@ import com.gitlab.model.ProductImage;
 import com.gitlab.service.ProductImageService;
 import com.gitlab.service.ProductService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -94,36 +92,18 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNoContent());
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"Фильтр-кабшин", "Защитное стек", "Коляска прог", "Каляска прагулачная", "Смартфон HU", "Смартфон"})
-    void should_get_product_by_name(String name) throws Exception {
-        String expected = objectMapper.writeValueAsString(
-                productService.findByNameIgnoreCaseContaining(name)
-        );
-
-        mockMvc.perform(get(PRODUCT_URI + "/search?text=" + name))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().json(expected));
-    }
 
     @Test
-    void should_return_no_content_when_get_product_by_name_non_existent() throws Exception {
-        String name = "Non existent name product";
-
-        mockMvc.perform(get(PRODUCT_URI + "/search?text=" + name))
-                .andDo(print())
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
+    @Transactional
     void should_get_product_by_id() throws Exception {
-        long id = 1L;
+        ProductDto productDto = generateProductDTO();
+        ProductDto savedProductDto = productService.saveDto(productDto);
+
         String expected = objectMapper.writeValueAsString(
-                productService.findByIdDto(id).orElse(null)
+                productService.findByIdDto(savedProductDto.getId()).orElse(null)
         );
 
-        mockMvc.perform(get(PRODUCT_URI + "/{id}", id))
+        mockMvc.perform(get(PRODUCT_URI + "/{id}", savedProductDto.getId()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(expected));
@@ -131,7 +111,7 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_product_by_non_existent_id() throws Exception {
-        long id = -10L;
+        long id = 9000L;
         mockMvc.perform(get(PRODUCT_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -150,19 +130,38 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isCreated());
     }
+    @Test
+    @Transactional
+    void should_return_bad_request_when_creating_product_with_invalid_data() throws Exception {
+        ProductDto productDto = generateProductDTO();
+        productDto.setName("");
+
+        String jsonProductDto = objectMapper.writeValueAsString(productDto);
+
+        mockMvc.perform(post(PRODUCT_URI)
+                        .content(jsonProductDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
 
     @Test
     @Transactional
     void should_update_product_by_id() throws Exception {
-        long id = 1L;
-        int numberOfEntitiesExpected = productService.findAll().size();
         ProductDto productDto = generateProductDTO();
-        productDto.setRating(productService.findByIdDto(id).get().getRating());
-        String jsonProductDto = objectMapper.writeValueAsString(productDto);
-        productDto.setId(id);
-        String expected = objectMapper.writeValueAsString(productDto);
+        ProductDto savedProduct = productService.saveDto(productDto);
 
-        mockMvc.perform(patch(PRODUCT_URI + "/{id}", id)
+        ProductDto updatedProductDto = generateProductDTO();
+        updatedProductDto.setRating(productService.findByIdDto(savedProduct.getId()).get().getRating());
+        updatedProductDto.setId(savedProduct.getId());
+
+        int numberOfEntitiesExpected = productService.findAll().size();
+
+        String jsonProductDto = objectMapper.writeValueAsString(updatedProductDto);
+        String expected = objectMapper.writeValueAsString(updatedProductDto);
+
+
+        mockMvc.perform(patch(PRODUCT_URI + "/{id}", savedProduct.getId())
                         .content(jsonProductDto)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -171,13 +170,12 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(content().json(expected))
                 .andExpect(result -> assertThat(productService.findAll().size(),
                         equalTo(numberOfEntitiesExpected)));
-
     }
 
     @Test
     @Transactional
     void should_return_not_found_when_update_product_by_non_existent_id() throws Exception {
-        long id = -10L;
+        long id = 9000L;
         ProductDto productDto = generateProductDTO();
         String jsonProductDto = objectMapper.writeValueAsString(productDto);
 
@@ -201,6 +199,7 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
+
 
     @Test
     void should_get_images_ids_by_product_id() throws Exception {

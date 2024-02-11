@@ -26,8 +26,7 @@ public class Store {
     @Id
     private Long id;
 
-    @OneToMany
-    @JoinColumn(name = "id")
+    @OneToMany(mappedBy = "someProduct")
     private Set<Product> products;
 
     @ManyToMany
@@ -45,4 +44,5 @@ public class Store {
     @Column(name = "entity_status")
     @Enumerated(EnumType.STRING)
     private EntityStatus entityStatus;
+
 }
