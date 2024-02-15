@@ -5,6 +5,7 @@ import com.gitlab.enums.EntityStatus;
 import com.gitlab.mapper.StoreMapper;
 import com.gitlab.model.Store;
 import com.gitlab.repository.StoreRepository;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,7 +52,7 @@ public class StoreServiceTest {
         when(storeRepository.findById(id)).thenReturn(Optional.of(store));
         when(storeMapper.toDto(store)).thenReturn(generateStoreDto());
 
-        Optional<StoreDto> actualResult = storeService.findById(id);
+        Optional<Store> actualResult = storeService.findById(id);
 
         assertEquals(expectedResult, actualResult.orElse(null));
     }
@@ -66,7 +68,7 @@ public class StoreServiceTest {
     }
 
     @Test
-    void should_update_store() {
+    void should_update_store_with_entity_status_is_ACTIVE() {
         long id = 1L;
         StoreDto storeToUpdate = generateStoreDto();
 
@@ -74,12 +76,31 @@ public class StoreServiceTest {
 
         StoreDto updatedStore = generateStoreDto();
 
-        when(storeRepository.findById(id)).thenReturn(Optional.of(storeBeforeUpdate));
-        when(storeService.update(updatedStore.getId(), updatedStore)).thenReturn(updatedStore);
+        when(storeRepository.findById(id)).thenReturn(Optional.of(storeBeforeUpdate));// ok
+        when(storeRepository.save(any())).thenReturn(storeBeforeUpdate);
+        when(storeMapper.toDto(storeBeforeUpdate)).thenReturn(updatedStore);
 
-        Optional<StoreDto> actualResult = Optional.ofNullable(storeService.update(id, storeToUpdate));
+        Optional<StoreDto> actualResult = storeService.update(id, storeToUpdate);
 
-        assertEquals(updatedStore, actualResult.orElse(null));
+        assertEquals(Optional.of(updatedStore), actualResult);
+    }
+    @Test
+    void should_update_store_with_entity_status_is_DELETED() {
+        long id = 1L;
+        StoreDto storeToUpdate = generateStoreDto();
+
+        Store storeBeforeUpdate = generateStoreBefore();
+        storeBeforeUpdate.setEntityStatus(EntityStatus.DELETED);
+
+        StoreDto updatedStore = generateStoreDto();
+
+        when(storeRepository.findById(id)).thenReturn(Optional.of(storeBeforeUpdate));// ok
+        when(storeRepository.save(any())).thenReturn(storeBeforeUpdate);
+        when(storeMapper.toDto(storeBeforeUpdate)).thenReturn(updatedStore);
+
+        Optional<StoreDto> actualResult = storeService.update(id, storeToUpdate);
+
+        assertEquals(Optional.of(updatedStore), actualResult);
     }
 
     @Test
@@ -87,10 +108,9 @@ public class StoreServiceTest {
         long id = 4L;
         StoreDto storeToUpdateWith = generateStoreDto();
 
-
         when(storeRepository.findById(id)).thenReturn(Optional.empty());
 
-        Optional<StoreDto> actualResult = Optional.ofNullable(storeService.update(id, storeToUpdateWith));
+        Optional<StoreDto> actualResult = storeService.update(id, storeToUpdateWith);
 
         verify(storeRepository, never()).save(any());
         assertNull(actualResult.orElse(null));
@@ -132,6 +152,8 @@ public class StoreServiceTest {
         Store store = generateStore();
         store.setId(id);
         store.setEntityStatus(EntityStatus.ACTIVE);
+        store.setProducts(new HashSet<>());
+        store.setManagers(new HashSet<>());
         return store;
     }
 
@@ -150,8 +172,9 @@ public class StoreServiceTest {
     private StoreDto generateStoreDto() {
         StoreDto storeDto = new StoreDto();
         storeDto.setId(1L);
-        storeDto.setOwnerId(1L);
+//        storeDto.setOwnerId(1L);
         storeDto.setManagersId(new HashSet<>());
+        storeDto.setProductsId(new HashSet<>());
 
         return storeDto;
     }
