@@ -63,5 +63,5 @@ public class Product {
 
     @ManyToOne
     @JoinColumn(name = "store_id")
-    private com.gitlab.model.Store someProduct;
+    private com.gitlab.model.Store store;
 }

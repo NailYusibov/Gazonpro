@@ -49,6 +49,4 @@ public class OrderDto {
     private Set<SelectedProductDto> selectedProducts;
 
     private OrderStatus orderStatus;
-
-
 }

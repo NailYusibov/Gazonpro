@@ -26,7 +26,7 @@ public class Store {
     @Id
     private Long id;
 
-    @OneToMany(mappedBy = "someProduct")
+    @OneToMany(mappedBy = "store")
     private Set<Product> products;
 
     @ManyToMany
