@@ -49,7 +49,7 @@ public class StoreRestController implements StoreRestApi {
 
     @Override
     public ResponseEntity<Void> delete(Long id) {
-        Optional<StoreDto> product = storeService.delete(id);
+        Optional<StoreDto> product = storeService.deleteDto(id);
         return product.isEmpty() ?
                 ResponseEntity.notFound().build() :
                 ResponseEntity.ok().build();

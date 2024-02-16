@@ -113,7 +113,7 @@ public class StoreService {
     }
 
     @Transactional
-    public Optional<StoreDto> delete(Long id) {
+    public Optional<StoreDto> deleteDto(Long id) {
         Optional<Store> optionalDeletedStore = storeRepository.findById(id);
         if (optionalDeletedStore.isEmpty() || optionalDeletedStore.get().getEntityStatus().equals(EntityStatus.DELETED)) {
             return Optional.empty();
@@ -124,7 +124,7 @@ public class StoreService {
 
         storeRepository.save(deletedStore);
 
-        return Optional.of(storeMapper.toDto(optionalDeletedStore.get()));
+        return Optional.of(storeMapper.toDto(deletedStore));
     }
 
 }

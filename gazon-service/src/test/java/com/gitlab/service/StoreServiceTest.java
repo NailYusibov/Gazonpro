@@ -34,17 +34,17 @@ public class StoreServiceTest {
     private StoreService storeService;
 
     @Test
-    void should_find_all_examples() {
+    void should_find_all() {
         List<Store> expectedResult = generateStores();
         when(storeRepository.findAll()).thenReturn(generateStores());
 
-        List<Store> actualResult = storeRepository.findAll();
+        List<Store> actualResult = storeService.findAll();
 
         assertEquals(expectedResult, actualResult);
     }
 
     @Test
-    void should_find_store_by_id() {
+    void should_find_store_by_id_with_entity_status_is_ACTIVE() {
         long id = 1L;
         StoreDto expectedResult = generateStoreDto();
         Store store = generateStore(id);
@@ -52,9 +52,22 @@ public class StoreServiceTest {
         when(storeRepository.findById(id)).thenReturn(Optional.of(store));
         when(storeMapper.toDto(store)).thenReturn(generateStoreDto());
 
-        Optional<Store> actualResult = storeService.findById(id);
+        Optional<StoreDto> actualResult = storeService.findByIdDto(id);
 
         assertEquals(expectedResult, actualResult.orElse(null));
+    }
+    @Test
+    void should_find_store_by_id_with_entity_status_is_DELETED() {
+        long id = 1L;
+        Optional<StoreDto> expectedResult = Optional.empty();
+        Store store = generateStore(id);
+        store.setEntityStatus(EntityStatus.DELETED);
+
+        when(storeRepository.findById(id)).thenReturn(Optional.of(store));
+
+        Optional<StoreDto> actualResult = storeService.findByIdDto(id);
+
+        assertEquals(expectedResult, actualResult);
     }
 
     @Test
@@ -84,6 +97,7 @@ public class StoreServiceTest {
 
         assertEquals(Optional.of(updatedStore), actualResult);
     }
+
     @Test
     void should_update_store_with_entity_status_is_DELETED() {
         long id = 1L;
@@ -122,10 +136,11 @@ public class StoreServiceTest {
         Store deletedStore = generateStore(id);
         deletedStore.setEntityStatus(EntityStatus.DELETED);
 
-        when(storeRepository.findById(id)).thenReturn(Optional.of(generateStore()));
+        when(storeRepository.findById(id)).thenReturn(Optional.of(generateStore(id)));
+        when(storeRepository.save(any())).thenReturn(generateStore(id));
+        when(storeMapper.toDto(any())).thenReturn(generateStoreDto());
 
-        storeService.delete(id);
-
+        storeService.deleteDto(id);
         verify(storeRepository).save(deletedStore);
     }
 
@@ -134,7 +149,7 @@ public class StoreServiceTest {
         long id = 1L;
         when(storeRepository.findById(id)).thenReturn(Optional.empty());
 
-        storeService.delete(id);
+        storeService.deleteDto(id);
 
         verify(storeRepository, never()).deleteById(anyLong());
     }
@@ -146,6 +161,14 @@ public class StoreServiceTest {
                 generateStore(3L),
                 generateStore(4L),
                 generateStore(5L));
+    }
+    private List<StoreDto> generateStoreDtos() {
+        return List.of(
+                generateStoreDto(1L),
+                generateStoreDto(2L),
+                generateStoreDto(3L),
+                generateStoreDto(4L),
+                generateStoreDto(5L));
     }
 
     private Store generateStore(Long id) {
@@ -163,16 +186,27 @@ public class StoreServiceTest {
         store.setEntityStatus(EntityStatus.ACTIVE);
         return store;
     }
+
     private Store generateStoreBefore() {
         Store store = new Store();
         store.setId(1L);
         store.setEntityStatus(EntityStatus.ACTIVE);
         return store;
     }
+
     private StoreDto generateStoreDto() {
         StoreDto storeDto = new StoreDto();
         storeDto.setId(1L);
-//        storeDto.setOwnerId(1L);
+        storeDto.setOwnerId(1L);
+        storeDto.setManagersId(new HashSet<>());
+        storeDto.setProductsId(new HashSet<>());
+
+        return storeDto;
+    }
+    private StoreDto generateStoreDto(Long id) {
+        StoreDto storeDto = new StoreDto();
+        storeDto.setId(id);
+        storeDto.setOwnerId(1L);
         storeDto.setManagersId(new HashSet<>());
         storeDto.setProductsId(new HashSet<>());
 
