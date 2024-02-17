@@ -100,7 +100,7 @@ class PostomatRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_postomat_by_non_existent_id() throws Exception {
-        long id = 20L;
+        long id = -20L;
         mockMvc.perform(get(URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -143,7 +143,7 @@ class PostomatRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_postomat_by_non_existent_id() throws Exception {
-        long id = 20L;
+        long id = -20L;
         PostomatDto postomatDto = generatePostomateDto();
         String jsonPostomatDto = objectMapper.writeValueAsString(postomatDto);
 

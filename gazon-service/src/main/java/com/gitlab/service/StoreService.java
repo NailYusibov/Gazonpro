@@ -103,7 +103,7 @@ public class StoreService {
             savedStore.setOwner(storeMapper.mapOwnerIdToUser(storeDto.getOwnerId()));
         }
         if (storeDto.getManagersId() != null) {
-            savedStore.setManagers(storeMapper.map(storeDto.getManagersId()));
+            savedStore.setManagers(storeMapper.mapUserToLong(storeDto.getManagersId()));
         }
 
         Store updatedStore = storeRepository.save(savedStore);

@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -101,7 +102,8 @@ public class StoreMapperTest extends AbstractIntegrationTest {
         StoreDto storeDto = new StoreDto();
         storeDto.setId(id);
         storeDto.setOwnerId(id);
-        storeDto.setManagersId(Set.of(id + 10));
+        storeDto.setManagersId(Set.of(id + 3));
+        storeDto.setProductsId(new HashSet<>());
         return storeDto;
     }
 }

@@ -88,7 +88,7 @@ public class StoreRestControllerIT extends AbstractIntegrationTest {
         long id = 1L;
         String expected = objectMapper.writeValueAsString(
                 storeService
-                        .findById(id)
+                        .findByIdDto(id)
                         .orElse(null));
 
         mockMvc.perform(get(STORE_URI + "/{id}", id))
@@ -204,6 +204,7 @@ public class StoreRestControllerIT extends AbstractIntegrationTest {
         storeDto.setId(5L);
         storeDto.setOwnerId(1L);
         storeDto.setManagersId(new HashSet<>());
+        storeDto.setProductsId(new HashSet<>());
 
         return storeDto;
     }

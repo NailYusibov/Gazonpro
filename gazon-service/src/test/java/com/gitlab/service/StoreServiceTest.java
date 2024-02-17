@@ -4,8 +4,8 @@ import com.gitlab.dto.StoreDto;
 import com.gitlab.enums.EntityStatus;
 import com.gitlab.mapper.StoreMapper;
 import com.gitlab.model.Store;
+import com.gitlab.model.User;
 import com.gitlab.repository.StoreRepository;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -44,7 +44,32 @@ public class StoreServiceTest {
     }
 
     @Test
-    void should_find_store_by_id_with_entity_status_is_ACTIVE() {
+    void should_find_allDto() {
+        StoreDto storeDto1 = generateStoreDto(1L);
+        StoreDto storeDto2 = generateStoreDto(2L);
+        StoreDto storeDto3 = generateStoreDto(3L);
+        StoreDto storeDto4 = generateStoreDto(4L);
+        StoreDto storeDto5 = generateStoreDto(5L);
+
+        List<StoreDto> dtoList = List.of(storeDto1, storeDto2, storeDto3, storeDto4, storeDto5);
+
+        List<StoreDto> expectedResult = dtoList;
+
+        when(storeService.findAll()).thenReturn(generateStores());
+
+        when(storeMapper.toDto(generateStore(1L))).thenReturn(storeDto1);
+        when(storeMapper.toDto(generateStore(2L))).thenReturn(storeDto2);
+        when(storeMapper.toDto(generateStore(3L))).thenReturn(storeDto3);
+        when(storeMapper.toDto(generateStore(4L))).thenReturn(storeDto4);
+        when(storeMapper.toDto(generateStore(5L))).thenReturn(storeDto5);
+
+        List<StoreDto> actualResult = storeService.findAllDto();
+
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void should_find_storeDto_by_id_with_entity_status_is_ACTIVE() {
         long id = 1L;
         StoreDto expectedResult = generateStoreDto();
         Store store = generateStore(id);
@@ -57,7 +82,7 @@ public class StoreServiceTest {
         assertEquals(expectedResult, actualResult.orElse(null));
     }
     @Test
-    void should_find_store_by_id_with_entity_status_is_DELETED() {
+    void should_find_storeDto_by_id_with_entity_status_is_DELETED() {
         long id = 1L;
         Optional<StoreDto> expectedResult = Optional.empty();
         Store store = generateStore(id);
@@ -131,6 +156,33 @@ public class StoreServiceTest {
     }
 
     @Test
+    void should_not_update_when_storeDto_have_nullable_fields(){
+        Long id = 4L;
+        User user = new User();
+        user.setId(4L);
+        Store expectedStore = generateStore(4L);
+        expectedStore.setManagers(Set.of(user));
+
+        StoreDto storeDtoWithNullFields = generateStoreDto(4L);
+        storeDtoWithNullFields.setManagersId(null);
+        storeDtoWithNullFields.setOwnerId(null);
+
+        StoreDto expectedStoreDto = generateStoreDto(4L);
+        expectedStoreDto.setManagersId(Set.of(user.getId()));
+
+        when(storeRepository.findById(id)).thenReturn(Optional.of(expectedStore));
+        when(storeRepository.save(expectedStore)).thenReturn(expectedStore);
+        when(storeMapper.toDto(any())).thenReturn(expectedStoreDto);
+
+        Optional<StoreDto> actualResult = storeService.update(id, storeDtoWithNullFields);
+
+        verify(storeMapper, times(0)).mapUserToLong(any());
+        verify(storeMapper, times(0)).mapOwnerIdToUser(any());
+        assertEquals(Optional.of(expectedStoreDto), actualResult);
+
+    }
+
+    @Test
     void should_delete_store() {
         long id = 1L;
         Store deletedStore = generateStore(id);
@@ -162,14 +214,14 @@ public class StoreServiceTest {
                 generateStore(4L),
                 generateStore(5L));
     }
-    private List<StoreDto> generateStoreDtos() {
-        return List.of(
-                generateStoreDto(1L),
-                generateStoreDto(2L),
-                generateStoreDto(3L),
-                generateStoreDto(4L),
-                generateStoreDto(5L));
-    }
+//    private List<StoreDto> generateStoreDtos() {
+//        return List.of(
+//                generateStoreDto(1L),
+//                generateStoreDto(2L),
+//                generateStoreDto(3L),
+//                generateStoreDto(4L),
+//                generateStoreDto(5L));
+//    }
 
     private Store generateStore(Long id) {
         Store store = generateStore();
