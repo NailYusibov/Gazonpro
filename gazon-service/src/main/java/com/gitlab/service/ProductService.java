@@ -27,19 +27,23 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
+    @Transactional(readOnly = true)
     public List<Product> findAll() {
         return productRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public List<ProductDto> findAllDto() {
         List<Product> products = findAll();
         return productMapper.toDtoList(products);
     }
 
+    @Transactional(readOnly = true)
     public Optional<Product> findById(Long id) {
         return productRepository.findById(id);
     }
 
+    @Transactional(readOnly = true)
     public Optional<ProductDto> findByIdDto(Long id) {
         Optional<Product> currentOptionalProduct = productRepository.findById(id);
         return currentOptionalProduct.map(productMapper::toDto);
@@ -127,11 +131,11 @@ public class ProductService {
         return Optional.of(productRepository.save(currentProduct));
     }
 
-    public Optional<ProductDto> updateDto(Long id, ProductDto productDto) {
+    public ProductDto updateDto(Long id, ProductDto productDto) {
         Optional<Product> currentOptionalProduct = findById(id);
 
         if (currentOptionalProduct.isEmpty()) {
-            return Optional.empty();
+            return null;
         }
 
         Product currentProduct = currentOptionalProduct.get();
@@ -159,17 +163,13 @@ public class ProductService {
             currentProduct.setPrice(productDto.getPrice());
         }
 
-
-        productRepository.save(currentProduct);
-
-        return findByIdDto(currentProduct.getId());
+        return productMapper.toDto(productRepository.save(currentProduct));
     }
 
     public Optional<Product> delete(Long id) {
         Optional<Product> foundProduct = productRepository.findById(id);
         if (foundProduct.isPresent()) {
-            foundProduct.get().setEntityStatus(EntityStatus.DELETED);
-            productRepository.save(foundProduct.get());
+            productRepository.deleteById(id);
         }
         return foundProduct;
     }
@@ -184,6 +184,7 @@ public class ProductService {
     }
 
     public ProductDto createDto(ProductDto productDto) {
+        productDto.setId(null);
         Product productEntity = productMapper.toEntity(productDto);
         productEntity.setEntityStatus(EntityStatus.ACTIVE);
         Product savedProduct = productRepository.save(productEntity);
@@ -203,4 +204,5 @@ public class ProductService {
 
         return mergedList.stream().filter(mergedList1 -> mergedList1.getEntityStatus().equals(EntityStatus.ACTIVE)).map(productMapper::toDto).toList();
     }
+
 }

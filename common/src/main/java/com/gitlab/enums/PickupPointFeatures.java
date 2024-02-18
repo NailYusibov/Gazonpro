@@ -2,8 +2,9 @@ package com.gitlab.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-@AllArgsConstructor
+
 @Getter
+@AllArgsConstructor
 public enum PickupPointFeatures {
 
     TRY_ON_CLOTHES("Примерка одежды"),

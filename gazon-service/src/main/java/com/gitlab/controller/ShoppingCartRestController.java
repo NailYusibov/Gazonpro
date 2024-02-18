@@ -34,9 +34,7 @@ public class ShoppingCartRestController implements ShoppingCartRestApi {
     public ResponseEntity<ShoppingCartDto> get(Long id) {
         Optional<ShoppingCartDto> shoppingCartOptional = shoppingCartService.findByIdDto(id);
 
-        return shoppingCartOptional.isEmpty() ?
-                ResponseEntity.notFound().build() :
-                ResponseEntity.ok(shoppingCartOptional.get());
+        return shoppingCartOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Override

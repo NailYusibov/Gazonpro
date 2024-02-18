@@ -36,7 +36,6 @@ public class Product {
     @Field(termVector = TermVector.YES, store = Store.YES)
     private String name;
 
-
     @Column(name = "stock_count")
     private Integer stockCount;
 
@@ -68,4 +67,8 @@ public class Product {
     @Column(name = "entity_status")
     @Enumerated(EnumType.STRING)
     private EntityStatus entityStatus;
+
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private com.gitlab.model.Store store;
 }

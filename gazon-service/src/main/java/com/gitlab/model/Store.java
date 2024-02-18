@@ -44,4 +44,5 @@ public class Store {
     @Column(name = "entity_status")
     @Enumerated(EnumType.STRING)
     private EntityStatus entityStatus;
+
 }

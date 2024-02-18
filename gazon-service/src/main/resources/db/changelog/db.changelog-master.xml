@@ -154,9 +154,13 @@
         <tagDatabase tag="v-1.28"/>
     </changeSet>
 
-    <include file="v-1.29-add_products_to_store_table/db.changelog-v-1.29.xml" relativeToChangelogFile="true"/>
-    <changeSet id="1.29" author="daniil_kolesnikov">
+    <include file="v-1.29-add_store_id_to_product_table/db.changelog-v-1.29.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1.29" author="vadim_dorogoychenkov">
         <tagDatabase tag="v-1.29"/>
+
+    <include file="v-1.30-add_products_to_store_table/db.changelog-v-1.30.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1.30" author="daniil_kolesnikov">
+        <tagDatabase tag="v-1.30"/>
     </changeSet>
 
 </databaseChangeLog>

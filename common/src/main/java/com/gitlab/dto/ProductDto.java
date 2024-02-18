@@ -7,6 +7,7 @@ import org.springframework.data.annotation.ReadOnlyProperty;
 
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
+import java.util.Map;
 
 @Data
 @Setter
@@ -49,4 +50,6 @@ public class ProductDto {
     private Long storeId;
 
     private String rating;
+
+    private Map<String, String> features;
 }

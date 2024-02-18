@@ -60,7 +60,6 @@ public class UserDto {
     @NotNull(message = "User passport cannot be null")
     private PassportDto passportDto;
 
-    @NotNull(message = "User personalAddress cannot be null")
     private Set<ShippingAddressDto> shippingAddressDtos;
 
     @NotNull(message = "User bankCards cannot be null")
