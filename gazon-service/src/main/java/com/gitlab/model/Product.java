@@ -68,7 +68,4 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private EntityStatus entityStatus;
 
-    @ManyToOne
-    @JoinColumn(name = "store_id")
-    private com.gitlab.model.Store store;
 }
