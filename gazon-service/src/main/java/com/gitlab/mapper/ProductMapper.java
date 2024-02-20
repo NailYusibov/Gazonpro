@@ -1,6 +1,7 @@
 package com.gitlab.mapper;
 
 import com.gitlab.dto.ProductDto;
+import com.gitlab.dto.StoreDto;
 import com.gitlab.model.Product;
 import com.gitlab.model.ProductImage;
 import com.gitlab.model.Review;
@@ -28,6 +29,8 @@ public abstract class ProductMapper {
     @Autowired
     @Lazy
     private StoreService storeService;
+    @Autowired
+    private StoreMapper storeMapper;
 
     @Mapping(source = "productImages", target = "imagesId")
     @Mapping(source = "review", target = "rating")/*product.*/
@@ -45,8 +48,8 @@ public abstract class ProductMapper {
         if (storeId == null) {
             return null;
         } else {
-            Optional<Store> storeServiceById = storeService.findById(storeId);
-            return storeServiceById.orElse(null);
+            Optional<StoreDto> storeServiceById = storeService.findById(storeId);
+            return storeMapper.toEntity(storeServiceById.orElse(null));
         }
     }
 

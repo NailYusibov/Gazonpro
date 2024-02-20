@@ -38,6 +38,17 @@ public class ProductService {
         return productMapper.toDtoList(products);
     }
 
+//    @Transactional(readOnly = true)
+//    public Optional<List<ProductDto>> findAllByStore(Integer storeId) {
+//        List<Product> allByStore;
+//        if (storeId == null) {
+//            allByStore = findAll();
+//        } else {
+//            allByStore = productRepository.findAllByStore(storeId);
+//        }
+//        return Optional.of(productMapper.toDtoList(allByStore));
+//    }
+
     @Transactional(readOnly = true)
     public Optional<Product> findById(Long id) {
         return productRepository.findById(id);
@@ -49,23 +60,7 @@ public class ProductService {
         return currentOptionalProduct.map(productMapper::toDto);
     }
 
-    public Page<Product> getPage(Integer page, Integer size) {
-        if (page == null || size == null) {
-            var products = findAll();
-            if (products.isEmpty()) {
-                return Page.empty();
-            }
-            return new PageImpl<>(products);
-        }
-        if (page < 0 || size < 1) {
-            return Page.empty();
-        }
-        PageRequest pageRequest = PageRequest.of(page, size);
-        return productRepository.findAll(pageRequest);
-    }
-
-    public Page<ProductDto> getPageDto(Integer page, Integer size) {
-
+    public Page<ProductDto> getPage(Integer page, Integer size, Long storeId) {
         if (page == null || size == null) {
             var products = findAllDto();
             if (products.isEmpty()) {
@@ -77,9 +72,33 @@ public class ProductService {
             return Page.empty();
         }
         PageRequest pageRequest = PageRequest.of(page, size);
-        Page<Product> productPage = productRepository.findAll(pageRequest);
+        Page<Product> productPage;
+        if (storeId != null) {
+            productPage = productRepository.findAllByStore(pageRequest, storeId);
+        } else {
+            productPage = productRepository.findAll(pageRequest);
+
+        }
+
         return productPage.map(productMapper::toDto);
     }
+
+//    public Page<ProductDto> getPageDto(Integer page, Integer size) {
+//
+//        if (page == null || size == null) {
+//            var products = findAllDto();
+//            if (products.isEmpty()) {
+//                return Page.empty();
+//            }
+//            return new PageImpl<>(products);
+//        }
+//        if (page < 0 || size < 1) {
+//            return Page.empty();
+//        }
+//        PageRequest pageRequest = PageRequest.of(page, size);
+//        Page<Product> productPage = productRepository.findAll(pageRequest);
+//        return productPage.map(productMapper::toDto);
+//    }
 
     public Product save(Product product) {
         product.setEntityStatus(EntityStatus.ACTIVE);
@@ -204,5 +223,4 @@ public class ProductService {
 
         return mergedList.stream().filter(mergedList1 -> mergedList1.getEntityStatus().equals(EntityStatus.ACTIVE)).map(productMapper::toDto).toList();
     }
-
 }

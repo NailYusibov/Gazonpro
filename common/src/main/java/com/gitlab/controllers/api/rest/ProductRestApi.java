@@ -22,7 +22,8 @@ public interface ProductRestApi {
             @ApiResponse(code = 204, message = "Products not present")}
     )
     ResponseEntity<List<ProductDto>> getPage(@ApiParam(name = "page") @RequestParam(required = false, value = "page") Integer page,
-                                             @ApiParam(name = "size") @RequestParam(required = false, value = "size") Integer size);
+                                             @ApiParam(name = "size") @RequestParam(required = false, value = "size") Integer size,
+                                             @ApiParam(name = "storeId") @RequestParam(required = false, value = "storeId") Long storeId);
 
     @GetMapping("/api/product/{id}")
     @ApiOperation(value = "Get Product by id")
@@ -31,6 +32,14 @@ public interface ProductRestApi {
             @ApiResponse(code = 404, message = "Product not found")}
     )
     ResponseEntity<ProductDto> get(@ApiParam(name = "id", value = "Product.id") @PathVariable(value = "id") Long id);
+
+//    @GetMapping("/api/product")
+//    @ApiOperation(value = "Get Product by storeId")
+//    @ApiResponses(value = {
+//            @ApiResponse(code = 200, message = "Product found"),
+//            @ApiResponse(code = 404, message = "Product not found")}
+//    )
+//    ResponseEntity<List<ProductDto>> getByStore(@ApiParam(name = "storeId") @RequestParam(required = false, value = "storeId") Integer storeId);
 
     @PostMapping("/api/product")
     @ApiOperation(value = "Create Product")

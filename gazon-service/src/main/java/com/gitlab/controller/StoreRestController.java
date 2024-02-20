@@ -27,7 +27,7 @@ public class StoreRestController implements StoreRestApi {
 
     @Override
     public ResponseEntity<StoreDto> get(Long id) {
-        return storeService.findByIdDto(id)
+        return storeService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

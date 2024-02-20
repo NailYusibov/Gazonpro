@@ -35,35 +35,12 @@ public class StoreService {
                 .toList();
     }
 
-    public Optional<Store> findById(Long id) {
-        Optional<Store> optionalStore = storeRepository.findById(id);
-        if (optionalStore.isPresent() && optionalStore.get().getEntityStatus().equals(EntityStatus.DELETED)) {
-            return Optional.empty();
-        }
-        return optionalStore;
-    }
-
-    public Optional<StoreDto> findByIdDto(Long id) {
+    public Optional<StoreDto> findById(Long id) {
         Optional<Store> optionalStore = storeRepository.findById(id);
         if (optionalStore.isPresent() && optionalStore.get().getEntityStatus().equals(EntityStatus.DELETED)) {
             return Optional.empty();
         }
         return optionalStore.map(storeMapper::toDto);
-    }
-
-    public Page<Store> getPage(Integer page, Integer size) {
-        if (page == null || size == null) {
-            var stores = findAll();
-            if (stores.isEmpty()) {
-                return Page.empty();
-            }
-            return new PageImpl<>(stores);
-        }
-        if (page < 0 || size < 1) {
-            return Page.empty();
-        }
-        PageRequest pageRequest = PageRequest.of(page, size);
-        return storeRepository.findAll(pageRequest);
     }
 
     public Page<StoreDto> getPageDto(Integer page, Integer size) {

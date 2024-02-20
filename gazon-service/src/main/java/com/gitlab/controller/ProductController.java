@@ -26,8 +26,8 @@ public class ProductController implements ProductRestApi {
 
     private final ProductImageService productImageService;
 
-    public ResponseEntity<List<ProductDto>> getPage(Integer page, Integer size) {
-        var productPage = productService.getPageDto(page, size);
+    public ResponseEntity<List<ProductDto>> getPage(Integer page, Integer size, Long storeId) {
+        var productPage = productService.getPage(page, size, storeId);
         if (productPage == null || productPage.getContent().isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -111,4 +111,11 @@ public class ProductController implements ProductRestApi {
         return ResponseEntity.ok().build();
     }
 
+//    public ResponseEntity<List<ProductDto>> getByStore(Integer storeId) {
+//        Optional<List<ProductDto>> allByStore = productService.findAllByStore(storeId);
+//        if (allByStore.isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
+//        return ResponseEntity.ok(allByStore.get());
+//    }
 }

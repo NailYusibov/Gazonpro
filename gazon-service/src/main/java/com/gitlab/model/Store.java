@@ -15,7 +15,6 @@ import java.util.Set;
 @AllArgsConstructor
 @NamedEntityGraph(name = "store",
         attributeNodes = {
-                @NamedAttributeNode("products"),
                 @NamedAttributeNode("managers"),
                 @NamedAttributeNode("owner")
         }
@@ -26,8 +25,6 @@ public class Store {
     @Id
     private Long id;
 
-    @OneToMany(mappedBy = "store")
-    private Set<Product> products;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
     @JoinTable(
