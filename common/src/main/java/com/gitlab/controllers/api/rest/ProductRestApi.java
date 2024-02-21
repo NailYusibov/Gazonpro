@@ -33,14 +33,6 @@ public interface ProductRestApi {
     )
     ResponseEntity<ProductDto> get(@ApiParam(name = "id", value = "Product.id") @PathVariable(value = "id") Long id);
 
-//    @GetMapping("/api/product")
-//    @ApiOperation(value = "Get Product by storeId")
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "Product found"),
-//            @ApiResponse(code = 404, message = "Product not found")}
-//    )
-//    ResponseEntity<List<ProductDto>> getByStore(@ApiParam(name = "storeId") @RequestParam(required = false, value = "storeId") Integer storeId);
-
     @PostMapping("/api/product")
     @ApiOperation(value = "Create Product")
     @ApiResponses(value = {

@@ -24,12 +24,12 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final StoreMapper storeMapper;
 
-    public List<Store> findAll() {
-        return storeRepository.findAll();
-    }
+//    public List<Store> findAll() {
+//        return storeRepository.findAll();
+//    }
 
     public @NonNull List<StoreDto> findAllDto() {
-        return findAll()
+        return storeRepository.findAll()
                 .stream()
                 .map(storeMapper::toDto)
                 .toList();
@@ -43,7 +43,7 @@ public class StoreService {
         return optionalStore.map(storeMapper::toDto);
     }
 
-    public Page<StoreDto> getPageDto(Integer page, Integer size) {
+    public Page<StoreDto> getPage(Integer page, Integer size) {
 
         if (page == null || size == null) {
             var stores = findAllDto();

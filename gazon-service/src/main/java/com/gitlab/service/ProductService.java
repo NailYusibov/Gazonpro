@@ -28,26 +28,15 @@ public class ProductService {
     private final ProductMapper productMapper;
 
     @Transactional(readOnly = true)
-    public List<Product> findAll() {
-        return productRepository.findAll();
-    }
-
-    @Transactional(readOnly = true)
-    public List<ProductDto> findAllDto() {
-        List<Product> products = findAll();
+    public List<ProductDto> findAll(Long storeId) {
+        List<Product> products;
+        if (storeId == null) {
+            products = productRepository.findAll();
+        } else {
+            products = productRepository.findAll(storeId);
+        }
         return productMapper.toDtoList(products);
     }
-
-//    @Transactional(readOnly = true)
-//    public Optional<List<ProductDto>> findAllByStore(Integer storeId) {
-//        List<Product> allByStore;
-//        if (storeId == null) {
-//            allByStore = findAll();
-//        } else {
-//            allByStore = productRepository.findAllByStore(storeId);
-//        }
-//        return Optional.of(productMapper.toDtoList(allByStore));
-//    }
 
     @Transactional(readOnly = true)
     public Optional<Product> findById(Long id) {
@@ -62,7 +51,7 @@ public class ProductService {
 
     public Page<ProductDto> getPage(Integer page, Integer size, Long storeId) {
         if (page == null || size == null) {
-            var products = findAllDto();
+            var products = findAll(storeId);
             if (products.isEmpty()) {
                 return Page.empty();
             }
@@ -82,23 +71,6 @@ public class ProductService {
 
         return productPage.map(productMapper::toDto);
     }
-
-//    public Page<ProductDto> getPageDto(Integer page, Integer size) {
-//
-//        if (page == null || size == null) {
-//            var products = findAllDto();
-//            if (products.isEmpty()) {
-//                return Page.empty();
-//            }
-//            return new PageImpl<>(products);
-//        }
-//        if (page < 0 || size < 1) {
-//            return Page.empty();
-//        }
-//        PageRequest pageRequest = PageRequest.of(page, size);
-//        Page<Product> productPage = productRepository.findAll(pageRequest);
-//        return productPage.map(productMapper::toDto);
-//    }
 
     public Product save(Product product) {
         product.setEntityStatus(EntityStatus.ACTIVE);

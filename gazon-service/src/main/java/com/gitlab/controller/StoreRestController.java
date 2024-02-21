@@ -18,7 +18,7 @@ public class StoreRestController implements StoreRestApi {
     private final StoreService storeService;
 
     public ResponseEntity<List<StoreDto>> getPage(Integer page, Integer size) {
-        var storePage = storeService.getPageDto(page, size);
+        var storePage = storeService.getPage(page, size);
         if (storePage == null || storePage.getContent().isEmpty()) {
             return ResponseEntity.noContent().build();
         }
