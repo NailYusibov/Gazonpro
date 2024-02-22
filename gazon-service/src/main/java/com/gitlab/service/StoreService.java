@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -24,11 +25,7 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final StoreMapper storeMapper;
 
-//    public List<Store> findAll() {
-//        return storeRepository.findAll();
-//    }
-
-    public @NonNull List<StoreDto> findAllDto() {
+    public @NonNull List<StoreDto> findAll() {
         return storeRepository.findAll()
                 .stream()
                 .map(storeMapper::toDto)
@@ -46,7 +43,7 @@ public class StoreService {
     public Page<StoreDto> getPage(Integer page, Integer size) {
 
         if (page == null || size == null) {
-            var stores = findAllDto();
+            var stores = findAll();
             if (stores.isEmpty()) {
                 return Page.empty();
             }
@@ -61,11 +58,24 @@ public class StoreService {
     }
 
     @Transactional
-    public StoreDto save(StoreDto storeDto) {
+    public Optional<StoreDto> save(StoreDto storeDto) {
+
+        if (storeDto.getManagersId() != null) {
+            Set<Long> distinctByManagers = storeRepository.findDistinctByManagers();
+            int sizeBefore = distinctByManagers.size();
+            int sizeToAdd = storeDto.getManagersId().size();
+            distinctByManagers.addAll(storeDto.getManagersId());
+            int sizeAfter = distinctByManagers.size();
+
+            if (sizeAfter != (sizeBefore + sizeToAdd)) {
+                return Optional.empty();
+            }
+        }
+
         Store store = storeMapper.toEntity(storeDto);
         store.setEntityStatus(EntityStatus.ACTIVE);
         Store savedStore = storeRepository.save(store);
-        return storeMapper.toDto(savedStore);
+        return Optional.of(storeMapper.toDto(savedStore));
     }
 
     @Transactional
@@ -84,13 +94,12 @@ public class StoreService {
         }
 
         Store updatedStore = storeRepository.save(savedStore);
-        updatedStore.setEntityStatus(EntityStatus.ACTIVE);
 
         return Optional.of(storeMapper.toDto(updatedStore));
     }
 
     @Transactional
-    public Optional<StoreDto> deleteDto(Long id) {
+    public Optional<StoreDto> delete(Long id) {
         Optional<Store> optionalDeletedStore = storeRepository.findById(id);
         if (optionalDeletedStore.isEmpty() || optionalDeletedStore.get().getEntityStatus().equals(EntityStatus.DELETED)) {
             return Optional.empty();

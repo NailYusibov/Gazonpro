@@ -44,20 +44,20 @@ public class ProductController implements ProductRestApi {
 
     @Override
     public ResponseEntity<ProductDto> create(ProductDto productDto) {
-        ProductDto createdProductDto = productService.createDto(productDto);
+        ProductDto createdProductDto = productService.create(productDto).get();
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProductDto);
     }
 
     @Override
     public ResponseEntity<ProductDto> update(Long id, ProductDto productDto) {
-        Optional<ProductDto> updatedProductDtoOptional = Optional.ofNullable(productService.updateDto(id, productDto));
+        Optional<ProductDto> updatedProductDtoOptional = productService.update(id, productDto);
 
         return updatedProductDtoOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Override
     public ResponseEntity<Void> delete(Long id) {
-        Optional<Product> product = productService.delete(id);
+        Optional<ProductDto> product = productService.delete(id);
         return product.isEmpty() ?
                 ResponseEntity.notFound().build() :
                 ResponseEntity.ok().build();
@@ -110,12 +110,4 @@ public class ProductController implements ProductRestApi {
         product.get().getProductImages().stream().map(ProductImage::getId).forEach(productImageService::delete);
         return ResponseEntity.ok().build();
     }
-
-//    public ResponseEntity<List<ProductDto>> getByStore(Integer storeId) {
-//        Optional<List<ProductDto>> allByStore = productService.findAllByStore(storeId);
-//        if (allByStore.isEmpty()) {
-//            return ResponseEntity.noContent().build();
-//        }
-//        return ResponseEntity.ok(allByStore.get());
-//    }
 }

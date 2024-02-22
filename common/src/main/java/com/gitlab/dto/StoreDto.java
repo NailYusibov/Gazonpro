@@ -15,8 +15,8 @@ public class StoreDto {
 
     private Set<Long> managersId;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Set<Long> productsId;
+//    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+//    private Set<Long> productsId;
 
     private Long ownerId;
 }

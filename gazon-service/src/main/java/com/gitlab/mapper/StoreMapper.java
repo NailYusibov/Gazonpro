@@ -21,20 +21,20 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public abstract class StoreMapper {
 
-    @Autowired
-    @Lazy
-    private ProductService productService;
+//    @Autowired
+//    @Lazy
+//    private ProductService productService;
     @Autowired
     private UserService userService;
 
     @Mapping(target = "ownerId", source = "owner")
     @Mapping(target = "managersId", source = "managers")
-    @Mapping(target = "productsId", source = "products")
+//    @Mapping(target = "productsId", source = "products")
     public abstract StoreDto toDto(Store store);
 
     @Mapping(target = "owner", source = "ownerId")
     @Mapping(target = "managers", source = "managersId")
-    @Mapping(target = "products", source = "productsId")
+//    @Mapping(target = "products", source = "productsId")
     public abstract Store toEntity(StoreDto storeDto);
 
     public Long mapUserToOwnerId(User user) {
@@ -68,27 +68,27 @@ public abstract class StoreMapper {
         }
     }
 
-    public Set<Long> mapProductsToLong(Set<Product> productSet) {
-        if (productSet == null) {
-            return Collections.emptySet();
-        } else {
-            return productSet.stream()
-                    .map(Product::getId)
-                    .collect(Collectors.toSet());
-        }
-    }
-
-    public Set<Product> mapLongToProducts(Set<Long> productsIds) {
-        if (productsIds == null) {
-            return Collections.emptySet();
-        } else {
-            return productsIds.stream()
-                    .map(p -> productService.findById(p))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toSet());
-        }
-    }
+//    public Set<Long> mapProductsToLong(Set<Product> productSet) {
+//        if (productSet == null) {
+//            return Collections.emptySet();
+//        } else {
+//            return productSet.stream()
+//                    .map(Product::getId)
+//                    .collect(Collectors.toSet());
+//        }
+//    }
+//
+//    public Set<Product> mapLongToProducts(Set<Long> productsIds) {
+//        if (productsIds == null) {
+//            return Collections.emptySet();
+//        } else {
+//            return productsIds.stream()
+//                    .map(p -> productService.findById(p))
+//                    .filter(Optional::isPresent)
+//                    .map(Optional::get)
+//                    .collect(Collectors.toSet());
+//        }
+//    }
 
     public abstract List<StoreDto> toDtoList(List<Store> storeList);
 

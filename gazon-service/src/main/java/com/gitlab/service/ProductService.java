@@ -68,65 +68,21 @@ public class ProductService {
             productPage = productRepository.findAll(pageRequest);
 
         }
-
         return productPage.map(productMapper::toDto);
     }
 
-    public Product save(Product product) {
-        product.setEntityStatus(EntityStatus.ACTIVE);
-        return productRepository.save(product);
-    }
-
-    public ProductDto saveDto(ProductDto productDto) {
+    public Optional<ProductDto> save(ProductDto productDto) {
         Product product = productMapper.toEntity(productDto);
         product.setEntityStatus(EntityStatus.ACTIVE);
         Product savedProduct = productRepository.save(product);
-        return productMapper.toDto(savedProduct);
+        return Optional.of(productMapper.toDto(savedProduct));
     }
 
-    public Optional<Product> update(Long id, Product product) {
-        Optional<Product> currentOptionalProduct = findById(id);
-        Product currentProduct;
-        if (currentOptionalProduct.isEmpty()) {
-            return currentOptionalProduct;
-        } else {
-            currentProduct = currentOptionalProduct.get();
-        }
-        if (product.getName() != null) {
-            currentProduct.setName(product.getName());
-        }
-        if (product.getStockCount() != null) {
-            currentProduct.setStockCount(product.getStockCount());
-        }
-        if (product.getProductImages() != null) {
-            currentProduct.setProductImages(product.getProductImages());
-        }
-        if (product.getDescription() != null) {
-            currentProduct.setDescription(product.getDescription());
-        }
-        if (product.getIsAdult() != null) {
-            currentProduct.setIsAdult(product.getIsAdult());
-        }
-        if (product.getCode() != null) {
-            currentProduct.setCode(product.getCode());
-        }
-        if (product.getWeight() != null) {
-            currentProduct.setWeight(product.getWeight());
-        }
-        if (product.getPrice() != null) {
-            currentProduct.setPrice(product.getPrice());
-        }
-
-        currentProduct.setEntityStatus(EntityStatus.ACTIVE);
-
-        return Optional.of(productRepository.save(currentProduct));
-    }
-
-    public ProductDto updateDto(Long id, ProductDto productDto) {
-        Optional<Product> currentOptionalProduct = findById(id);
+    public Optional<ProductDto> update(Long id, ProductDto productDto) {
+        Optional<Product> currentOptionalProduct = productRepository.findById(id);
 
         if (currentOptionalProduct.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
 
         Product currentProduct = currentOptionalProduct.get();
@@ -154,19 +110,11 @@ public class ProductService {
             currentProduct.setPrice(productDto.getPrice());
         }
 
-        return productMapper.toDto(productRepository.save(currentProduct));
+        return Optional.of(productMapper.toDto(productRepository.save(currentProduct)));
     }
 
-    public Optional<Product> delete(Long id) {
+    public Optional<ProductDto> delete(Long id) {
         Optional<Product> foundProduct = productRepository.findById(id);
-        if (foundProduct.isPresent()) {
-            productRepository.deleteById(id);
-        }
-        return foundProduct;
-    }
-
-    public Optional<ProductDto> deleteDto(Long id) {
-        Optional<Product> foundProduct = findById(id);
         if (foundProduct.isPresent()) {
             foundProduct.get().setEntityStatus(EntityStatus.DELETED);
             productRepository.save(foundProduct.get());
@@ -174,12 +122,12 @@ public class ProductService {
         return foundProduct.map(productMapper::toDto);
     }
 
-    public ProductDto createDto(ProductDto productDto) {
+    public Optional<ProductDto> create(ProductDto productDto) {
         productDto.setId(null);
         Product productEntity = productMapper.toEntity(productDto);
         productEntity.setEntityStatus(EntityStatus.ACTIVE);
         Product savedProduct = productRepository.save(productEntity);
-        return productMapper.toDto(savedProduct);
+        return Optional.of(productMapper.toDto(savedProduct));
     }
 
     public List<ProductDto> findByNameIgnoreCaseContaining(String name) throws InterruptedException {
