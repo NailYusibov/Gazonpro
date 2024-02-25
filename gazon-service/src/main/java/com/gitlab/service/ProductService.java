@@ -28,7 +28,12 @@ public class ProductService {
     private final ProductMapper productMapper;
 
     @Transactional(readOnly = true)
-    public List<ProductDto> findAll(Long storeId) {
+    public List<ProductDto> findAll() {
+        return productMapper.toDtoList(productRepository.findAll());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductDto> findAllByStoreId(Long storeId) {
         List<Product> products;
         if (storeId == null) {
             products = productRepository.findAll();
@@ -49,9 +54,25 @@ public class ProductService {
         return currentOptionalProduct.map(productMapper::toDto);
     }
 
-    public Page<ProductDto> getPage(Integer page, Integer size, Long storeId) {
+    public Page<ProductDto> getPage(Integer page, Integer size) {
         if (page == null || size == null) {
-            var products = findAll(storeId);
+            var products = findAll();
+            if (products.isEmpty()) {
+                return Page.empty();
+            }
+            return new PageImpl<>(products);
+        }
+        if (page < 0 || size < 1) {
+            return Page.empty();
+        }
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Product> productPage = productRepository.findAll(pageRequest);
+        return productPage.map(productMapper::toDto);
+    }
+
+    public Page<ProductDto> getPageByStoreId(Integer page, Integer size, Long storeId) {
+        if (page == null || size == null) {
+            var products = findAllByStoreId(storeId);
             if (products.isEmpty()) {
                 return Page.empty();
             }
@@ -93,7 +114,6 @@ public class ProductService {
         if (productDto.getStockCount() != null) {
             currentProduct.setStockCount(productDto.getStockCount());
         }
-
         if (productDto.getDescription() != null) {
             currentProduct.setDescription(productDto.getDescription());
         }

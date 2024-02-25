@@ -27,7 +27,9 @@ public class ProductController implements ProductRestApi {
     private final ProductImageService productImageService;
 
     public ResponseEntity<List<ProductDto>> getPage(Integer page, Integer size, Long storeId) {
-        var productPage = productService.getPage(page, size, storeId);
+        var productPage = (storeId == null)
+                ? productService.getPage(page, size)
+                : productService.getPageByStoreId(page, size, storeId);
         if (productPage == null || productPage.getContent().isEmpty()) {
             return ResponseEntity.noContent().build();
         }

@@ -220,7 +220,7 @@ public class ProductImageView extends VerticalLayout {
         TextField nameField = new TextField("Product image name");
         Select<Long> productField = new Select<>();
         productField.setLabel("Product id");
-        productField.setItems(Objects.requireNonNull(productClient.getPage(null, null).getBody())
+        productField.setItems(Objects.requireNonNull(productClient.getPage(null, null, null).getBody())
                 .stream()
                 .map(ProductDto::getId)
                 .collect(Collectors.toList()));

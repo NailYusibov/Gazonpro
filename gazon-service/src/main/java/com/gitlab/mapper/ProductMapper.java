@@ -71,8 +71,7 @@ public abstract class ProductMapper {
                 .map(Review::getRating).mapToInt(a -> a).average().orElse(0));
     }
 
-    @Mapping(source = "imagesId", target = "productImages")/*productDto.*/
-
+    @Mapping(source = "imagesId", target = "productImages")
     public abstract Product toEntity(ProductDto exampleDto);
 
     public Set<ProductImage> mapImagesIdToProductImages(Long[] imagesId) {

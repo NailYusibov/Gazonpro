@@ -11,11 +11,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,40 +33,26 @@ public class StoreServiceTest {
     @InjectMocks
     private StoreService storeService;
 
-//    @Test
-//    void should_find_all() {
-//        List<StoreDto> expectedResult = generateStore();
-//        when(storeRepository.findAll()).thenReturn(generateStores());
-//
-//        List<StoreDto> actualResult = storeService.findAll();
-//
-//        assertEquals(expectedResult, actualResult);
-//    }
+    @Test
+    void should_find_all() {
+        List<StoreDto> expectedResult = List.of(generateStoreDto(1L), generateStoreDto(2L));
 
-//    @Test
-//    void should_find_allDto() {
-//        StoreDto storeDto1 = generateStoreDto(1L);
-//        StoreDto storeDto2 = generateStoreDto(2L);
-//        StoreDto storeDto3 = generateStoreDto(3L);
-//        StoreDto storeDto4 = generateStoreDto(4L);
-//        StoreDto storeDto5 = generateStoreDto(5L);
-//
-//        List<StoreDto> dtoList = List.of(storeDto1, storeDto2, storeDto3, storeDto4, storeDto5);
-//
-//        List<StoreDto> expectedResult = dtoList;
-//
-//        when(storeService.findAll()).thenReturn(generateStoreDtos());
-//
-//        when(storeMapper.toDto(generateStore(1L))).thenReturn(storeDto1);
-//        when(storeMapper.toDto(generateStore(2L))).thenReturn(storeDto2);
-//        when(storeMapper.toDto(generateStore(3L))).thenReturn(storeDto3);
-//        when(storeMapper.toDto(generateStore(4L))).thenReturn(storeDto4);
-//        when(storeMapper.toDto(generateStore(5L))).thenReturn(storeDto5);
-//
-//        List<StoreDto> actualResult = storeService.findAll();
-//
-//        assertEquals(expectedResult, actualResult);
-//    }
+        when(storeRepository.findAll()).thenReturn(generateStores());
+        when(storeMapper.toDtoList(generateStores())).thenReturn(expectedResult);
+
+        List<StoreDto> actualResult = storeService.findAll();
+
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void should_find_all_if_not_exist() {
+        when(storeRepository.findAll()).thenReturn(Collections.emptyList());
+
+        List<StoreDto> actualResult = storeService.findAll();
+
+        assertEquals(new ArrayList<>(), actualResult);
+    }
 
     @Test
     void should_find_storeDto_by_id_with_entity_status_is_ACTIVE() {
@@ -94,6 +80,55 @@ public class StoreServiceTest {
         Optional<StoreDto> actualResult = storeService.findById(id);
 
         assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void should_find_stores_with_pagination_of_not_null_fields() {
+        Integer page = 0;
+        Integer size = 2;
+
+        List<Store> arrayList = new ArrayList<>();
+        arrayList.add(generateStore(1L));
+        arrayList.add(generateStore(2L));
+
+        Page<Store> storePage = new PageImpl<>(arrayList);
+
+        when(storeRepository.findAll(any(Pageable.class))).thenReturn(storePage);
+        when(storeMapper.toDto(generateStore(1L))).thenReturn(generateStoreDto(1L));
+        when(storeMapper.toDto(generateStore(2L))).thenReturn(generateStoreDto(2L));
+
+        Page<StoreDto> result = storeService.getPage(page, size);
+
+        verify(storeRepository, times(1)).findAll(any(Pageable.class));
+        verify(storeMapper, times(arrayList.size())).toDto(any(Store.class));
+    }
+
+    @Test
+    void should_find_stores_with_pagination_of_null_parameter_fields() {
+        Page<StoreDto> expectedResult = new PageImpl<>(generateStoreDtos());
+
+        when(storeService.findAll()).thenReturn(generateStoreDtos());
+        Page<StoreDto> actualResult = storeService.getPage(null, null);
+
+        assertEquals(expectedResult, actualResult);
+    }
+    @Test
+    void should_find_stores_with_pagination_of_null_fields_when_products_not_found() {
+        when(storeService.findAll()).thenReturn(Collections.emptyList());
+        Page<StoreDto> actualResult = storeService.getPage(null, null);
+
+        assertEquals(Page.empty(), actualResult);
+    }
+
+    @Test
+    void should_find_stores_with_pagination_of_incorrect_parameter_fields() {
+        Page<StoreDto> actualResult1 = storeService.getPage(0, 0);
+        Page<StoreDto> actualResult2 = storeService.getPage(-1, 2);
+        Page<StoreDto> actualResult3 = storeService.getPage(-1, 0);
+
+        assertEquals(Page.empty(), actualResult1);
+        assertEquals(Page.empty(), actualResult2);
+        assertEquals(Page.empty(), actualResult3);
     }
 
     @Test
@@ -215,6 +250,7 @@ public class StoreServiceTest {
                 generateStore(4L),
                 generateStore(5L));
     }
+
     private List<StoreDto> generateStoreDtos() {
         return List.of(
                 generateStoreDto(1L),
@@ -229,8 +265,8 @@ public class StoreServiceTest {
         Store store = generateStore();
         store.setId(id);
         store.setEntityStatus(EntityStatus.ACTIVE);
-//        store.setProducts(new HashSet<>());
         store.setManagers(new HashSet<>());
+
         return store;
     }
 
@@ -238,6 +274,7 @@ public class StoreServiceTest {
         Store store = new Store();
         store.setId(1L);
         store.setEntityStatus(EntityStatus.ACTIVE);
+
         return store;
     }
 
@@ -245,6 +282,7 @@ public class StoreServiceTest {
         Store store = new Store();
         store.setId(1L);
         store.setEntityStatus(EntityStatus.ACTIVE);
+
         return store;
     }
 
@@ -253,7 +291,6 @@ public class StoreServiceTest {
         storeDto.setId(1L);
         storeDto.setOwnerId(1L);
         storeDto.setManagersId(new HashSet<>());
-//        storeDto.setProductsId(new HashSet<>());
 
         return storeDto;
     }
@@ -263,7 +300,6 @@ public class StoreServiceTest {
         storeDto.setId(id);
         storeDto.setOwnerId(1L);
         storeDto.setManagersId(new HashSet<>());
-//        storeDto.setProductsId(new HashSet<>());
 
         return storeDto;
     }
