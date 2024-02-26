@@ -4,7 +4,6 @@ import com.gitlab.dto.StoreDto;
 import com.gitlab.enums.EntityStatus;
 import com.gitlab.mapper.StoreMapper;
 import com.gitlab.model.Store;
-import com.gitlab.model.User;
 import com.gitlab.repository.StoreRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,8 +57,17 @@ public class StoreService {
     @Transactional
     public Optional<StoreDto> save(StoreDto storeDto) {
 
-        if (storeDto.getManagersId() != null && checkExistingManagers(storeDto.getManagersId())) {
-            return Optional.empty();
+        if (storeDto.getManagersId() != null) {
+
+            Set<Long> distinctByManagers = storeRepository.findDistinctByManagers();
+            int sizeBefore = distinctByManagers.size();
+            int sizeToAdd = storeDto.getManagersId().size();
+            distinctByManagers.addAll(storeDto.getManagersId());
+            int sizeAfter = distinctByManagers.size();
+
+            if (sizeAfter != (sizeBefore + sizeToAdd)) {
+                return Optional.empty();
+            }
         }
 
         Store store = storeMapper.toEntity(storeDto);
@@ -80,7 +87,7 @@ public class StoreService {
         if (storeDto.getOwnerId() != null) {
             savedStore.setOwner(storeMapper.mapOwnerIdToUser(storeDto.getOwnerId()));
         }
-        if (storeDto.getManagersId() != null && checkExistingManagers(storeDto.getManagersId())) {
+        if (storeDto.getManagersId() != null) {
             savedStore.setManagers(storeMapper.mapUserToLong(storeDto.getManagersId()));
         }
 
@@ -103,15 +110,4 @@ public class StoreService {
 
         return Optional.of(storeMapper.toDto(deletedStore));
     }
-
-    private boolean checkExistingManagers(Set<Long> managers) {
-        Set<Long> distinctByManagers = storeRepository.findDistinctByManagers();
-        int sizeBefore = distinctByManagers.size();
-        int sizeToAdd = managers.size();
-        distinctByManagers.addAll(managers);
-        int sizeAfter = distinctByManagers.size();
-
-        return sizeAfter != (sizeBefore + sizeToAdd);
-    }
-
 }

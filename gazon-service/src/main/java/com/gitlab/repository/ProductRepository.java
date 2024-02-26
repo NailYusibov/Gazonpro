@@ -1,6 +1,5 @@
 package com.gitlab.repository;
 
-import com.gitlab.dto.ProductDto;
 import com.gitlab.model.Product;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;

@@ -13,7 +13,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,13 +26,12 @@ public abstract class ProductMapper {
     @Autowired
     private ProductImageService productImageService;
     @Autowired
-    @Lazy
     private StoreService storeService;
     @Autowired
     private StoreMapper storeMapper;
 
     @Mapping(source = "productImages", target = "imagesId")
-    @Mapping(source = "review", target = "rating")/*product.*/
+    @Mapping(source = "review", target = "rating")
     @Mapping(source = "store", target = "storeId")
     public abstract ProductDto toDto(Product product);
 
