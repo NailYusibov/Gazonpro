@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -35,7 +34,7 @@ public class PersonalAddressService {
         List<PersonalAddress> personalAddresses = personalAddressRepository.findAll();
         return personalAddresses.stream()
                 .map(personalAddressMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
