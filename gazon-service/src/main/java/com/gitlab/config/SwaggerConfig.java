@@ -2,6 +2,8 @@ package com.gitlab.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -13,7 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 
 @Configuration
-public class SwaggerConfig {
+public class SwaggerConfig implements WebMvcConfigurer {
 
     @Bean
     public Docket api() {
@@ -32,5 +34,10 @@ public class SwaggerConfig {
                 .description("UI для работы с API проекта Gazon.")
                 .version("1.2.0")
                 .build();
+    }
+
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addRedirectViewController("/", "/swagger-ui/");
     }
 }
