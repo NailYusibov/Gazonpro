@@ -1,7 +1,6 @@
 package com.gitlab.controller;
 
 import com.gitlab.dto.ProductDto;
-import com.gitlab.mapper.ProductMapper;
 import com.gitlab.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +30,7 @@ class ProductSearchRestIT extends AbstractIntegrationTest {
         productDto.setCode("name");
         productDto.setWeight(1L);
         productDto.setPrice(BigDecimal.ONE);
-        productService.saveDto(productDto);
+        productService.save(productDto);
 
         String expected = objectMapper.writeValueAsString(
                 productService.findByNameIgnoreCaseContaining(productDto.getName()));

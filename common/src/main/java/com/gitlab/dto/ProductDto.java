@@ -47,6 +47,8 @@ public class ProductDto {
     @NotNull(message = "Product's price should not be empty")
     private BigDecimal price;
 
+    private Long storeId;
+
     private String rating;
 
     private Map<String, String> features;

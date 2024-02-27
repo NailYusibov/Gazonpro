@@ -176,7 +176,8 @@ class UserRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_user_by_id() throws Exception {
-        User user = userService.save(userMapper.toEntity(generateUser(5L)));
+        User entity = userMapper.toEntity(generateUser(5L));
+        User user = userService.save(entity);
         long id = userService.findById(user.getId()).get().getId();
 
         mockMvc.perform(delete(USER_URI + "/{id}", id))
@@ -185,6 +186,26 @@ class UserRestControllerIT extends AbstractIntegrationTest {
         mockMvc.perform(get(USER_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+        /*
+        StoreDto storeDto = generateStore();
+        String jsonProductDto = objectMapper.writeValueAsString(storeDto);
+
+        mockMvc.perform(post(STORE_URI)
+                        .content(jsonProductDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated());
+
+        long id = storeDto.getId() - 2;
+
+        mockMvc.perform(delete(STORE_URI + "/{id}", id))
+                .andDo(print())
+                .andExpect(status().isOk());
+        mockMvc.perform(get(STORE_URI + "/{id}", id))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+                */
     }
 
     private UserDto generateUser(Long id) {

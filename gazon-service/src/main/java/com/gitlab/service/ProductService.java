@@ -28,13 +28,18 @@ public class ProductService {
     private final ProductMapper productMapper;
 
     @Transactional(readOnly = true)
-    public List<Product> findAll() {
-        return productRepository.findAll();
+    public List<ProductDto> findAll() {
+        return productMapper.toDtoList(productRepository.findAll());
     }
 
     @Transactional(readOnly = true)
-    public List<ProductDto> findAllDto() {
-        List<Product> products = findAll();
+    public List<ProductDto> findAllByStoreId(Long storeId) {
+        List<Product> products;
+        if (storeId == null) {
+            products = productRepository.findAll();
+        } else {
+            products = productRepository.findAll(storeId);
+        }
         return productMapper.toDtoList(products);
     }
 
@@ -49,25 +54,9 @@ public class ProductService {
         return currentOptionalProduct.map(productMapper::toDto);
     }
 
-    public Page<Product> getPage(Integer page, Integer size) {
+    public Page<ProductDto> getPage(Integer page, Integer size) {
         if (page == null || size == null) {
             var products = findAll();
-            if (products.isEmpty()) {
-                return Page.empty();
-            }
-            return new PageImpl<>(products);
-        }
-        if (page < 0 || size < 1) {
-            return Page.empty();
-        }
-        PageRequest pageRequest = PageRequest.of(page, size);
-        return productRepository.findAll(pageRequest);
-    }
-
-    public Page<ProductDto> getPageDto(Integer page, Integer size) {
-
-        if (page == null || size == null) {
-            var products = findAllDto();
             if (products.isEmpty()) {
                 return Page.empty();
             }
@@ -81,61 +70,40 @@ public class ProductService {
         return productPage.map(productMapper::toDto);
     }
 
-    public Product save(Product product) {
-        product.setEntityStatus(EntityStatus.ACTIVE);
-        return productRepository.save(product);
+    public Page<ProductDto> getPageByStoreId(Integer page, Integer size, Long storeId) {
+        if (page == null || size == null) {
+            var products = findAllByStoreId(storeId);
+            if (products.isEmpty()) {
+                return Page.empty();
+            }
+            return new PageImpl<>(products);
+        }
+        if (page < 0 || size < 1) {
+            return Page.empty();
+        }
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Product> productPage;
+        if (storeId != null) {
+            productPage = productRepository.findAllByStore(pageRequest, storeId);
+        } else {
+            productPage = productRepository.findAll(pageRequest);
+
+        }
+        return productPage.map(productMapper::toDto);
     }
 
-    public ProductDto saveDto(ProductDto productDto) {
+    public Optional<ProductDto> save(ProductDto productDto) {
         Product product = productMapper.toEntity(productDto);
         product.setEntityStatus(EntityStatus.ACTIVE);
         Product savedProduct = productRepository.save(product);
-        return productMapper.toDto(savedProduct);
+        return Optional.of(productMapper.toDto(savedProduct));
     }
 
-    public Optional<Product> update(Long id, Product product) {
-        Optional<Product> currentOptionalProduct = findById(id);
-        Product currentProduct;
-        if (currentOptionalProduct.isEmpty()) {
-            return currentOptionalProduct;
-        } else {
-            currentProduct = currentOptionalProduct.get();
-        }
-        if (product.getName() != null) {
-            currentProduct.setName(product.getName());
-        }
-        if (product.getStockCount() != null) {
-            currentProduct.setStockCount(product.getStockCount());
-        }
-        if (product.getProductImages() != null) {
-            currentProduct.setProductImages(product.getProductImages());
-        }
-        if (product.getDescription() != null) {
-            currentProduct.setDescription(product.getDescription());
-        }
-        if (product.getIsAdult() != null) {
-            currentProduct.setIsAdult(product.getIsAdult());
-        }
-        if (product.getCode() != null) {
-            currentProduct.setCode(product.getCode());
-        }
-        if (product.getWeight() != null) {
-            currentProduct.setWeight(product.getWeight());
-        }
-        if (product.getPrice() != null) {
-            currentProduct.setPrice(product.getPrice());
-        }
-
-        currentProduct.setEntityStatus(EntityStatus.ACTIVE);
-
-        return Optional.of(productRepository.save(currentProduct));
-    }
-
-    public ProductDto updateDto(Long id, ProductDto productDto) {
-        Optional<Product> currentOptionalProduct = findById(id);
+    public Optional<ProductDto> update(Long id, ProductDto productDto) {
+        Optional<Product> currentOptionalProduct = productRepository.findById(id);
 
         if (currentOptionalProduct.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
 
         Product currentProduct = currentOptionalProduct.get();
@@ -146,7 +114,6 @@ public class ProductService {
         if (productDto.getStockCount() != null) {
             currentProduct.setStockCount(productDto.getStockCount());
         }
-
         if (productDto.getDescription() != null) {
             currentProduct.setDescription(productDto.getDescription());
         }
@@ -163,19 +130,11 @@ public class ProductService {
             currentProduct.setPrice(productDto.getPrice());
         }
 
-        return productMapper.toDto(productRepository.save(currentProduct));
+        return Optional.of(productMapper.toDto(productRepository.save(currentProduct)));
     }
 
-    public Optional<Product> delete(Long id) {
+    public Optional<ProductDto> delete(Long id) {
         Optional<Product> foundProduct = productRepository.findById(id);
-        if (foundProduct.isPresent()) {
-            productRepository.deleteById(id);
-        }
-        return foundProduct;
-    }
-
-    public Optional<ProductDto> deleteDto(Long id) {
-        Optional<Product> foundProduct = findById(id);
         if (foundProduct.isPresent()) {
             foundProduct.get().setEntityStatus(EntityStatus.DELETED);
             productRepository.save(foundProduct.get());
@@ -183,12 +142,12 @@ public class ProductService {
         return foundProduct.map(productMapper::toDto);
     }
 
-    public ProductDto createDto(ProductDto productDto) {
+    public Optional<ProductDto> create(ProductDto productDto) {
         productDto.setId(null);
         Product productEntity = productMapper.toEntity(productDto);
         productEntity.setEntityStatus(EntityStatus.ACTIVE);
         Product savedProduct = productRepository.save(productEntity);
-        return productMapper.toDto(savedProduct);
+        return Optional.of(productMapper.toDto(savedProduct));
     }
 
     public List<ProductDto> findByNameIgnoreCaseContaining(String name) throws InterruptedException {
@@ -204,5 +163,4 @@ public class ProductService {
 
         return mergedList.stream().filter(mergedList1 -> mergedList1.getEntityStatus().equals(EntityStatus.ACTIVE)).map(productMapper::toDto).toList();
     }
-
 }

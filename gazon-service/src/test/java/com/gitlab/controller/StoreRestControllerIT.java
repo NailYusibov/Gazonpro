@@ -34,7 +34,7 @@ public class StoreRestControllerIT extends AbstractIntegrationTest {
     void should_get_all_stores() throws Exception {
 
         var response = storeService.getPage(null, null);
-        var expected = objectMapper.writeValueAsString(storeMapper.toDtoList(response.getContent()));
+        var expected = objectMapper.writeValueAsString(response.getContent());
 
         mockMvc.perform(get(STORE_URI))
                 .andDo(print())
@@ -52,7 +52,7 @@ public class StoreRestControllerIT extends AbstractIntegrationTest {
         var response = storeService.getPage(page, size);
         assertFalse(response.getContent().isEmpty());
 
-        var expected = objectMapper.writeValueAsString(storeMapper.toDtoList(response.getContent()));
+        var expected = objectMapper.writeValueAsString(response.getContent());
 
         mockMvc.perform(get(STORE_URI + parameters))
                 .andDo(print())
@@ -204,6 +204,7 @@ public class StoreRestControllerIT extends AbstractIntegrationTest {
         storeDto.setId(5L);
         storeDto.setOwnerId(1L);
         storeDto.setManagersId(new HashSet<>());
+//        storeDto.setProductsId(new HashSet<>());
 
         return storeDto;
     }

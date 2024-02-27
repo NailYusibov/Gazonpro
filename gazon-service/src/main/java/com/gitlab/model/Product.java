@@ -14,10 +14,13 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Set;
 
-@NamedEntityGraph(name = "Product.productImages",
-        attributeNodes = @NamedAttributeNode("productImages"))
+@NamedEntityGraph(name = "product",
+        attributeNodes = {
+                @NamedAttributeNode("productImages"),
+                @NamedAttributeNode("store")
+        })
 @Entity
-@EqualsAndHashCode(exclude = {"productImages", "selectedProducts", "review"})
+@EqualsAndHashCode(exclude = {"productImages", "selectedProducts", "review", "store"})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -57,11 +60,12 @@ public class Product {
     @Column(name = "price")
     private BigDecimal price;
 
+    @ManyToOne
+    @JoinColumn(name = "store_id", referencedColumnName = "id")
+    private com.gitlab.model.Store store;
+
     @Column(name = "entity_status")
     @Enumerated(EnumType.STRING)
     private EntityStatus entityStatus;
 
-    @ManyToOne
-    @JoinColumn(name = "store_id")
-    private com.gitlab.model.Store store;
 }

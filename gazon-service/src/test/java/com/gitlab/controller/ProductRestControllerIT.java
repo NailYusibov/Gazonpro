@@ -42,7 +42,7 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional(readOnly = true)
     void should_get_all_products() throws Exception {
-        var response = productService.getPageDto(null, null);
+        var response = productService.getPage(null, null);
 
         var expected = objectMapper.writeValueAsString(response.getContent());
 
@@ -55,14 +55,14 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional(readOnly = true)
     void should_get_page() throws Exception {
-        int page = 0;
-        int size = 2;
+        Integer page = 0;
+        Integer size = 2;
         String parameters = "?page=" + page + "&size=" + size;
 
         var response = productService.getPage(page, size);
         assertFalse(response.getContent().isEmpty());
 
-        var expected = objectMapper.writeValueAsString(productMapper.toDtoList(response.getContent()));
+        var expected = objectMapper.writeValueAsString(response.getContent());
 
         mockMvc.perform(get(PRODUCT_URI + parameters))
                 .andDo(print())
@@ -97,7 +97,7 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
     @Transactional
     void should_get_product_by_id() throws Exception {
         ProductDto productDto = generateProductDTO();
-        ProductDto savedProductDto = productService.saveDto(productDto);
+        ProductDto savedProductDto = productService.save(productDto).get();
 
         String expected = objectMapper.writeValueAsString(
                 productService.findByIdDto(savedProductDto.getId()).orElse(null)
@@ -149,7 +149,7 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
     @Transactional
     void should_update_product_by_id() throws Exception {
         ProductDto productDto = generateProductDTO();
-        ProductDto savedProduct = productService.saveDto(productDto);
+        ProductDto savedProduct = productService.save(productDto).get();
 
         ProductDto updatedProductDto = generateProductDTO();
         updatedProductDto.setRating(productService.findByIdDto(savedProduct.getId()).get().getRating());
@@ -190,7 +190,7 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void should_delete_product_by_id() throws Exception {
-        ProductDto productDto = productService.saveDto(generateProductDTO());
+        ProductDto productDto = productService.save(generateProductDTO()).get();
         long id = productDto.getId();
         mockMvc.perform(delete(PRODUCT_URI + "/{id}", id))
                 .andDo(print())

@@ -2,13 +2,8 @@ package com.gitlab.controller;
 
 import com.gitlab.controllers.api.rest.StoreRestApi;
 import com.gitlab.dto.StoreDto;
-import com.gitlab.dto.StoreDto;
-import com.gitlab.model.Store;
 import com.gitlab.service.StoreService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +18,7 @@ public class StoreRestController implements StoreRestApi {
     private final StoreService storeService;
 
     public ResponseEntity<List<StoreDto>> getPage(Integer page, Integer size) {
-        var storePage = storeService.getPageDto(page, size);
+        var storePage = storeService.getPage(page, size);
         if (storePage == null || storePage.getContent().isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -41,12 +36,12 @@ public class StoreRestController implements StoreRestApi {
     public ResponseEntity<StoreDto> create(StoreDto storeDto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(storeService
-                                .save(storeDto));
+                                .save(storeDto).get());
     }
 
     @Override
     public ResponseEntity<StoreDto> update(Long id, StoreDto storeDto) {
-        Optional<StoreDto> updatedStoreDto = Optional.ofNullable(storeService.update(id, storeDto));
+        Optional<StoreDto> updatedStoreDto = storeService.update(id, storeDto);
         return updatedStoreDto
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -54,7 +49,7 @@ public class StoreRestController implements StoreRestApi {
 
     @Override
     public ResponseEntity<Void> delete(Long id) {
-        Optional<StoreDto> product = Optional.ofNullable(storeService.delete(id));
+        Optional<StoreDto> product = storeService.delete(id);
         return product.isEmpty() ?
                 ResponseEntity.notFound().build() :
                 ResponseEntity.ok().build();

@@ -13,9 +13,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -24,15 +25,8 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final StoreMapper storeMapper;
 
-    public List<Store> findAll() {
-        return storeRepository.findAll();
-    }
-
-    public @NonNull List<StoreDto> findAllDto() {
-        return findAll()
-                .stream()
-                .map(storeMapper::toDto)
-                .collect(Collectors.toList());
+    public @NonNull List<StoreDto> findAll() {
+        return storeMapper.toDtoList(storeRepository.findAll());
     }
 
     public Optional<StoreDto> findById(Long id) {
@@ -43,25 +37,10 @@ public class StoreService {
         return optionalStore.map(storeMapper::toDto);
     }
 
-    public Page<Store> getPage(Integer page, Integer size) {
+    public Page<StoreDto> getPage(Integer page, Integer size) {
+
         if (page == null || size == null) {
             var stores = findAll();
-            if (stores.isEmpty()) {
-                return Page.empty();
-            }
-            return new PageImpl<>(stores);
-        }
-        if (page < 0 || size < 1) {
-            return Page.empty();
-        }
-        PageRequest pageRequest = PageRequest.of(page, size);
-        return storeRepository.findAll(pageRequest);
-    }
-
-    public Page<StoreDto> getPageDto(Integer page, Integer size) {
-
-        if (page == null || size == null) {
-            var stores = findAllDto();
             if (stores.isEmpty()) {
                 return Page.empty();
             }
@@ -74,45 +53,61 @@ public class StoreService {
         Page<Store> storePage = storeRepository.findAll(pageRequest);
         return storePage.map(storeMapper::toDto);
     }
-    
+
     @Transactional
-    public StoreDto save(StoreDto storeDto) {
+    public Optional<StoreDto> save(StoreDto storeDto) {
+
+        if (storeDto.getManagersId() != null) {
+
+            Set<Long> distinctByManagers = storeRepository.findDistinctByManagers();
+            int sizeBefore = distinctByManagers.size();
+            int sizeToAdd = storeDto.getManagersId().size();
+            distinctByManagers.addAll(storeDto.getManagersId());
+            int sizeAfter = distinctByManagers.size();
+
+            if (sizeAfter != (sizeBefore + sizeToAdd)) {
+                return Optional.empty();
+            }
+        }
+
         Store store = storeMapper.toEntity(storeDto);
         store.setEntityStatus(EntityStatus.ACTIVE);
         Store savedStore = storeRepository.save(store);
-        return storeMapper.toDto(savedStore);
+        return Optional.of(storeMapper.toDto(savedStore));
     }
 
     @Transactional
-    public StoreDto update(Long id, StoreDto storeDto) {
+    public Optional<StoreDto> update(Long id, StoreDto storeDto) {
         Optional<Store> optionalSavedStore = storeRepository.findById(id);
-        if (optionalSavedStore.isEmpty() || optionalSavedStore.get().getEntityStatus().equals(EntityStatus.DELETED)) {
-            return null;
+        if (optionalSavedStore.isEmpty()) {
+            return Optional.empty();
         }
         Store savedStore = optionalSavedStore.get();
+        savedStore.setEntityStatus(EntityStatus.ACTIVE);
+        if (storeDto.getOwnerId() != null) {
+            savedStore.setOwner(storeMapper.mapOwnerIdToUser(storeDto.getOwnerId()));
+        }
+        if (storeDto.getManagersId() != null) {
+            savedStore.setManagers(storeMapper.mapUserToLong(storeDto.getManagersId()));
+        }
 
-        updateStoreFields(savedStore, storeDto);
         Store updatedStore = storeRepository.save(savedStore);
-        return storeMapper.toDto(updatedStore);
+
+        return Optional.of(storeMapper.toDto(updatedStore));
     }
 
     @Transactional
-    public StoreDto delete(Long id) {
+    public Optional<StoreDto> delete(Long id) {
         Optional<Store> optionalDeletedStore = storeRepository.findById(id);
         if (optionalDeletedStore.isEmpty() || optionalDeletedStore.get().getEntityStatus().equals(EntityStatus.DELETED)) {
-            return null;
+            return Optional.empty();
         }
         Store deletedStore = optionalDeletedStore.get();
         deletedStore.setEntityStatus(EntityStatus.DELETED);
+        deletedStore.setManagers(Collections.emptySet());
+
         storeRepository.save(deletedStore);
 
-        return storeMapper.toDto(optionalDeletedStore.get());
-    }
-
-    private Store updateStoreFields(Store savedStore, StoreDto storeDto) {
-        savedStore.setOwner(storeMapper.mapOwnerIdToUser(storeDto.getOwnerId()));
-        savedStore.setManagers(storeMapper.map(storeDto.getManagersId()));
-
-        return savedStore;
+        return Optional.of(storeMapper.toDto(deletedStore));
     }
 }

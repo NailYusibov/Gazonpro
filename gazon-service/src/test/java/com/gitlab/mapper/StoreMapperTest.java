@@ -101,7 +101,7 @@ public class StoreMapperTest extends AbstractIntegrationTest {
         StoreDto storeDto = new StoreDto();
         storeDto.setId(id);
         storeDto.setOwnerId(id);
-        storeDto.setManagersId(Set.of(id + 10));
+        storeDto.setManagersId(Set.of(id + 3));
         return storeDto;
     }
 }

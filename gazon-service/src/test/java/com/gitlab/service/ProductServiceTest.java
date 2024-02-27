@@ -1,6 +1,8 @@
 package com.gitlab.service;
 
+import com.gitlab.dto.ProductDto;
 import com.gitlab.enums.EntityStatus;
+import com.gitlab.mapper.ProductMapper;
 import com.gitlab.model.Product;
 import com.gitlab.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
@@ -8,14 +10,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -23,17 +28,48 @@ class ProductServiceTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @Mock
+    private ProductMapper productMapper;
+
     @InjectMocks
     private ProductService productService;
 
     @Test
     void should_find_all_products() {
-        List<Product> expectedResult = generateProducts();
+        List<ProductDto> expectedResult = generateProductDtos();
         when(productRepository.findAll()).thenReturn(generateProducts());
+        when(productMapper.toDtoList(generateProducts())).thenReturn(generateProductDtos());
 
-        List<Product> actualResult = productService.findAll();
+        List<ProductDto> actualResult = productService.findAll();
 
         assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void should_find_all_products_by_storeId_when_not_null() {
+        Long storeId = 1L;
+
+        List<ProductDto> expectedResult = generateProductDtos();
+        when(productRepository.findAll(storeId)).thenReturn(generateProducts());
+        when(productMapper.toDtoList(generateProducts())).thenReturn(generateProductDtos());
+
+        List<ProductDto> actualResult = productService.findAllByStoreId(storeId);
+
+        assertEquals(expectedResult, actualResult);
+
+    }
+
+    @Test
+    void should_find_all_products_by_storeId_when_null() {
+        List<ProductDto> expectedResult = generateProductDtos();
+        when(productRepository.findAll()).thenReturn(generateProducts());
+        when(productMapper.toDtoList(generateProducts())).thenReturn(generateProductDtos());
+
+        List<ProductDto> actualResult = productService.findAllByStoreId(null);
+
+        assertEquals(expectedResult, actualResult);
+
     }
 
     @Test
@@ -49,19 +85,84 @@ class ProductServiceTest {
     }
 
     @Test
-    void should_save_product() {
-        Product expectedResult = generateProduct();
-        when(productRepository.save(expectedResult)).thenReturn(expectedResult);
+    void should_find_productDto_by_id() {
+        ProductDto expectedResult = generateProductDto();
+        Long id = expectedResult.getId();
 
-        Product actualResult = productService.save(expectedResult);
+        when(productRepository.findById(id)).thenReturn(Optional.of(generateProduct()));
+        when(productMapper.toDto(generateProduct())).thenReturn(expectedResult);
+
+        Optional<ProductDto> actualResult = productService.findByIdDto(id);
+
+        assertEquals(expectedResult, actualResult.orElse(null));
+    }
+
+    @Test
+    void should_find_products_with_pagination_of_not_null_fields() {
+        Integer page = 0;
+        Integer size = 2;
+
+        List<Product> productList = new ArrayList<>();
+        productList.add(generateProduct(1L));
+        productList.add(generateProduct(2L));
+
+        Page<Product> productPage = new PageImpl<>(productList);
+
+        when(productRepository.findAll(any(Pageable.class))).thenReturn(productPage);
+        when(productMapper.toDto(generateProduct(1L))).thenReturn(generateProductDto(1L));
+        when(productMapper.toDto(generateProduct(2L))).thenReturn(generateProductDto(2L));
+
+        Page<ProductDto> result = productService.getPage(page, size);
+
+        verify(productRepository, times(1)).findAll(any(Pageable.class));
+        verify(productMapper, times(productList.size())).toDto(any(Product.class));
+    }
+
+    @Test
+    void should_find_products_with_pagination_of_null_parameter_fields() {
+        Page<ProductDto> expectedResult = new PageImpl<>(generateProductDtos());
+        when(productService.findAll()).thenReturn(generateProductDtos());
+        Page<ProductDto> actualResult = productService.getPage(null, null);
+
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void should_find_products_with_pagination_of_null_fields_when_products_not_found() {
+        when(productService.findAll()).thenReturn(Collections.emptyList());
+        Page<ProductDto> actualResult = productService.getPage(null, null);
+
+        assertEquals(Page.empty(), actualResult);
+    }
+
+    @Test
+    void should_find_products_with_pagination_of_incorrect_parameter_fields() {
+        Page<ProductDto> actualResult1 = productService.getPage(0, 0);
+        Page<ProductDto> actualResult2 = productService.getPage(-1, 2);
+        Page<ProductDto> actualResult3 = productService.getPage(-1, 0);
+
+        assertEquals(Page.empty(), actualResult1);
+        assertEquals(Page.empty(), actualResult2);
+        assertEquals(Page.empty(), actualResult3);
+    }
+
+    @Test
+    void should_save_product() {
+        Optional<ProductDto> expectedResult = Optional.of(generateProductDto());
+
+        when(productRepository.save(any(Product.class))).thenReturn(generateProduct());
+        when(productMapper.toEntity(any(ProductDto.class))).thenReturn(generateProduct());
+        when(productMapper.toDto(any(Product.class))).thenReturn(generateProductDto());
+
+        Optional<ProductDto> actualResult = productService.save(generateProductDto());
 
         assertEquals(expectedResult, actualResult);
     }
 
     @Test
     void should_update_product() {
-        Product productToUpdateWith = generateProduct();
-        Long id = productToUpdateWith.getId();
+        ProductDto inputProductDto = generateProductDto();
+        Long id = inputProductDto.getId();
 
         Product productBeforeUpdate = new Product();
         productBeforeUpdate.setId(id);
@@ -69,26 +170,27 @@ class ProductServiceTest {
         productBeforeUpdate.setDescription("old");
         productBeforeUpdate.setEntityStatus(EntityStatus.ACTIVE);
 
-        Product productFromFuture = generateProduct();
-        productFromFuture.setId(id);
+        Product productAfterUpdate = generateProduct();
+        productAfterUpdate.setId(id);
 
         when(productRepository.findById(id)).thenReturn(Optional.of(productBeforeUpdate));
-        when(productRepository.save(productFromFuture)).thenReturn(productFromFuture);
+        when(productRepository.save(productAfterUpdate)).thenReturn(productAfterUpdate);
+        when(productMapper.toDto(productAfterUpdate)).thenReturn(generateProductDto());
 
-        Optional<Product> actualResult = productService.update(id, productToUpdateWith);
+        Optional<ProductDto> actualResult = productService.update(id, inputProductDto);
 
-        assertEquals(productFromFuture, actualResult.orElse(null));
+        assertEquals(inputProductDto, actualResult.orElse(null));
+
     }
 
     @Test
     void should_not_update_product_when_entity_not_found() {
         long id = 4L;
-        Product productToUpdateWith = generateProduct();
-
+        ProductDto productToUpdateWith = generateProductDto();
 
         when(productRepository.findById(id)).thenReturn(Optional.empty());
 
-        Optional<Product> actualResult = productService.update(id, productToUpdateWith);
+        Optional<ProductDto> actualResult = productService.update(id, productToUpdateWith);
 
         verify(productRepository, never()).save(any());
         assertNull(actualResult.orElse(null));
@@ -96,13 +198,21 @@ class ProductServiceTest {
 
     @Test
     void should_delete_product() {
-        long id = 1L;
+        Product activeProduct = generateProduct();
+        activeProduct.setEntityStatus(EntityStatus.ACTIVE);
 
-        when(productRepository.findById(id)).thenReturn(Optional.of(generateProduct()));
+        Product deletedProduct = generateProduct();
+        deletedProduct.setEntityStatus(EntityStatus.DELETED);
+
+        Long id = activeProduct.getId();
+
+        when(productRepository.findById(id)).thenReturn(Optional.of(activeProduct));
+        when(productRepository.save(activeProduct)).thenReturn(deletedProduct);
+        when(productMapper.toDto(deletedProduct)).thenReturn(generateProductDto(id));
 
         productService.delete(id);
 
-        verify(productRepository).deleteById(id);
+        verify(productRepository).save(activeProduct);
     }
 
     @Test
@@ -112,73 +222,61 @@ class ProductServiceTest {
 
         productService.delete(id);
 
-        verify(productRepository, never()).deleteById(anyLong());
+        verify(productRepository, never()).save(any());
     }
 
     @Test
     void should_not_updated_product_name_field_if_null() {
         long id = 1L;
-        Product productToUpdateWith = generateProduct();
+        ProductDto productToUpdateWith = generateProductDto();
         productToUpdateWith.setName(null);
 
         Product productBeforeUpdate = generateProduct();
 
         when(productRepository.findById(id)).thenReturn(Optional.of(productBeforeUpdate));
         when(productRepository.save(productBeforeUpdate)).thenReturn(productBeforeUpdate);
+        when(productMapper.toDto(any())).thenReturn(generateProductDto());
 
-        Optional<Product> actualResult = productService.update(id, productToUpdateWith);
+        Optional<ProductDto> actualResult = productService.update(id, productToUpdateWith);
 
         verify(productRepository).save(productBeforeUpdate);
-        assertNotNull(actualResult.orElse(productBeforeUpdate).getName());
+        assertNotNull(actualResult.orElse(productToUpdateWith).getName());
     }
 
     @Test
     void should_not_updated_product_stockCount_field_if_null() {
         long id = 1L;
-        Product productToUpdateWith = generateProduct();
+        ProductDto productToUpdateWith = generateProductDto();
         productToUpdateWith.setStockCount(null);
 
         Product productBeforeUpdate = generateProduct();
 
         when(productRepository.findById(id)).thenReturn(Optional.of(productBeforeUpdate));
         when(productRepository.save(productBeforeUpdate)).thenReturn(productBeforeUpdate);
+        when(productMapper.toDto(any())).thenReturn(generateProductDto());
 
-        Optional<Product> actualResult = productService.update(id, productToUpdateWith);
+        Optional<ProductDto> actualResult = productService.update(id, productToUpdateWith);
 
         verify(productRepository).save(productBeforeUpdate);
-        assertNotNull(actualResult.orElse(productBeforeUpdate).getStockCount());
+        assertNotNull(actualResult.orElse(productToUpdateWith).getStockCount());
     }
 
     @Test
     void should_not_updated_product_description_field_if_null() {
         long id = 1L;
-        Product productToUpdateWith = generateProduct();
+        ProductDto productToUpdateWith = generateProductDto();
         productToUpdateWith.setDescription(null);
 
         Product productBeforeUpdate = generateProduct();
 
         when(productRepository.findById(id)).thenReturn(Optional.of(productBeforeUpdate));
         when(productRepository.save(productBeforeUpdate)).thenReturn(productBeforeUpdate);
+        when(productMapper.toDto(any())).thenReturn(generateProductDto());
 
-        Optional<Product> actualResult = productService.update(id, productToUpdateWith);
+        Optional<ProductDto> actualResult = productService.update(id, productToUpdateWith);
 
         verify(productRepository).save(productBeforeUpdate);
-        assertNotNull(actualResult.orElse(productBeforeUpdate).getDescription());
-    }
-
-    private List<Product> generateProducts() {
-        return List.of(
-                generateProduct(1L),
-                generateProduct(2L),
-                generateProduct(3L),
-                generateProduct(4L),
-                generateProduct(5L));
-    }
-
-    private Product generateProduct(Long id) {
-        Product product = generateProduct();
-        product.setId(id);
-        return product;
+        assertNotNull(actualResult.orElse(productToUpdateWith).getDescription());
     }
 
     private Product generateProduct() {
@@ -195,4 +293,50 @@ class ProductServiceTest {
         return product;
     }
 
+    private Product generateProduct(Long id) {
+        Product product = generateProduct();
+        product.setId(id);
+        return product;
+    }
+
+    private List<Product> generateProducts() {
+        return List.of(
+                generateProduct(1L),
+                generateProduct(2L),
+                generateProduct(3L),
+                generateProduct(4L),
+                generateProduct(5L));
+    }
+
+    private ProductDto generateProductDto() {
+        ProductDto dto = new ProductDto();
+        dto.setId(1L);
+        dto.setName("name1");
+        dto.setStockCount(2);
+        dto.setDescription("name");
+        dto.setIsAdult(true);
+        dto.setCode("name");
+        dto.setWeight(2L);
+        dto.setPrice(BigDecimal.ONE);
+        dto.setStoreId(1L);
+        dto.setRating("8.0");
+
+        return dto;
+    }
+
+    private ProductDto generateProductDto(Long id) {
+        ProductDto dto = new ProductDto();
+        dto.setId(id);
+        return dto;
+    }
+
+    private List<ProductDto> generateProductDtos() {
+        return List.of(
+                generateProductDto(1L),
+                generateProductDto(2L),
+                generateProductDto(3L),
+                generateProductDto(4L),
+                generateProductDto(5L)
+        );
+    }
 }
