@@ -164,4 +164,14 @@
         <tagDatabase tag="v-1.30"/>
     </changeSet>
 
+    <include file="v-1.31-create_and_fill_product_category_table/db.changelog-v-1.31.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1.31" author="vadim_dorogoychenkov">
+        <tagDatabase tag="v-1.31"/>
+    </changeSet>
+
+    <include file="v-1.32-add_product_category_id_to_product_table/db.changelog-v-1.32.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1.32" author="vadim_dorogoychenkov">
+        <tagDatabase tag="v-1.32"/>
+    </changeSet>
+
 </databaseChangeLog>
