@@ -15,6 +15,9 @@ import javax.validation.constraints.Size;
 @Setter
 public class PostomatDto extends ShippingAddressDto {
 
+    @Schema(name = "type", example = "postomat")
+    private String type;
+
     @ReadOnlyProperty
     @Schema(name = "id", example = "1", required = true)
     private Long id;
