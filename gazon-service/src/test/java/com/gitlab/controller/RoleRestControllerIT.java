@@ -135,6 +135,19 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(expected));
     }
+    @Test
+    void should_return_not_found_if_role_not_exists() throws Exception {
+        RoleDto dto = generateRoleDto();
+
+        String jsonRoleDto = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(patch(ROLE_URI + "/{id}", 9999)
+                        .content(jsonRoleDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
 
     @Test
     void should_delete_role_by_id() throws Exception {
