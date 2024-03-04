@@ -24,4 +24,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT r FROM Order r WHERE r.entityStatus = 'ACTIVE' order by r.id asc")
     List<Order> findAll();
 
+    @NonNull
+    @Query("SELECT r FROM Order r JOIN FETCH r.selectedProducts where r.orderStatus = 'NOT_PAID' order by r.id asc")
+    List<Order> findOrdersWithNotPaidStatus();
 }
