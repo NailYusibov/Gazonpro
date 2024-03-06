@@ -51,5 +51,7 @@ public class ProductDto {
 
     private String rating;
 
+    private String productCategory;
+
     private Map<String, String> features;
 }

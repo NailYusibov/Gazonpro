@@ -42,7 +42,7 @@ public interface PostomatRestApi {
                                     @PathVariable (value = "id") Long id);
 
     @PostMapping("/api/postomat")
-    @ApiOperation(value = "Create Postomat")
+    @ApiOperation(value = "Create Postomat", notes="В тело запроса необходимо добавить сточку:  \"type\": \"postomat\"")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Postomat created"),
             @ApiResponse(code = 400, message = "Postomat not created")}
