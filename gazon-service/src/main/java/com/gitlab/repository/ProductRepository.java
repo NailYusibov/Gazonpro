@@ -38,10 +38,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findAll(Pageable pageable);
 
     Iterable<Product> findByNameContainingIgnoreCase(String name);
+
     @NonNull
     @EntityGraph(value = "product")
     @Query("SELECT p FROM Product p WHERE p.entityStatus = 'ACTIVE' AND p.store.id = :storeId")
     Page<Product> findAllByStore(Pageable pageable, Long storeId);
+
     @NonNull
     @EntityGraph(value = "product")
     Product findProductById(Long id);

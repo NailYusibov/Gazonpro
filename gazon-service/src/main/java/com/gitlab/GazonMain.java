@@ -6,8 +6,8 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableCaching
-@SpringBootApplication
 @EnableScheduling
+@SpringBootApplication
 public class GazonMain {
     public static void main(String[] args) {
         SpringApplication.run(GazonMain.class, args);
