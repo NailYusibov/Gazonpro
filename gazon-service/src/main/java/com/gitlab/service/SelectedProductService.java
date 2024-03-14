@@ -88,20 +88,27 @@ public class SelectedProductService {
         return selectedProductMapper.toDto(savedSelectedProduct);
     }
 
+
     @Transactional
     public Optional<SelectedProduct> update(Long id, SelectedProduct selectedProduct) {
         Optional<SelectedProduct> optionalSelectedProduct = findById(id);
-        SelectedProduct currentSelectedProduct;
+
         if (optionalSelectedProduct.isEmpty()) {
             return optionalSelectedProduct;
-        } else {
-            currentSelectedProduct = optionalSelectedProduct.get();
         }
+
+        SelectedProduct currentSelectedProduct = optionalSelectedProduct.get();
+
         if (selectedProduct.getCount() != null) {
             currentSelectedProduct.setCount(selectedProduct.getCount());
         }
+        if (selectedProduct.getIsSelected() != null) {
+            currentSelectedProduct.setIsSelected(selectedProduct.getIsSelected());
+        }
+
         return Optional.of(selectedProductRepository.save(currentSelectedProduct));
     }
+
 
     @Transactional
     public Optional<SelectedProduct> delete(Long id) {
@@ -120,6 +127,7 @@ public class SelectedProductService {
         }
         return selectedProductOptional.map(selectedProductMapper::toDto);
     }
+
     public Optional<SelectedProductDto> updateSelectedProduct(Long id, SelectedProductDto selectedProductDto) {
         Optional<SelectedProduct> optionalSelectedProduct = selectedProductRepository.findById(id);
         if (optionalSelectedProduct.isEmpty()) {

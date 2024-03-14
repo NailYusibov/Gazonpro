@@ -174,4 +174,9 @@
         <tagDatabase tag="v-1.32"/>
     </changeSet>
 
+    <include file="v-1.33-add_new_field_is_selected/db.changelog-v-1.33.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1.33" author="marsel_faizullin">
+        <tagDatabase tag="v-1.33"/>
+    </changeSet>
+
 </databaseChangeLog>
