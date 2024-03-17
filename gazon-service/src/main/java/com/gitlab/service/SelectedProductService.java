@@ -135,9 +135,15 @@ public class SelectedProductService {
         }
 
         SelectedProduct currentSelectedProduct = optionalSelectedProduct.get();
+
         // Обновление полей, если они не null в DTO
         if (selectedProductDto.getCount() != null) {
             currentSelectedProduct.setCount(selectedProductDto.getCount());
+        }
+
+        // Обновление нового поля isSelected
+        if (selectedProductDto.getIsSelected() != null) {
+            currentSelectedProduct.setIsSelected(selectedProductDto.getIsSelected());
         }
 
         // Расчет незамаппированных полей
@@ -147,6 +153,7 @@ public class SelectedProductService {
         SelectedProductDto updatedProductDto = selectedProductMapper.toDto(updatedSelectedProduct);
         return Optional.of(updatedProductDto);
     }
+
 
     public Optional<SelectedProductDto> findByIdAndMapToDto(Long id) {
         Optional<SelectedProduct> selectedProductOptional = selectedProductRepository.findById(id);
