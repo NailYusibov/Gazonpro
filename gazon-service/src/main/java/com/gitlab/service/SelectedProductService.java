@@ -88,7 +88,6 @@ public class SelectedProductService {
         return selectedProductMapper.toDto(savedSelectedProduct);
     }
 
-
     @Transactional
     public Optional<SelectedProduct> update(Long id, SelectedProduct selectedProduct) {
         Optional<SelectedProduct> optionalSelectedProduct = findById(id);
@@ -96,16 +95,13 @@ public class SelectedProductService {
         if (optionalSelectedProduct.isEmpty()) {
             return optionalSelectedProduct;
         }
-
         SelectedProduct currentSelectedProduct = optionalSelectedProduct.get();
-
         if (selectedProduct.getCount() != null) {
             currentSelectedProduct.setCount(selectedProduct.getCount());
         }
         if (selectedProduct.getIsSelected() != null) {
             currentSelectedProduct.setIsSelected(selectedProduct.getIsSelected());
         }
-
         return Optional.of(selectedProductRepository.save(currentSelectedProduct));
     }
 
@@ -135,12 +131,10 @@ public class SelectedProductService {
         }
 
         SelectedProduct currentSelectedProduct = optionalSelectedProduct.get();
-
         // Обновление полей, если они не null в DTO
         if (selectedProductDto.getCount() != null) {
             currentSelectedProduct.setCount(selectedProductDto.getCount());
         }
-
         // Обновление нового поля isSelected
         if (selectedProductDto.getIsSelected() != null) {
             currentSelectedProduct.setIsSelected(selectedProductDto.getIsSelected());
@@ -153,7 +147,6 @@ public class SelectedProductService {
         SelectedProductDto updatedProductDto = selectedProductMapper.toDto(updatedSelectedProduct);
         return Optional.of(updatedProductDto);
     }
-
 
     public Optional<SelectedProductDto> findByIdAndMapToDto(Long id) {
         Optional<SelectedProduct> selectedProductOptional = selectedProductRepository.findById(id);
