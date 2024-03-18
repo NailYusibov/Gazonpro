@@ -15,7 +15,6 @@ import javax.persistence.*;
 
 @Table(name = "selected_product")
 public class SelectedProduct {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,4 +37,7 @@ public class SelectedProduct {
     @ManyToOne
     @JoinColumn(name = "order_id", referencedColumnName = "id")
     private Order order;
+
+    @Column(name = "is_selected")
+    private Boolean isSelected;
 }

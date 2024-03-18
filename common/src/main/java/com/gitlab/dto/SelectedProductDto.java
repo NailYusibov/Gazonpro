@@ -35,4 +35,6 @@ public class SelectedProductDto {
     private Long totalWeight;
 
     private Long userId;
+
+    private Boolean isSelected;
 }
