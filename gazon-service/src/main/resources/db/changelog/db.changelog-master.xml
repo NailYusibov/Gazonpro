@@ -164,4 +164,9 @@
         <tagDatabase tag="v-1.30"/>
     </changeSet>
 
+    <include file="v-1.31-add_column_username_to_user_table/db.changelog-v-1.31.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1.31" author="daniil_kolesnikov">
+        <tagDatabase tag="v-1.31"/>
+    </changeSet>
+
 </databaseChangeLog>
