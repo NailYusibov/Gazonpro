@@ -1,6 +1,5 @@
 package com.gitlab.dto;
 
-import com.gitlab.enums.EntityStatus;
 import com.gitlab.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -62,7 +61,6 @@ public class UserDto {
 
     private Set<ShippingAddressDto> shippingAddressDtos;
 
-    @NotNull(message = "User bankCards cannot be null")
     private Set<BankCardDto> bankCardDtos;
 
     @NotNull(message = "User roles cannot be null")
