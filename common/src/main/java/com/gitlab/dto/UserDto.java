@@ -61,6 +61,7 @@ public class UserDto {
 
     private Set<ShippingAddressDto> shippingAddressDtos;
 
+    @NotNull(message = "User bankCards cannot be null")
     private Set<BankCardDto> bankCardDtos;
 
     @NotNull(message = "User roles cannot be null")
