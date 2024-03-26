@@ -106,14 +106,14 @@ public abstract class UserMapper {
     public abstract  PickupPoint createPickupPointEntity(PickupPointDto pickupPointDto);
 
     public Set<ShippingAddressDto> mapShippingAddressEntityToShippingAddressDto(Set<ShippingAddress> shippingAddress) {
-        if (shippingAddress == null || shippingAddress.isEmpty()) return null;
+        if (shippingAddress == null || shippingAddress.isEmpty()) return new HashSet<>();
         return shippingAddress.stream()
                 .map(this::createShippingAddressDto)
                 .collect(Collectors.toSet());
     }
 
     public Set<ShippingAddress> mapShippingAddressDtoToShippingAddressSetEntity(Set<ShippingAddressDto> shippingAddressDtoSet) {
-        if (shippingAddressDtoSet == null || shippingAddressDtoSet.isEmpty()) return null;
+        if (shippingAddressDtoSet == null || shippingAddressDtoSet.isEmpty()) return new HashSet<>();
         return shippingAddressDtoSet.stream()
                 .map(this::createShippingAddress)
                 .collect(Collectors.toSet());
