@@ -19,7 +19,6 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
 
     public CustomUserStorageProviderFactory() {
         log.info("[I24] CustomUserStorageProviderFactory created");
-        // Create config metadata
         configMetadata = ProviderConfigurationBuilder.create()
                 .property()
                 .name(CustomUserStorageProviderConstants.CONFIG_KEY_JDBC_DRIVER)
@@ -32,7 +31,7 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
                 .name(CustomUserStorageProviderConstants.CONFIG_KEY_JDBC_URL)
                 .label("JDBC URL")
                 .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue("jdbc:postgresql://localhost:5431/gazon_db")
+                .defaultValue("jdbc:postgresql://db:5432/gazon_db")
                 .helpText("JDBC URL used to connect to the user database")
                 .add()
                 .property()
@@ -71,7 +70,6 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
         return "custom-user-provider";
     }
 
-    // Configuration support methods
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
         return configMetadata;

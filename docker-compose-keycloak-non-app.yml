@@ -1,19 +1,6 @@
 version: "3.8"
 
 services:
-  app:
-    image: 'denispronin/gazon-service:1.2.0'
-    build:
-      context: .
-      dockerfile: Dockerfile_Gazon
-    container_name: app
-    ports:
-      - "8080:8080"
-      - "5005:5005"
-    depends_on:
-      - db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/gazon_db
   db:
     image: 'postgres:12.12'
     environment:
