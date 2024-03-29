@@ -27,6 +27,10 @@ public class UserDto {
     @NotEmpty(message = "User's email should have at least one character")
     private String email;
 
+    @Size(min = 1, max = 255, message = "Length of User's username should be between 1 and 255 characters")
+    @NotEmpty(message = "User's username should have at least one character")
+    private String username;
+
     @Size(min = 1, max = 16, message = "Length of User's password should be between 1 and 255 characters")
     @NotEmpty(message = "User's password should have at least one character")
     private String password;

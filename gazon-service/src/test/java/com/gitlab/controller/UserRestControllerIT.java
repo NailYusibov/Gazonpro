@@ -247,6 +247,7 @@ class UserRestControllerIT extends AbstractIntegrationTest {
         return new UserDto(
                 10L,
                 "mail" + id + "@mail.ru",
+                "username",
                 "user",
                 "answer",
                 "question",

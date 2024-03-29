@@ -408,6 +408,7 @@ class UserDtoTest extends AbstractDtoTest {
         return new UserDto(
                 1L,
                 "mail@mail.ru",
+                "username",
                 "user",
                 "answer",
                 "question",
