@@ -7,6 +7,7 @@
 - #129 Проверка работоспособности Payment REST
 - #149 Добавлена карточка товара
 - #114 - Status model for Order
+- #164 - ProductCategory
 - 
 ## [1.2.0] - 24.12.2023
 - #13 - Make Payment entity

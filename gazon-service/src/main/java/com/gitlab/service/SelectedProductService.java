@@ -91,17 +91,20 @@ public class SelectedProductService {
     @Transactional
     public Optional<SelectedProduct> update(Long id, SelectedProduct selectedProduct) {
         Optional<SelectedProduct> optionalSelectedProduct = findById(id);
-        SelectedProduct currentSelectedProduct;
+
         if (optionalSelectedProduct.isEmpty()) {
             return optionalSelectedProduct;
-        } else {
-            currentSelectedProduct = optionalSelectedProduct.get();
         }
+        SelectedProduct currentSelectedProduct = optionalSelectedProduct.get();
         if (selectedProduct.getCount() != null) {
             currentSelectedProduct.setCount(selectedProduct.getCount());
         }
+        if (selectedProduct.getIsSelected() != null) {
+            currentSelectedProduct.setIsSelected(selectedProduct.getIsSelected());
+        }
         return Optional.of(selectedProductRepository.save(currentSelectedProduct));
     }
+
 
     @Transactional
     public Optional<SelectedProduct> delete(Long id) {
@@ -120,6 +123,7 @@ public class SelectedProductService {
         }
         return selectedProductOptional.map(selectedProductMapper::toDto);
     }
+
     public Optional<SelectedProductDto> updateSelectedProduct(Long id, SelectedProductDto selectedProductDto) {
         Optional<SelectedProduct> optionalSelectedProduct = selectedProductRepository.findById(id);
         if (optionalSelectedProduct.isEmpty()) {
@@ -130,6 +134,10 @@ public class SelectedProductService {
         // Обновление полей, если они не null в DTO
         if (selectedProductDto.getCount() != null) {
             currentSelectedProduct.setCount(selectedProductDto.getCount());
+        }
+        // Обновление нового поля isSelected
+        if (selectedProductDto.getIsSelected() != null) {
+            currentSelectedProduct.setIsSelected(selectedProductDto.getIsSelected());
         }
 
         // Расчет незамаппированных полей

@@ -3,6 +3,7 @@ package com.gitlab.mapper;
 import com.gitlab.dto.ProductDto;
 import com.gitlab.dto.StoreDto;
 import com.gitlab.model.Product;
+import com.gitlab.model.ProductCategory;
 import com.gitlab.model.ProductImage;
 import com.gitlab.model.Review;
 import com.gitlab.model.Store;
@@ -50,6 +51,23 @@ public abstract class ProductMapper {
             return storeMapper.toEntity(storeServiceById.orElse(null));
         }
     }
+
+    public String map(ProductCategory productCategory) {
+        if (productCategory == null) {
+            return null;
+        }
+        return productCategory.getName();
+    }
+
+    public ProductCategory map(String productCategory) {
+        if (productCategory == null) {
+            return null;
+        }
+        ProductCategory category = new ProductCategory();
+        category.setName(productCategory);
+        return category;
+    }
+
 
     public Long[] mapProductImagesToImagesId(Set<ProductImage> productImages) {
         if (productImages == null || productImages.isEmpty()) {

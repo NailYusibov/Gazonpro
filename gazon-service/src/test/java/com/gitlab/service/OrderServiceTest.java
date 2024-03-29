@@ -5,12 +5,15 @@ import com.gitlab.enums.EntityStatus;
 import com.gitlab.mapper.*;
 import com.gitlab.model.Order;
 import com.gitlab.repository.OrderRepository;
+import com.gitlab.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +27,9 @@ public class OrderServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
+
+    @Mock
+    private ProductRepository productRepository;
 
     @InjectMocks
     private OrderService orderService;
@@ -169,5 +175,44 @@ public class OrderServiceTest {
 
     }
 
+    @Test
+    void updateOverdueOrders_NoOverdueOrders() {
+        LocalDateTime currentTime = LocalDateTime.now();
+        List<Order> notPaidOrders = new ArrayList<>();
+
+        Order order1 = new Order();
+        order1.setCreateDateTime(currentTime.plusMinutes(2));
+        notPaidOrders.add(order1);
+
+        Order order2 = new Order();
+        order2.setCreateDateTime(currentTime.minusMinutes(2));
+        notPaidOrders.add(order2);
+
+        when(orderRepository.findOrdersWithNotPaidStatus()).thenReturn(notPaidOrders);
+        orderService.updateOverdueOrders();
+
+        verify(orderRepository, never()).save(any());
+        verify(productRepository, never()).save(any());
+    }
+
+    @Test
+    void updateOverdueOrders_WithOverdueOrders() {
+        LocalDateTime currentTime = LocalDateTime.now();
+        List<Order> notPaidOrders = new ArrayList<>();
+
+        Order order1 = new Order();
+        order1.setCreateDateTime(currentTime.minusHours(2));
+        notPaidOrders.add(order1);
+
+        Order order2 = new Order();
+        order2.setCreateDateTime(currentTime.minusDays(1));
+        notPaidOrders.add(order2);
+
+        when(orderRepository.findOrdersWithNotPaidStatus()).thenReturn(notPaidOrders);
+        orderService.updateOverdueOrders();
+
+        verify(orderRepository, times(2)).save(any());
+        verify(productRepository, never()).save(any());
+    }
 
 }

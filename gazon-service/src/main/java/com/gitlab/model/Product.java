@@ -60,12 +60,16 @@ public class Product {
     @Column(name = "price")
     private BigDecimal price;
 
-    @ManyToOne
-    @JoinColumn(name = "store_id", referencedColumnName = "id")
-    private com.gitlab.model.Store store;
-
     @Column(name = "entity_status")
     @Enumerated(EnumType.STRING)
     private EntityStatus entityStatus;
+
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private com.gitlab.model.Store store;
+
+    @ManyToOne
+    @JoinColumn(name = "product_category_id")
+    private ProductCategory productCategory;
 
 }

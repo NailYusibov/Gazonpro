@@ -173,4 +173,30 @@ class SelectedProductServiceTest {
 
         return selectedProduct;
     }
+
+    @Test
+    void should_update_isSelected_field() {
+        long id = 2L;
+        SelectedProduct selectedProductToUpdate = generateSelectedProduct();
+        selectedProductToUpdate.setIsSelected(true);
+
+        SelectedProduct selectedProductBeforeUpdate = new SelectedProduct();
+        selectedProductBeforeUpdate.setId(id);
+        selectedProductBeforeUpdate.setProduct(new Product());
+        selectedProductBeforeUpdate.setCount(4);
+        selectedProductBeforeUpdate.setIsSelected(false);
+
+        SelectedProduct updatedSelectedProduct = generateSelectedProduct();
+        updatedSelectedProduct.setId(id);
+        updatedSelectedProduct.setIsSelected(true);
+
+        when(selectedProductRepository.findById(id)).thenReturn(Optional.of(selectedProductBeforeUpdate));
+        when(selectedProductRepository.save(updatedSelectedProduct)).thenReturn(updatedSelectedProduct);
+
+        Optional<SelectedProduct> actualResult = selectedProductService.update(id, selectedProductToUpdate);
+
+        assertEquals(updatedSelectedProduct, actualResult.orElse(null));
+        verify(selectedProductRepository).save(updatedSelectedProduct);
+    }
+
 }
