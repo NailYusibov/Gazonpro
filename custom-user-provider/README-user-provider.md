@@ -24,7 +24,7 @@ docker-compose -f docker-compose-keycloak-non-app.yml up
 ```
 **Важно!** При первом запуске KeyCloak будет вылетать, пока не подключишь сервис. Поэтому после **docker-compose** запусти приложение **gazon-service**. И перезагрузи контейнер keycloak.
 
-Консоль Keycloak [тут](http://localhost:8180). Логин **admin** пароль **admin**.
+Консоль Keycloak [тут](http://localhost:8180/admin/master/console/#/GazonRealm). Логин **admin** пароль **admin**.
 
 > Чтобы Keycloak мог использовать данные пользователей из нашей базы данных, написан Keycloak provider: **custom-user-provider** который при сборке образа копируется в контейнер. Все основные настройки Keycloak находятся в realm-export.json, при запуске контейнера файл импортируются в Keycloak.
 
