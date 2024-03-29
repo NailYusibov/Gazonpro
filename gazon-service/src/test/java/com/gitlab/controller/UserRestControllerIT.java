@@ -186,26 +186,7 @@ class UserRestControllerIT extends AbstractIntegrationTest {
         mockMvc.perform(get(USER_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
-        /*
-        StoreDto storeDto = generateStore();
-        String jsonProductDto = objectMapper.writeValueAsString(storeDto);
 
-        mockMvc.perform(post(STORE_URI)
-                        .content(jsonProductDto)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isCreated());
-
-        long id = storeDto.getId() - 2;
-
-        mockMvc.perform(delete(STORE_URI + "/{id}", id))
-                .andDo(print())
-                .andExpect(status().isOk());
-        mockMvc.perform(get(STORE_URI + "/{id}", id))
-                .andDo(print())
-                .andExpect(status().isNotFound());
-                */
     }
 
     private UserDto generateUser(Long id) {
@@ -247,7 +228,7 @@ class UserRestControllerIT extends AbstractIntegrationTest {
         return new UserDto(
                 10L,
                 "mail" + id + "@mail.ru",
-                "username",
+                "username" + id,
                 "user",
                 "answer",
                 "question",

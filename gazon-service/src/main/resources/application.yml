@@ -23,7 +23,7 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5431/gazon_db?useUnicode=yes&characterEncoding=UTF-8&serverTimezone=Europe/Moscow
+    url: jdbc:postgresql://localhost:5432/gazon_db?useUnicode=yes&characterEncoding=UTF-8&serverTimezone=Europe/Moscow
     username: root
     password: root
     hikari:
@@ -55,13 +55,3 @@ logging:
     org:
       hibernate:
         search=DEBUG:
-
-#openapi:
-#  components:
-#    securitySchemes:
-#        bearerAuth:
-#          type: http
-#          scheme: bearer
-#          bearerFormat: JWT
-#  security:
-#    bearerAuth: []
