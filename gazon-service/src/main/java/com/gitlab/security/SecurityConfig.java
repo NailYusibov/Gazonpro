@@ -25,7 +25,7 @@ public class SecurityConfig {
 
             http.sessionManagement().sessionCreationPolicy(STATELESS);
         } else {
-            http
+            http.csrf().disable()
                     .authorizeRequests()
                     .anyRequest().permitAll();
         }
