@@ -110,7 +110,9 @@ public class UserService {
         user.setCreateDate(LocalDate.from(LocalDateTime.now()));
         user.setEntityStatus(EntityStatus.ACTIVE);
         user.getPassport().setEntityStatus(EntityStatus.ACTIVE);
+
         UserDto newUserDto = userMapper.toDto(userRepository.save(user));
+
         ShoppingCartDto shoppingCartDto = new ShoppingCartDto();
         shoppingCartDto.setUserId(newUserDto.getId());
         shoppingCartService.saveDto(shoppingCartDto);

@@ -1,14 +1,11 @@
 package com.gitlab.controller;
 
-import com.gitlab.dto.BankCardDto;
-import com.gitlab.dto.PassportDto;
-import com.gitlab.dto.PersonalAddressDto;
-import com.gitlab.dto.ShippingAddressDto;
-import com.gitlab.dto.UserDto;
+import com.gitlab.dto.*;
 import com.gitlab.enums.Citizenship;
 import com.gitlab.enums.Gender;
 import com.gitlab.mapper.UserMapper;
 import com.gitlab.model.User;
+import com.gitlab.service.ShoppingCartService;
 import com.gitlab.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +36,8 @@ class UserRestControllerIT extends AbstractIntegrationTest {
     private UserService userService;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private ShoppingCartService shoppingCartService;
 
     @Test
     @Transactional(readOnly = true)
@@ -123,11 +122,16 @@ class UserRestControllerIT extends AbstractIntegrationTest {
 
         String jsonExampleDto = objectMapper.writeValueAsString(generateUser(6L));
 
+        ShoppingCartDto shoppingCartDto = new ShoppingCartDto();
+        shoppingCartDto.setUserId(6L);
+
         mockMvc.perform(post(USER_URI)
                         .content(jsonExampleDto)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
+                .andExpect(x -> assertThat(shoppingCartService.saveDto(shoppingCartDto).getUserId(),
+                        equalTo(shoppingCartDto.getUserId())))
                 .andExpect(status().isCreated());
     }
 
