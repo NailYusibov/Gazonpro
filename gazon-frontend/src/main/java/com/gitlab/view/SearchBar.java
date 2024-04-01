@@ -28,7 +28,7 @@ public class SearchBar extends VerticalLayout {
         HorizontalLayout searchWrapper = new HorizontalLayout();
         searchWrapper.addClassName("search-bar-wrapper");
 
-        searchField.setPlaceholder("Искать на Ozon");
+        searchField.setPlaceholder("Искать на Gazon");
         searchField.addClassName("search-input");
         searchField.setWidthFull();
         searchField.setWidth("600px");
