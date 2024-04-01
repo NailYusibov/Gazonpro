@@ -3,18 +3,17 @@ package com.gitlab.controller;
 import com.gitlab.dto.ShoppingCartDto;
 import com.gitlab.mapper.ShoppingCartMapper;
 import com.gitlab.service.ShoppingCartService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -175,12 +174,30 @@ class ShoppingCartRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    private ShoppingCartDto generateShoppingCartDto(){
+    private ShoppingCartDto generateShoppingCartDto() {
         ShoppingCartDto shoppingCartDto = new ShoppingCartDto();
         shoppingCartDto.setUserId(3L);
         shoppingCartDto.setSum(BigDecimal.valueOf(100));
         shoppingCartDto.setTotalWeight(500L);
 
-        return  shoppingCartDto;
+        return shoppingCartDto;
     }
+
+    @Test
+    void should_use_user_assigned_id_in_database_for_shopping_cart() throws Exception {
+        ShoppingCartDto shoppingCartDto = generateShoppingCartDto();
+        shoppingCartDto.setId(9999L);
+
+        String jsonShoppingCartDto = objectMapper.writeValueAsString(shoppingCartDto);
+        MockHttpServletResponse response = mockMvc.perform(post(SHOPPING_CART_URI)
+                        .content(jsonShoppingCartDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        ShoppingCartDto createdShoppingCartDto = objectMapper.readValue(response.getContentAsString(), ShoppingCartDto.class);
+        Assertions.assertNotEquals(shoppingCartDto.getId(), createdShoppingCartDto.getId());
+    }
+
 }

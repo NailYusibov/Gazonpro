@@ -3,9 +3,11 @@ package com.gitlab.controller;
 import com.gitlab.dto.PostomatDto;
 import com.gitlab.mapper.PostomatMapper;
 import com.gitlab.service.PostomatService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -176,4 +178,22 @@ class PostomatRestControllerIT extends AbstractIntegrationTest {
         postomatDto.setShelfLifeDays((byte) 10);
         return postomatDto;
     }
+
+    @Test
+    void should_use_user_assigned_id_in_database_for_postomat() throws Exception {
+        PostomatDto postomatDto = generatePostomateDto();
+        postomatDto.setId(9999L);
+        String jsonPostomatDto = objectMapper.writeValueAsString(postomatDto);
+
+        MockHttpServletResponse response = mockMvc.perform(post(URI)
+                        .content(jsonPostomatDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        PostomatDto createdPostomatDto = objectMapper.readValue(response.getContentAsString(), PostomatDto.class);
+        Assertions.assertNotEquals(postomatDto.getId(), createdPostomatDto.getId());
+    }
+
 }

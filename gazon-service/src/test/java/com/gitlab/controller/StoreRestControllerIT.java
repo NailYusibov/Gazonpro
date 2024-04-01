@@ -3,9 +3,11 @@ package com.gitlab.controller;
 import com.gitlab.dto.StoreDto;
 import com.gitlab.mapper.StoreMapper;
 import com.gitlab.service.StoreService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
@@ -208,4 +210,23 @@ public class StoreRestControllerIT extends AbstractIntegrationTest {
 
         return storeDto;
     }
+
+    @Test
+    void should_use_user_assigned_id_in_database_for_store() throws Exception {
+        StoreDto storeDto = generateStore();
+        storeDto.setId(9999L);
+        String jsonStoreDto = objectMapper.writeValueAsString(storeDto);
+
+        MockHttpServletResponse response = mockMvc.perform(post(STORE_URI)
+                        .content(jsonStoreDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        StoreDto createdStoreDto = objectMapper.readValue(response.getContentAsString(), StoreDto.class);
+        Assertions.assertNotEquals(storeDto.getId(), createdStoreDto.getId());
+    }
+
+
 }

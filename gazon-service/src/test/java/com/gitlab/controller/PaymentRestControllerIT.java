@@ -6,9 +6,11 @@ import com.gitlab.dto.PaymentDto;
 import com.gitlab.enums.PaymentStatus;
 import com.gitlab.mapper.PaymentMapper;
 import com.gitlab.service.PaymentService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -191,7 +190,6 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
     }
 
     private PaymentDto generatePaymentDto() {
-
         PaymentDto paymentDto = new PaymentDto();
         paymentDto.setId(1L);
         BankCardDto bankCardDto = new BankCardDto();
@@ -205,7 +203,24 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
         paymentDto.setOrderId(1L);
         paymentDto.setSum(new BigDecimal(500));
         paymentDto.setUserId(2L);
-
         return paymentDto;
     }
+
+    @Test
+    void should_use_user_assigned_id_in_database_for_payment() throws Exception {
+        PaymentDto paymentDto = generatePaymentDto();
+        paymentDto.setId(9999L);
+
+        String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
+        MockHttpServletResponse response = mockMvc.perform(post(PAYMENT_URI)
+                        .content(jsonPaymentDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        PaymentDto createdPaymentDto = objectMapper.readValue(response.getContentAsString(), PaymentDto.class);
+        Assertions.assertNotEquals(paymentDto.getId(), createdPaymentDto.getId());
+    }
+
 }

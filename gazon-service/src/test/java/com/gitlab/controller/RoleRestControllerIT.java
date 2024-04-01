@@ -4,8 +4,10 @@ import com.gitlab.dto.RoleDto;
 import com.gitlab.mapper.RoleMapper;
 import com.gitlab.model.Role;
 import com.gitlab.service.RoleService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.MediaType;
 
@@ -167,4 +169,23 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
 
         return roleDto;
     }
+
+    @Test
+    void should_use_user_assigned_id_in_database_for_role() throws Exception {
+        RoleDto roleDto = generateRoleDto();
+        roleDto.setId(9999L);
+        String jsonRoleDto = objectMapper.writeValueAsString(roleDto);
+
+        MockHttpServletResponse response = mockMvc.perform(post(ROLE_URI)
+                        .content(jsonRoleDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        RoleDto createdRoleDto = objectMapper.readValue(response.getContentAsString(), RoleDto.class);
+        Assertions.assertNotEquals(roleDto.getId(), createdRoleDto.getId());
+    }
+
+
 }
