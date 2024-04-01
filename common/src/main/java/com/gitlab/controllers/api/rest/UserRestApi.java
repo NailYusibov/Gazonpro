@@ -31,7 +31,7 @@ public interface UserRestApi {
     ResponseEntity<UserDto> get(@ApiParam(name = "id", value = "User.id") @PathVariable(value = "id") Long id);
 
     @PostMapping("/api/user")
-    @ApiOperation(value = "Create User", notes = "Bank card number example: 876543210987654321")
+    @ApiOperation(value = "Create User", notes = "Shopping cart is automatically created when creating new user. Bank card number example: 876543210987654321")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "User created"),
             @ApiResponse(code = 400, message = "User not created")}

@@ -8,7 +8,8 @@
 - #149 Добавлена карточка товара
 - #114 - Status model for Order
 - #164 - ProductCategory
-- 
+- #25 - Creating shopping cart when creating new user
+
 ## [1.2.0] - 24.12.2023
 - #13 - Make Payment entity
 - #73 - added User field to SelectedProduct
