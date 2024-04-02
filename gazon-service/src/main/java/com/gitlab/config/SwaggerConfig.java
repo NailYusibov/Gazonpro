@@ -32,7 +32,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
         return new ApiInfoBuilder()
                 .title("Gazon API")
                 .description("UI для работы с API проекта Gazon.")
-                .version("1.2.0")
+                .version("1.3.0")
                 .build();
     }
 

@@ -1,16 +1,14 @@
-version: "3.8"
+version: "2"
 
 services:
   gazon-no-app-db:
     image: 'postgres:12.12'
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: gazon_db
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
-    healthcheck:
-      test: "exit 0"
-    ports:
-      - "5431:5432"
   gazon-no-app-keycloak:
     build:
       context: .
@@ -18,7 +16,7 @@ services:
     command: start-dev --import-realm
     container_name: gazon-no-app-keycloak
     volumes:
-      - ./custom-user-provider/src/main/resources/realm-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./custom-user-provider/src/main/resources/non-app-realm-export.json:/opt/keycloak/data/import/realm-export.json
     environment:
       KC_DB: postgres
       KC_DB_USERNAME: root
@@ -30,6 +28,3 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
       - "8180:8080"
-    depends_on:
-      gazon-no-app-db:
-        condition: service_healthy

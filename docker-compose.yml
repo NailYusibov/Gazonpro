@@ -1,8 +1,8 @@
-version: "3.8"
+version: "2"
 
 services:
   gazon-app:
-    image: 'denispronin/gazon-service:latest'
+    image: 'denispronin/gazon-service:1.3.0'
     build:
       context: .
       dockerfile: Dockerfile_Gazon
@@ -16,14 +16,12 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://gazon-db:5432/gazon_db
   gazon-db:
     image: 'postgres:12.12'
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: gazon_db
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
-    healthcheck:
-      test: "exit 0"
-    ports:
-      - "5431:5432"
   gazon-keycloak:
     build:
       context: .
@@ -43,6 +41,3 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
       - "8180:8080"
-    depends_on:
-      gazon-db:
-        condition: service_healthy
