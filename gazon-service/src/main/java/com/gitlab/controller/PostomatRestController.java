@@ -37,7 +37,6 @@ public class PostomatRestController implements PostomatRestApi {
 
     @Override
     public ResponseEntity<PostomatDto> create(PostomatDto postomatDto) {
-        postomatDto.setId(null);
         PostomatDto createdPostomatDto = postomatService.saveDto(postomatDto);
 
         return ResponseEntity.status(HttpStatus.CREATED)

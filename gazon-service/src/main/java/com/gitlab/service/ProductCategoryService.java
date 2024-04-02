@@ -59,7 +59,6 @@ public class ProductCategoryService {
 
 
     public ProductCategoryDto saveDto(ProductCategoryDto productCategoryDto) {
-        productCategoryDto.setId(null);
         return productCategoryMapper.toDto(productCategoryRepository
                 .save(productCategoryMapper.toEntity(productCategoryDto)));
     }

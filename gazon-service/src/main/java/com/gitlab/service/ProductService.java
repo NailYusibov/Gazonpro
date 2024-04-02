@@ -143,7 +143,6 @@ public class ProductService {
     }
 
     public Optional<ProductDto> create(ProductDto productDto) {
-        productDto.setId(null);
         Product productEntity = productMapper.toEntity(productDto);
         productEntity.setEntityStatus(EntityStatus.ACTIVE);
         Product savedProduct = productRepository.save(productEntity);

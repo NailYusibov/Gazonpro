@@ -3,9 +3,11 @@ package com.gitlab.controller;
 import com.gitlab.dto.PersonalAddressDto;
 import com.gitlab.mapper.PersonalAddressMapper;
 import com.gitlab.service.PersonalAddressService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -180,4 +182,23 @@ class PersonalAddressRestControllerIT extends AbstractIntegrationTest {
 
         return personalAddressDto;
     }
+
+    @Test
+    void should_use_user_assigned_id_in_database_for_personal_address() throws Exception {
+        PersonalAddressDto personalAddressDto = generatePersonalAddressDto();
+        personalAddressDto.setId(9999L);
+
+        String jsonPersonalAddressDto = objectMapper.writeValueAsString(personalAddressDto);
+        MockHttpServletResponse response = mockMvc.perform(post(URI)
+                        .content(jsonPersonalAddressDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        PersonalAddressDto createdPersonalAddressDto = objectMapper.readValue(response.getContentAsString(), PersonalAddressDto.class);
+        Assertions.assertNotEquals(personalAddressDto.getId(), createdPersonalAddressDto.getId());
+    }
+
+
 }
