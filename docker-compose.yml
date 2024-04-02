@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   gazon-app:
-    image: 'denispronin/gazon-service:1.2.0'
+    image: 'denispronin/gazon-service:latest'
     build:
       context: .
       dockerfile: Dockerfile_Gazon
