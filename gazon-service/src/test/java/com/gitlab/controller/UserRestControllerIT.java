@@ -1,5 +1,6 @@
 package com.gitlab.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gitlab.dto.BankCardDto;
 import com.gitlab.dto.PassportDto;
 import com.gitlab.dto.PersonalAddressDto;
@@ -10,9 +11,12 @@ import com.gitlab.enums.Gender;
 import com.gitlab.mapper.UserMapper;
 import com.gitlab.model.User;
 import com.gitlab.service.UserService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -261,4 +265,23 @@ class UserRestControllerIT extends AbstractIntegrationTest {
                 roleSet
         );
     }
+    @Test
+    void should_use_user_assigned_id_in_database_for_user() throws Exception {
+        UserDto userDto = generateUser(null);
+        userDto.setId(9999L);
+        String jsonUserDto = objectMapper.writeValueAsString(userDto);
+
+        MockHttpServletResponse response = mockMvc.perform(post(USER_URI)
+                        .content(jsonUserDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        UserDto createdUserDto = objectMapper.readValue(response.getContentAsString(), UserDto.class);
+        Assertions.assertNotEquals(userDto.getId(), createdUserDto.getId());
+    }
+
+
+
 }

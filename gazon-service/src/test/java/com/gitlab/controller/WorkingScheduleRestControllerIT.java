@@ -3,9 +3,11 @@ package com.gitlab.controller;
 import com.gitlab.dto.WorkingScheduleDto;
 import com.gitlab.mapper.WorkingScheduleMapper;
 import com.gitlab.service.WorkingScheduleService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
@@ -196,27 +198,6 @@ class WorkingScheduleRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    void should_not_include_id_from_body_while_creating() throws Exception {
-        WorkingScheduleDto workingScheduleDto = workingScheduleService.saveDto(generateWorkingScheduleDto());
-        Long id = workingScheduleDto.getId();
-
-        WorkingScheduleDto newWorkingScheduleDto = new WorkingScheduleDto();
-        newWorkingScheduleDto.setId(id);
-        newWorkingScheduleDto.setDayOfWeek(DayOfWeek.FRIDAY);
-        newWorkingScheduleDto.setFrom(LocalTime.parse("09:09"));
-        newWorkingScheduleDto.setTo(LocalTime.parse("10:10"));
-        String jsonWorkingScheduleDto = objectMapper.writeValueAsString(newWorkingScheduleDto);
-
-        mockMvc.perform(post(WORKING_SCHEDULE_URI)
-                        .content(jsonWorkingScheduleDto)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id", not(id.intValue())));
-    }
-
     private WorkingScheduleDto generateWorkingScheduleDto() {
         WorkingScheduleDto workingScheduleDto = new WorkingScheduleDto();
         workingScheduleDto.setFrom(LocalTime.of(10, 0));
@@ -225,5 +206,21 @@ class WorkingScheduleRestControllerIT extends AbstractIntegrationTest {
         return workingScheduleDto;
     }
 
+    @Test
+    void should_use_user_assigned_id_in_database_for_working_schedule() throws Exception {
+        WorkingScheduleDto workingScheduleDto = generateWorkingScheduleDto();
+        workingScheduleDto.setId(9999L);
+        String jsonWorkingScheduleDto = objectMapper.writeValueAsString(workingScheduleDto);
+
+        MockHttpServletResponse response = mockMvc.perform(post(WORKING_SCHEDULE_URI)
+                        .content(jsonWorkingScheduleDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        WorkingScheduleDto createdWorkingScheduleDto = objectMapper.readValue(response.getContentAsString(), WorkingScheduleDto.class);
+        Assertions.assertNotEquals(workingScheduleDto.getId(), createdWorkingScheduleDto.getId());
+    }
 
 }

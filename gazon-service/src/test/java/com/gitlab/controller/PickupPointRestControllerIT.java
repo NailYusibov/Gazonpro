@@ -4,9 +4,11 @@ import com.gitlab.dto.PickupPointDto;
 import com.gitlab.enums.PickupPointFeatures;
 import com.gitlab.mapper.PickupPointMapper;
 import com.gitlab.service.PickupPointService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
@@ -183,4 +185,22 @@ class PickupPointRestControllerIT extends AbstractIntegrationTest {
 
         return pickupPointDto;
     }
+
+    @Test
+    void should_use_user_assigned_id_in_database_for_pickup_point() throws Exception {
+        PickupPointDto pickupPointDto = generatePickupPointDto();
+        pickupPointDto.setId(9999L);
+        String jsonPickupPointDto = objectMapper.writeValueAsString(pickupPointDto);
+
+        MockHttpServletResponse response = mockMvc.perform(post(URI)
+                        .content(jsonPickupPointDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        PickupPointDto createdPickupPointDto = objectMapper.readValue(response.getContentAsString(), PickupPointDto.class);
+        Assertions.assertNotEquals(pickupPointDto.getId(), createdPickupPointDto.getId());
+    }
+
 }

@@ -3,9 +3,11 @@ package com.gitlab.controller;
 import com.gitlab.dto.SelectedProductDto;
 import com.gitlab.mapper.SelectedProductMapper;
 import com.gitlab.service.SelectedProductService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -172,4 +174,22 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
 
         return selectedProduct;
     }
+
+    @Test
+    void should_use_user_assigned_id_in_database_for_selected_product() throws Exception {
+        SelectedProductDto selectedProductDto = generateSelectedProductDto();
+        selectedProductDto.setId(9999L);
+        String jsonSelectedProductDto = objectMapper.writeValueAsString(selectedProductDto);
+
+        MockHttpServletResponse response = mockMvc.perform(post(SELECTED_PRODUCT_URI)
+                        .content(jsonSelectedProductDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        SelectedProductDto createdSelectedProductDto = objectMapper.readValue(response.getContentAsString(), SelectedProductDto.class);
+        Assertions.assertNotEquals(selectedProductDto.getId(), createdSelectedProductDto.getId());
+    }
+
 }
