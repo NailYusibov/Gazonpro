@@ -3,6 +3,7 @@ package com.gitlab.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.Setter;
+import org.springframework.data.annotation.ReadOnlyProperty;
 
 import java.util.Set;
 
@@ -10,7 +11,7 @@ import java.util.Set;
 @Setter
 public class StoreDto {
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @ReadOnlyProperty
     private Long id;
 
     private Set<Long> managersId;

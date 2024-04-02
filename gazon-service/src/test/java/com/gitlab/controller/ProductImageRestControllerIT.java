@@ -5,9 +5,11 @@ import com.gitlab.mapper.ProductImageMapper;
 import com.gitlab.model.ProductImage;
 import com.gitlab.service.ProductImageService;
 import com.gitlab.util.ImageUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.imageio.ImageIO;
@@ -214,4 +216,23 @@ class ProductImageRestControllerIT extends AbstractIntegrationTest {
 
         return productImageDto;
     }
+
+    @Test
+    void should_use_user_assigned_id_in_database_for_product_image() throws Exception {
+        ProductImageDto productImageDto = generateProductDto();
+        productImageDto.setId(9999L);
+        String jsonProductImageDto = objectMapper.writeValueAsString(productImageDto);
+
+        MockHttpServletResponse response = mockMvc.perform(post(PRODUCT_IMAGE_URI)
+                        .content(jsonProductImageDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        ProductImageDto createdProductImageDto = objectMapper.readValue(response.getContentAsString(), ProductImageDto.class);
+        Assertions.assertNotEquals(productImageDto.getId(), createdProductImageDto.getId());
+    }
+
+
 }

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -207,4 +208,22 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
         bankCardDto.setSecurityCode(123);
         return bankCardDto;
     }
+
+    @Test
+    void should_use_user_assigned_id_in_database() throws Exception {
+        BankCardDto bankCardDto = generateBankCardDto();
+        bankCardDto.setId(9999L);
+
+        String jsonBankCardDto = objectMapper.writeValueAsString(bankCardDto);
+        MockHttpServletResponse response = mockMvc.perform(post(BANK_CARD_URI)
+                        .content(jsonBankCardDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        BankCardDto createdBankCardDto = objectMapper.readValue(response.getContentAsString(), BankCardDto.class);
+        Assertions.assertNotEquals(bankCardDto.getId(), createdBankCardDto.getId());
+    }
+
 }

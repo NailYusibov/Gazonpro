@@ -5,9 +5,11 @@ import com.gitlab.enums.Citizenship;
 import com.gitlab.mapper.PassportMapper;
 import com.gitlab.model.Passport;
 import com.gitlab.service.PassportService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ConstraintViolation;
@@ -223,4 +225,22 @@ class PassportRestControllerIT extends AbstractIntegrationTest {
 
         return passportDto;
     }
+
+    @Test
+    void should_use_user_assigned_id_in_database_for_passport() throws Exception {
+        PassportDto passportDto = generatePassportDto();
+        passportDto.setId(9999L);
+
+        String jsonPassportDto = objectMapper.writeValueAsString(passportDto);
+        MockHttpServletResponse response = mockMvc.perform(post(PASSPORT_URI)
+                        .content(jsonPassportDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        PassportDto createdPassportDto = objectMapper.readValue(response.getContentAsString(), PassportDto.class);
+        Assertions.assertNotEquals(passportDto.getId(), createdPassportDto.getId());
+    }
+
 }

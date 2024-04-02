@@ -18,11 +18,7 @@ import org.mapstruct.MappingConstants;
 import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
@@ -110,12 +106,14 @@ public abstract class UserMapper {
     public abstract  PickupPoint createPickupPointEntity(PickupPointDto pickupPointDto);
 
     public Set<ShippingAddressDto> mapShippingAddressEntityToShippingAddressDto(Set<ShippingAddress> shippingAddress) {
+        if (shippingAddress == null || shippingAddress.isEmpty()) return new HashSet<>();
         return shippingAddress.stream()
                 .map(this::createShippingAddressDto)
                 .collect(Collectors.toSet());
     }
 
     public Set<ShippingAddress> mapShippingAddressDtoToShippingAddressSetEntity(Set<ShippingAddressDto> shippingAddressDtoSet) {
+        if (shippingAddressDtoSet == null || shippingAddressDtoSet.isEmpty()) return new HashSet<>();
         return shippingAddressDtoSet.stream()
                 .map(this::createShippingAddress)
                 .collect(Collectors.toSet());
