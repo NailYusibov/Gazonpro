@@ -413,6 +413,7 @@ class UserServiceTest {
 
         return new User(1L,
                 "user",
+                "username",
                 "user",
                 "anwer",
                 "queion",
@@ -471,6 +472,7 @@ class UserServiceTest {
 
         return new User(1L,
                 "userBef",
+                "username",
                 "useBef",
                 "ansrBef",
                 "quesonBef",
@@ -518,6 +520,7 @@ class UserServiceTest {
 
         return new UserDto(1L,
                 "user",
+                "username",
                 "user",
                 "anwer",
                 "queion",

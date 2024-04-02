@@ -1,20 +1,7 @@
 version: "2"
 
 services:
-  gazon-app:
-    image: 'denispronin/gazon-service:1.3.0'
-    build:
-      context: .
-      dockerfile: Dockerfile_Gazon
-    container_name: gazon-app
-    ports:
-      - "8080:8080"
-      - "5005:5005"
-    depends_on:
-      - gazon-db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://gazon-db:5432/gazon_db
-  gazon-db:
+  gazon-no-app-db:
     image: 'postgres:12.12'
     ports:
       - "5432:5432"
@@ -22,19 +9,19 @@ services:
       POSTGRES_DB: gazon_db
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
-  gazon-keycloak:
+  gazon-no-app-keycloak:
     build:
       context: .
       dockerfile: Dockerfile_KeyCloak&Provider
     command: start-dev --import-realm
-    container_name: gazon-keycloak
+    container_name: gazon-no-app-keycloak
     volumes:
-      - ./custom-user-provider/src/main/resources/realm-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./custom-user-provider/src/main/resources/non-app-realm-export.json:/opt/keycloak/data/import/realm-export.json
     environment:
       KC_DB: postgres
       KC_DB_USERNAME: root
       KC_DB_PASSWORD: root
-      KC_DB_URL_HOST: gazon-db
+      KC_DB_URL_HOST: gazon-no-app-db
       KC_DB_URL_DATABASE: gazon_db
       KC_DB_SCHEMA: public
       KEYCLOAK_ADMIN: admin

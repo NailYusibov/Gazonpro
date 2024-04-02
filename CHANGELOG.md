@@ -2,12 +2,15 @@
 
 ## [Unreleased]
 - #task_number - short task description
+
+## [1.3.0] - 2.04.2024
 - #119 - Status model for Role and Integration test fix
-- #128 Проверка работоспособности Passport REST
-- #129 Проверка работоспособности Payment REST
-- #149 Добавлена карточка товара
+- #128 - Проверка работоспособности Passport REST
+- #129 - Проверка работоспособности Payment REST
+- #149 - Добавлена карточка товара
 - #114 - Status model for Order
 - #164 - ProductCategory
+- #159 - added security with Keycloak
 - #25 - Creating shopping cart when creating new user
 
 ## [1.2.0] - 24.12.2023
