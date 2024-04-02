@@ -2,7 +2,6 @@ package com.gitlab.controller;
 
 import com.gitlab.controllers.api.rest.UserRestApi;
 import com.gitlab.dto.UserDto;
-import com.gitlab.mapper.UserMapper;
 import com.gitlab.model.User;
 import com.gitlab.service.UserService;
 import lombok.RequiredArgsConstructor;
