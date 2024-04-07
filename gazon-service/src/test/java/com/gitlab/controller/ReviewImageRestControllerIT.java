@@ -2,12 +2,15 @@ package com.gitlab.controller;
 
 import com.gitlab.dto.ReviewImageDto;
 import com.gitlab.mapper.ReviewImageMapper;
+import com.gitlab.model.Review;
 import com.gitlab.model.ReviewImage;
 import com.gitlab.service.ReviewImageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;

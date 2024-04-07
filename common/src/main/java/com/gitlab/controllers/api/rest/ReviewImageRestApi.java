@@ -15,8 +15,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 
 @Api(tags = "Review Image REST")
@@ -66,4 +68,33 @@ public interface ReviewImageRestApi {
             @ApiResponse(code = 404, message = "Review Image not found")}
     )
     ResponseEntity<Void> delete(@ApiParam(name = "id", value = "ReviewImage.id") @PathVariable(value = "id") Long id);
+
+    @GetMapping("/api/review/{id}/images")
+    @ApiOperation(value = "Get all ReviewImages IDs")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "ReviewImages found"),
+            @ApiResponse(code = 204, message = "ReviewImages not present"),
+            @ApiResponse(code = 404, message = "Review's ReviewImages not found")}
+    )
+    ResponseEntity<long[]> getImagesIDsByReviewId(@ApiParam(name = "id", value = "Review.id")
+                                                  @PathVariable("id") Long id);
+
+    @PostMapping("/api/review/{id}/images")
+    @ApiOperation(value = "Upload ReviewImages")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "ReviewImages uploaded"),
+            @ApiResponse(code = 400, message = "ReviewImages not uploaded"),
+            @ApiResponse(code = 404, message = "Review not found, unable to upload images without Review")}
+    )
+    ResponseEntity<String> uploadImagesByReviewId(@RequestParam("files") MultipartFile[] files,
+                                                  @PathVariable("id") Long id) throws IOException;
+
+    @DeleteMapping("/api/review/{id}/images")
+    @ApiOperation(value = "Delete ReviewImages by Review.id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "ReviewImages deleted"),
+            @ApiResponse(code = 204, message = "Review with such id has no images"),
+            @ApiResponse(code = 404, message = "Review not found")}
+    )
+    ResponseEntity<String> deleteAllImagesByReviewId(@PathVariable("id") Long id);
 }
