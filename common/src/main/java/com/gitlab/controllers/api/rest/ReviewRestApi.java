@@ -50,7 +50,7 @@ public interface ReviewRestApi {
     ResponseEntity<Long> getReviewAmount(@ApiParam(name = "id", value = "Product.id") @PathVariable("id") Long id);
 
     @PostMapping("/api/review")
-    @ApiOperation(value = "Create Review")
+    @ApiOperation(value = "Create Review", notes = "Поле \"reviewImagesId\" оставляй [0]")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Review created"),
             @ApiResponse(code = 400, message = "Review not created")}
@@ -58,7 +58,7 @@ public interface ReviewRestApi {
     ResponseEntity<ReviewDto> create(@ApiParam(name = "Review", value = "ReviewDto") @Valid @RequestBody ReviewDto reviewDto);
 
     @PatchMapping("/api/review/{id}")
-    @ApiOperation(value = "Update Review")
+    @ApiOperation(value = "Update Review", notes = "Поле \"reviewImagesId\" оставляй [0]")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Review updated"),
             @ApiResponse(code = 404, message = "Previous Review not found"),
@@ -75,33 +75,4 @@ public interface ReviewRestApi {
             @ApiResponse(code = 404, message = "Review not found")}
     )
     ResponseEntity<Void> delete(@ApiParam(name = "id", value = "Review.id") @PathVariable("id") Long id);
-
-    @GetMapping("/api/review/{id}/images")
-    @ApiOperation(value = "Get all ReviewImages IDs")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "ReviewImages found"),
-            @ApiResponse(code = 204, message = "ReviewImages not present"),
-            @ApiResponse(code = 404, message = "Review's ReviewImages not found")}
-    )
-    ResponseEntity<long[]> getImagesIDsByReviewId(@ApiParam(name = "id", value = "Review.id")
-                                                   @PathVariable("id") Long id);
-
-    @PostMapping("/api/review/{id}/images")
-    @ApiOperation(value = "Upload ReviewImages")
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "ReviewImages uploaded"),
-            @ApiResponse(code = 400, message = "ReviewImages not uploaded"),
-            @ApiResponse(code = 404, message = "Review not found, unable to upload images without Review")}
-    )
-    ResponseEntity<String> uploadImagesByReviewId(@RequestParam("files") MultipartFile[] files,
-                                                   @PathVariable("id") Long id) throws IOException;
-
-    @DeleteMapping("/api/review/{id}/images")
-    @ApiOperation(value = "Delete ReviewImages by Review.id")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "ReviewImages deleted"),
-            @ApiResponse(code = 204, message = "Review with such id has no images"),
-            @ApiResponse(code = 404, message = "Review not found")}
-    )
-    ResponseEntity<String> deleteAllImagesByReviewId(@PathVariable("id") Long id);
 }
