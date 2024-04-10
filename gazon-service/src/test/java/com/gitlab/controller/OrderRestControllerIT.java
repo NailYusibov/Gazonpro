@@ -6,9 +6,11 @@ import com.gitlab.dto.ShippingAddressDto;
 import com.gitlab.enums.OrderStatus;
 import com.gitlab.mapper.OrderMapper;
 import com.gitlab.service.OrderService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -17,10 +19,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -236,6 +235,23 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
         orderDto.setBagCounter((byte) 5);
         orderDto.setOrderStatus(OrderStatus.DONE);
         return orderDto;
+    }
+
+    @Test
+    void should_use_user_assigned_id_in_database_for_order() throws Exception {
+        OrderDto orderDto = generateOrderDto();
+        orderDto.setId(9999L);
+        String jsonOrderDto = objectMapper.writeValueAsString(orderDto);
+
+        MockHttpServletResponse response = mockMvc.perform(post(ORDER_URI)
+                        .content(jsonOrderDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        OrderDto createdOrderDto = objectMapper.readValue(response.getContentAsString(), OrderDto.class);
+        Assertions.assertNotEquals(orderDto.getId(), createdOrderDto.getId());
     }
 
 }

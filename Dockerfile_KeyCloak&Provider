@@ -1,0 +1,19 @@
+FROM maven:3.8.4-openjdk-17-slim AS BUILD
+
+WORKDIR /build
+COPY custom-user-provider/pom.xml .
+COPY custom-user-provider/src /build/src
+RUN mvn -f /build/pom.xml clean package
+
+
+FROM quay.io/keycloak/keycloak:23.0.1
+
+COPY --from=BUILD /build/target/custom-user-provider.jar /opt/keycloak/providers/custom-user-provider.jar
+
+ENV KC_HEALTH_ENABLED=true
+ENV KC_METRICS_ENABLED=true
+
+WORKDIR /opt/keycloak
+RUN keytool -genkeypair -storepass password -storetype PKCS12 -keyalg RSA -keysize 2048 -dname "CN=server" -alias server -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -keystore conf/server.keystore
+
+RUN /opt/keycloak/bin/kc.sh build

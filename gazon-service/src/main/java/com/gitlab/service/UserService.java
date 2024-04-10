@@ -1,17 +1,16 @@
 package com.gitlab.service;
 
+import com.gitlab.dto.ShoppingCartDto;
 import com.gitlab.dto.UserDto;
 import com.gitlab.enums.EntityStatus;
 import com.gitlab.mapper.BankCardMapper;
 import com.gitlab.mapper.PassportMapper;
 import com.gitlab.mapper.UserMapper;
-import com.gitlab.model.BankCard;
-import com.gitlab.model.Passport;
-import com.gitlab.model.Role;
-import com.gitlab.model.ShippingAddress;
-import com.gitlab.model.User;
+import com.gitlab.model.*;
 import com.gitlab.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +34,12 @@ public class UserService {
     private final UserMapper userMapper;
     private final BankCardMapper bankCardMapper;
     private final PassportMapper passportMapper;
+    private ShoppingCartService shoppingCartService;
+
+    @Autowired
+    public void setShoppingCartService(@Lazy ShoppingCartService shoppingCartService) {
+        this.shoppingCartService = shoppingCartService;
+    }
 
     public List<User> findAll() {
         return userRepository.findAll();
@@ -105,7 +110,14 @@ public class UserService {
         user.setCreateDate(LocalDate.from(LocalDateTime.now()));
         user.setEntityStatus(EntityStatus.ACTIVE);
         user.getPassport().setEntityStatus(EntityStatus.ACTIVE);
-        return userMapper.toDto(userRepository.save(user));
+
+        UserDto newUserDto = userMapper.toDto(userRepository.save(user));
+
+        ShoppingCartDto shoppingCartDto = new ShoppingCartDto();
+        shoppingCartDto.setUserId(newUserDto.getId());
+        shoppingCartService.saveDto(shoppingCartDto);
+
+        return newUserDto;
     }
 
     @Transactional

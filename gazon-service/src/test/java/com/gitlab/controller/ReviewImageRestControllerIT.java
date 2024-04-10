@@ -7,9 +7,11 @@ import com.gitlab.model.Review;
 import com.gitlab.model.ReviewImage;
 import com.gitlab.service.ReviewImageService;
 import com.gitlab.service.ReviewService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -212,4 +214,23 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
 
         return reviewImageDto;
     }
+
+    @Test
+    void should_use_user_assigned_id_in_database_for_review_image() throws Exception {
+        ReviewImageDto reviewImageDto = generateReviewDto();
+        reviewImageDto.setId(9999L);
+        String jsonReviewImageDto = objectMapper.writeValueAsString(reviewImageDto);
+
+        MockHttpServletResponse response = mockMvc.perform(post(REVIEW_IMAGE_URI)
+                        .content(jsonReviewImageDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        ReviewImageDto createdReviewImageDto = objectMapper.readValue(response.getContentAsString(), ReviewImageDto.class);
+        Assertions.assertNotEquals(reviewImageDto.getId(), createdReviewImageDto.getId());
+    }
+
+
 }

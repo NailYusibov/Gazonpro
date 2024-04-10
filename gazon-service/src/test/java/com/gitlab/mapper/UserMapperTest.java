@@ -115,6 +115,7 @@ class UserMapperTest extends AbstractIntegrationTest {
 
         return new User(id,
                 "user",
+                "username",
                 "user",
                 "answer",
                 "question",
@@ -170,6 +171,7 @@ class UserMapperTest extends AbstractIntegrationTest {
         return new UserDto(
                 id,
                 "mail@mail.ru",
+                "username",
                 "user",
                 "answer",
                 "question",

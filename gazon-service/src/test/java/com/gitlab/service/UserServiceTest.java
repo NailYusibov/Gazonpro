@@ -30,6 +30,8 @@ class UserServiceTest {
     private UserRepository userRepository;
     @Mock
     private UserMapper userMapper;
+    @Mock
+    private ShoppingCartService shoppingCartService;
     @InjectMocks
     private UserService userService;
 
@@ -67,6 +69,19 @@ class UserServiceTest {
         assertEquals(expectedResult, actualResult);
     }
 
+    @Test
+    public void test_saveDto_create_shoppingCart() {
+        UserDto newUserDto = generateUserDto();
+        newUserDto.setId(1L);
+
+        ShoppingCartDto expectedShoppingCartDto = new ShoppingCartDto();
+        expectedShoppingCartDto.setUserId(newUserDto.getId());
+
+        shoppingCartService.saveDto(expectedShoppingCartDto);
+
+        verify(shoppingCartService, times(1))
+                .saveDto(argThat(arg -> arg.getUserId().equals(newUserDto.getId())));
+    }
 
     @Test
     void should_update_user() {
@@ -85,7 +100,6 @@ class UserServiceTest {
         assertEquals(updatedUser, actualResult.orElse(null));
 
     }
-
 
     @Test
     void should_not_update_user_when_entity_not_found() {
@@ -399,6 +413,7 @@ class UserServiceTest {
 
         return new User(1L,
                 "user",
+                "username",
                 "user",
                 "anwer",
                 "queion",
@@ -457,6 +472,7 @@ class UserServiceTest {
 
         return new User(1L,
                 "userBef",
+                "username",
                 "useBef",
                 "ansrBef",
                 "quesonBef",
@@ -504,6 +520,7 @@ class UserServiceTest {
 
         return new UserDto(1L,
                 "user",
+                "username",
                 "user",
                 "anwer",
                 "queion",

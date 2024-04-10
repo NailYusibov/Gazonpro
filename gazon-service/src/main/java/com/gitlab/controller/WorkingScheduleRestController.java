@@ -40,9 +40,6 @@ public class WorkingScheduleRestController implements WorkingScheduleRestApi {
 
     @Override
     public ResponseEntity<WorkingScheduleDto> create(WorkingScheduleDto workingScheduleDto) {
-
-        workingScheduleDto.setId(null);
-
         List<WorkingScheduleDto> workingScheduleDtoList = workingScheduleService.findAllDto();
         for (WorkingScheduleDto dto : workingScheduleDtoList) {
             if ( /* workingScheduleDto.getId().equals(dto.getId()) && */ // Избыточная проверка, с ним не работало добавление нового расписания
