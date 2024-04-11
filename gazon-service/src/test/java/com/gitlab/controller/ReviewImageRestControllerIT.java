@@ -1,10 +1,12 @@
 package com.gitlab.controller;
 
+import com.gitlab.dto.ReviewDto;
 import com.gitlab.dto.ReviewImageDto;
 import com.gitlab.mapper.ReviewImageMapper;
 import com.gitlab.model.Review;
 import com.gitlab.model.ReviewImage;
 import com.gitlab.service.ReviewImageService;
+import com.gitlab.service.ReviewService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,15 +32,17 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
 
     private static final String REVIEW_IMAGE_URN = "/api/review-images";
     private static final String REVIEW_IMAGE_URI = URL + REVIEW_IMAGE_URN;
+
     @Autowired
     private ReviewImageService reviewImageService;
     @Autowired
     private ReviewImageMapper reviewImageMapper;
+    @Autowired
+    private ReviewService reviewService;
 
     @Test
     @Transactional(readOnly = true)
     void should_get_all_reviewImages() throws Exception {
-
         var response = reviewImageService.getPage(null, null);
         var expected = objectMapper.writeValueAsString(reviewImageMapper.toDtoList(response.getContent()));
 
@@ -81,6 +85,7 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_get_page_without_content() throws Exception {
         int page = 10;
         int size = 100;
+
         String parameters = "?page=" + page + "&size=" + size;
 
         mockMvc.perform(get(REVIEW_IMAGE_URI + parameters))
@@ -91,6 +96,7 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     @Test
     void should_get_reviewImage_by_id() throws Exception {
         long id = 1L;
+
         String expected = objectMapper.writeValueAsString(
                 reviewImageMapper.toDto(
                         reviewImageService
@@ -107,6 +113,7 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     @Test
     void should_return_not_found_when_get_reviewImage_by_non_existent_id() throws Exception {
         long id = 10L;
+
         mockMvc.perform(get(REVIEW_IMAGE_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -169,12 +176,34 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_delete_reviewImage_by_id() throws Exception {
         ReviewImage reviewImage = reviewImageService.save(reviewImageMapper.toEntity(generateReviewDto()));
         long id = reviewImageService.findById(reviewImage.getId()).get().getId();
+
         mockMvc.perform(delete(REVIEW_IMAGE_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isOk());
+
         mockMvc.perform(get(REVIEW_IMAGE_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void should_get_images_ids_by_review_id() throws Exception {
+        ReviewDto reviewDto = new ReviewDto();
+        reviewDto.setId(3L);
+        long id = reviewDto.getId();
+
+        Optional<Review> reviewOptional = reviewService.findById(id);
+        assert reviewOptional.orElse(null) != null;
+
+        String expected = objectMapper.writeValueAsString(
+                reviewOptional.orElse(null).getReviewImages().stream()
+                        .map(ReviewImage::getId).mapToLong(Long::valueOf).toArray()
+        );
+
+        mockMvc.perform(get(URL + "/api/review" + "/{id}" + "/images", id))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(expected));
     }
 
     private ReviewImageDto generateReviewDto() {

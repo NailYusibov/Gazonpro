@@ -3,7 +3,6 @@ package com.gitlab.controller;
 import com.gitlab.dto.ReviewDto;
 import com.gitlab.mapper.ReviewMapper;
 import com.gitlab.model.Review;
-import com.gitlab.model.ReviewImage;
 import com.gitlab.service.ReviewService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,11 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -23,8 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.testcontainers.shaded.org.hamcrest.CoreMatchers.equalTo;
 import static org.testcontainers.shaded.org.hamcrest.MatcherAssert.assertThat;
 
@@ -93,7 +93,9 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_review_by_id() throws Exception {
-        long id = 1L;
+        ReviewDto reviewDto = generateReviewDto();
+        reviewDto.setId(4L);
+        Long id = reviewDto.getId();
         String expected = objectMapper.writeValueAsString(
                 reviewMapper.toDto(
                         reviewService
@@ -118,6 +120,7 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
     @Test
     void should_create_review() throws Exception {
         ReviewDto reviewDto = generateReviewDto();
+        reviewDto.setId(1L);
         String jsonReviewDto = objectMapper.writeValueAsString(reviewDto);
 
         mockMvc.perform(post(REVIEW_URI)
@@ -126,6 +129,28 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void should_review_Id_notEqual_before_and_after_post_request() throws Exception {
+        ReviewDto reviewDto = generateReviewDto();
+        reviewDto.setId(1000L);
+        Long idBefore = reviewDto.getId();
+
+        String jsonReviewDto = objectMapper.writeValueAsString(reviewDto);
+
+        MvcResult result = mockMvc.perform(post(REVIEW_URI)
+                        .content(jsonReviewDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String response = result.getResponse().getContentAsString();
+        Long idAfter = objectMapper.readValue(response, ReviewDto.class).getId();
+
+        assertNotEquals(idBefore, idAfter);
     }
 
     @Test
@@ -165,8 +190,33 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void should_review_Id_equal_before_and_after_patch_request() throws Exception {
+        ReviewDto reviewDto = generateReviewDto();
+        reviewDto.setId(4L);
+        Long idBefore = reviewDto.getId();
+
+        String jsonReviewDto = objectMapper.writeValueAsString(reviewDto);
+
+        MvcResult result = mockMvc.perform(patch(REVIEW_URI + "/{id}", idBefore)
+                        .content(jsonReviewDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String response = result.getResponse().getContentAsString();
+        Long idAfter = objectMapper.readValue(response, ReviewDto.class).getId();
+
+        assertEquals(idBefore, idAfter);
+    }
+
+    @Test
     void should_delete_review_by_id() throws Exception {
-        long id = 3L;
+        ReviewDto reviewDto = generateReviewDto();
+        reviewDto.setId(4L);
+        Long id = reviewDto.getId();
+
         mockMvc.perform(delete(REVIEW_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -176,25 +226,10 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void should_get_images_ids_by_review_id() throws Exception {
-        long id = 3L;
-        Optional<Review> reviewOptional = reviewService.findById(id);
-        assert reviewOptional.orElse(null) != null;
-
-        String expected = objectMapper.writeValueAsString(
-                reviewOptional.orElse(null).getReviewImages().stream()
-                        .map(ReviewImage::getId).mapToLong(Long::valueOf).toArray()
-        );
-
-        mockMvc.perform(get(REVIEW_URI + "/{id}" + "/images", id))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().json(expected));
-    }
-
-    @Test
     void should_create_multiple_reviews_by_review_id() throws Exception {
-        long id = 1L;
+        ReviewDto reviewDto = generateReviewDto();
+        reviewDto.setId(4L);
+        Long id = reviewDto.getId();
 
         mockMvc.perform(multipart(REVIEW_URI + "/{id}" + "/images", id)
                         .file(new MockMultipartFile("files",
