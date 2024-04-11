@@ -20,7 +20,6 @@
         <module>gazon-service</module>
         <module>order-service</module>
         <module>search-service</module>
-        <module>security-service</module>
         <module>api-gateway</module>
         <module>gazon-frontend</module>
         <module>data-generator</module>
