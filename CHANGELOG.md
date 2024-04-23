@@ -3,8 +3,11 @@
 ## [Unreleased]
 - #task_number - short task description
 
+## [1.4.0] - 2.04.2024
+- #167 - Testing the conversion of Product review to productDTO rating
+
 ## [1.3.0] - 2.04.2024
-- #119 - Status model for Role and Integration test fix
+- #119 - Product rating testing
 - #128 - Проверка работоспособности Passport REST
 - #129 - Проверка работоспособности Payment REST
 - #149 - Добавлена карточка товара
