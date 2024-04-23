@@ -7,7 +7,7 @@
 - #167 - Testing the conversion of Product review to productDTO rating
 
 ## [1.3.0] - 2.04.2024
-- #119 - Product rating testing
+- #119 - Status model for Role and Integration test fix
 - #128 - Проверка работоспособности Passport REST
 - #129 - Проверка работоспособности Payment REST
 - #149 - Добавлена карточка товара
