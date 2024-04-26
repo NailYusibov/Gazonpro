@@ -23,6 +23,7 @@
         <module>api-gateway</module>
         <module>gazon-frontend</module>
         <module>data-generator</module>
+        <module>gazon-microservice-starter</module>
     </modules>
 
     <properties>
