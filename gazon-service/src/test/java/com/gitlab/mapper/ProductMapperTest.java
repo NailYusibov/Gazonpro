@@ -98,7 +98,7 @@ class ProductMapperTest {
         reviewSet.add(review2);
         product.setReview(reviewSet);
         ProductDto productDto = mapper.toDto(product);
-        Assert.assertEquals(productDto.getRating(), "3.00");
+        Assert.assertEquals(productDto.getRating(), "3,00");
     }
 
     @NotNull

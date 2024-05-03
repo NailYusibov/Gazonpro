@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 - #task_number - short task description
+- #136 - Checking functionality ReviewImage Rest
 
 ## [1.4.0] - 2.04.2024
 - #167 - Testing the conversion of Product review to productDTO rating

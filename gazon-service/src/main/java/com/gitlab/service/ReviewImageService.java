@@ -1,6 +1,7 @@
 package com.gitlab.service;
 
 import com.gitlab.dto.ReviewImageDto;
+import com.gitlab.dto.ReviewImageUpdateDto;
 import com.gitlab.mapper.ReviewImageMapper;
 import com.gitlab.model.ReviewImage;
 import com.gitlab.repository.ReviewImageRepository;
@@ -81,6 +82,7 @@ public class ReviewImageService {
 
     @Transactional
     public ReviewImageDto saveDto(ReviewImageDto reviewImageDto) {
+        reviewImageDto.setId(null);
         ReviewImage reviewImage = reviewImageMapper.toEntity(reviewImageDto);
         ReviewImage savedReviewImage = reviewImageRepository.save(reviewImage);
         return reviewImageMapper.toDto(savedReviewImage);
@@ -105,7 +107,7 @@ public class ReviewImageService {
     }
 
     @Transactional
-    public Optional<ReviewImageDto> updateDto(Long id, ReviewImageDto reviewImageDto) {
+    public Optional<ReviewImageDto> updateDto(Long id, ReviewImageUpdateDto reviewImageUpdateDto) {
         Optional<ReviewImage> imageOptional = findById(id);
         if (imageOptional.isEmpty()) {
             return Optional.empty();
@@ -113,11 +115,11 @@ public class ReviewImageService {
 
         ReviewImage currentReviewImage = imageOptional.get();
 
-        if (reviewImageDto.getName() != null) {
-            currentReviewImage.setName(reviewImageDto.getName());
+        if (reviewImageUpdateDto.getName() != null) {
+            currentReviewImage.setName(reviewImageUpdateDto.getName());
         }
-        if (reviewImageDto.getData() != null) {
-            currentReviewImage.setData(reviewImageDto.getData());
+        if (reviewImageUpdateDto.getData() != null) {
+            currentReviewImage.setData(reviewImageUpdateDto.getData());
         }
 
         ReviewImage updatedReviewImage = reviewImageRepository.save(currentReviewImage);
