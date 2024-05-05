@@ -36,9 +36,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.gitlab</groupId>
+            <groupId>ru.vito.springvito</groupId>
             <artifactId>gazon-microservice-starter</artifactId>
-            <version>1.0.0</version>
+            <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
