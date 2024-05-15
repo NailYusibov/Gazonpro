@@ -26,8 +26,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.ByteArrayInputStream;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Route(value = "product_page")
@@ -146,8 +149,15 @@ public class ProductPageView extends CommonView implements HasUrlParameter<Strin
             return horizontalLayout;
         }
 
-        double rating = Double.parseDouble(productDto.getRating());
-
+//        double rating = Double.parseDouble(productDto.getRating());
+        NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
+        Number number = null;
+        try {
+            number = format.parse(productDto.getRating());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        double rating = number.doubleValue();
         if (rating > 4.5D) {
             horizontalLayout.add(VaadinIcon.STAR.create(), VaadinIcon.STAR.create(), VaadinIcon.STAR.create(), VaadinIcon.STAR.create(), VaadinIcon.STAR.create());
         } else if (rating > 4.0D) {
@@ -172,6 +182,7 @@ public class ProductPageView extends CommonView implements HasUrlParameter<Strin
             horizontalLayout.add(VaadinIcon.STAR_O.create(), VaadinIcon.STAR_O.create(), VaadinIcon.STAR_O.create(), VaadinIcon.STAR_O.create(), VaadinIcon.STAR_O.create());
         }
 
+        horizontalLayout.add(new Label(productDto.getRating()));
         return horizontalLayout;
     }
 
