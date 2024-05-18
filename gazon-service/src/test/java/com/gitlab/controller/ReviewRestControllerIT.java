@@ -15,16 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.testcontainers.shaded.org.hamcrest.CoreMatchers.equalTo;
 import static org.testcontainers.shaded.org.hamcrest.MatcherAssert.assertThat;
 
@@ -150,7 +145,7 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
         String response = result.getResponse().getContentAsString();
         Long idAfter = objectMapper.readValue(response, ReviewDto.class).getId();
 
-        assertNotEquals(idBefore, idAfter);
+        Assertions.assertNotEquals(idBefore, idAfter);
     }
 
     @Test
@@ -176,7 +171,7 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_review_by_non_existent_id() throws Exception {
-        long id = 10L;
+        long id = 100L;
         ReviewDto reviewDto = generateReviewDto();
 
         String jsonReviewDto = objectMapper.writeValueAsString(reviewDto);
@@ -208,7 +203,7 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
         String response = result.getResponse().getContentAsString();
         Long idAfter = objectMapper.readValue(response, ReviewDto.class).getId();
 
-        assertEquals(idBefore, idAfter);
+        Assertions.assertEquals(idBefore, idAfter);
     }
 
     @Test
