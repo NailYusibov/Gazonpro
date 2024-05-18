@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 - #task_number - short task description
+- #185 - Add Spotbugs
 
 ## [1.3.0] - 2.04.2024
 - #119 - Status model for Role and Integration test fix
