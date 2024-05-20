@@ -36,6 +36,11 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>ru.vito.springvito</groupId>
+            <artifactId>gazon-microservice-starter</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
             <version>3.1.1</version>

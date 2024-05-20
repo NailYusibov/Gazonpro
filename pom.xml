@@ -17,6 +17,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>common</module>
+        <module>gazon-microservice-starter</module>
         <module>gazon-service</module>
         <module>order-service</module>
         <module>search-service</module>
