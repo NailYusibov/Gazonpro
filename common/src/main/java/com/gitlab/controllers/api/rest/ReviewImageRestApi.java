@@ -1,6 +1,7 @@
 package com.gitlab.controllers.api.rest;
 
 import com.gitlab.dto.ReviewImageDto;
+import com.gitlab.dto.ReviewImageUpdateDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -59,7 +60,7 @@ public interface ReviewImageRestApi {
             @ApiResponse(code = 404, message = "Review Image not found")}
     )
     ResponseEntity<ReviewImageDto> update(@ApiParam(name = "id", value = "ReviewImage.id") @PathVariable(value = "id") Long id,
-                                          @ApiParam(name = "review_image", value = "ReviewImageDto") @Valid @RequestBody ReviewImageDto reviewImageDto);
+                                          @ApiParam(name = "review_image", value = "ReviewImageDto") @Valid @RequestBody ReviewImageUpdateDto reviewImageUpdateDto);
 
     @DeleteMapping("/api/review-images/{id}")
     @ApiOperation(value = "Delete ReviewImage by id")

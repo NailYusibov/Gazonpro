@@ -99,6 +99,10 @@ public class ProductService {
         return Optional.of(productMapper.toDto(savedProduct));
     }
 
+    public Product save(Product product) {
+        return productRepository.save(product);
+    }
+
     public Optional<ProductDto> update(Long id, ProductDto productDto) {
         Optional<Product> currentOptionalProduct = productRepository.findById(id);
 
