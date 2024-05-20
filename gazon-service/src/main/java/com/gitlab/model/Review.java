@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Set;
@@ -38,7 +39,10 @@ public class Review {
     @Column(name = "comment")
     private String comment;
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "review", cascade = {CascadeType.DETACH,
+            CascadeType.MERGE,
+            CascadeType.REFRESH,
+            CascadeType.REMOVE})
     private Set<ReviewImage> reviewImages;
 
     @Column(name = "rating")
