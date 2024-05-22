@@ -1,10 +1,11 @@
 package com.gitlab.controller;
 
-import com.gitlab.dto.ReviewDto;
+import com.gitlab.TestUtil;
 import com.gitlab.dto.ReviewImageDto;
 import com.gitlab.mapper.ReviewImageMapper;
 import com.gitlab.model.Review;
 import com.gitlab.model.ReviewImage;
+import com.gitlab.service.ProductService;
 import com.gitlab.service.ReviewImageService;
 import com.gitlab.service.ReviewService;
 import org.junit.jupiter.api.Assertions;
@@ -12,15 +13,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,6 +30,7 @@ import static org.testcontainers.shaded.org.hamcrest.MatcherAssert.assertThat;
 class ReviewImageRestControllerIT extends AbstractIntegrationTest {
 
     private static final String REVIEW_IMAGE_URN = "/api/review-images";
+    private static final String REVIEW_URN = "/api/review";
     private static final String REVIEW_IMAGE_URI = URL + REVIEW_IMAGE_URN;
 
     @Autowired
@@ -39,6 +39,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     private ReviewImageMapper reviewImageMapper;
     @Autowired
     private ReviewService reviewService;
+    @Autowired
+    private ProductService productService;
 
     @Test
     @Transactional(readOnly = true)
@@ -95,12 +97,25 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_reviewImage_by_id() throws Exception {
-        long id = 1L;
+        long id;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        var reviewImageDto = TestUtil.generateReviewImageDto(reviewDto.getId());
+        reviewImageDto = reviewImageService.saveDto(reviewImageDto);
+
+        id = reviewImageDto.getId();
 
         String expected = objectMapper.writeValueAsString(
                 reviewImageMapper.toDto(
                         reviewImageService
-                                .findById(id)
+                                .findById(reviewImageDto.getId())
                                 .orElse(null))
         );
 
@@ -112,7 +127,22 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_reviewImage_by_non_existent_id() throws Exception {
-        long id = 10L;
+        long id;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        var reviewImageDto = TestUtil.generateReviewImageDto(reviewDto.getId());
+        reviewImageDto = reviewImageService.saveDto(reviewImageDto);
+
+        id = reviewImageDto.getId();
+
+        reviewImageService.deleteDto(id);
 
         mockMvc.perform(get(REVIEW_IMAGE_URI + "/{id}", id))
                 .andDo(print())
@@ -121,7 +151,15 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_reviewImage() throws Exception {
-        ReviewImageDto reviewImageDto = generateReviewDto();
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        var reviewImageDto = TestUtil.generateReviewImageDto(reviewDto.getId());
 
         String jsonReviewImageDto = objectMapper.writeValueAsString(reviewImageDto);
 
@@ -134,13 +172,54 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void should_update_reviewImage_by_id() throws Exception {
-        long id = 1L;
-        int numberOfEntitiesExpected = reviewImageService.findAll().size();
+    void should_created_reviewImage_ignored_id_in_the_request_body() throws Exception {
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
 
-        ReviewImageDto reviewImageDto = generateReviewDto();
-        reviewImageDto.setId(id);
-        reviewImageDto.setName("updatedName");
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        var reviewImageDto = TestUtil.generateReviewImageDto(reviewDto.getId());
+        reviewImageDto.setId(1L);
+
+        String jsonReviewImageDto = objectMapper.writeValueAsString(reviewImageDto);
+
+        MockHttpServletResponse response = mockMvc.perform(post(REVIEW_IMAGE_URI)
+                        .content(jsonReviewImageDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse();
+
+        ReviewImageDto createdReviewImageDto = objectMapper.readValue(response.getContentAsString(), ReviewImageDto.class);
+        Assertions.assertNotEquals(reviewImageDto.getId(), createdReviewImageDto.getId());
+    }
+
+    @Test
+    void should_update_reviewImage_by_id() throws Exception {
+        long id;
+        int numberOfEntitiesExpected;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        var reviewImageDto = TestUtil.generateReviewImageDto(reviewDto.getId());
+        reviewImageDto = reviewImageService.saveDto(reviewImageDto);
+
+        id = reviewImageDto.getId();
+
+        numberOfEntitiesExpected = reviewImageService.findAll().size();
+        reviewImageDto.setName("updatedTest");
+
         String jsonReviewImageDto = objectMapper.writeValueAsString(reviewImageDto);
         String expected = objectMapper.writeValueAsString(reviewImageDto);
 
@@ -156,12 +235,88 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void should_return_not_found_when_update_reviewImage_by_non_existent_id() throws Exception {
-        long id = 10L;
+    void should_update_reviewImage_ignored_id_in_the_request_body() throws Exception {
+        long id;
 
-        ReviewImageDto reviewImageDto = generateReviewDto();
-        reviewImageDto.setId(id);
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        var reviewImageDto = TestUtil.generateReviewImageDto(reviewDto.getId());
+        reviewImageDto = reviewImageService.saveDto(reviewImageDto);
+
+        String expected = objectMapper.writeValueAsString(reviewImageDto);
+
+        id = reviewImageDto.getId();
+        reviewImageDto.setId(1L);
+
+        String jsonReviewImageDto = objectMapper.writeValueAsString(reviewImageDto);
+
+        mockMvc.perform(patch(REVIEW_IMAGE_URI + "/{id}", id)
+                        .content(jsonReviewImageDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(expected));
+    }
+
+    @Test
+    void should_update_reviewImage_by_id_do_not_overwrite_fields_with_null() throws Exception {
+        long id;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        var reviewImageDto = TestUtil.generateReviewImageDto(reviewDto.getId());
+        reviewImageDto = reviewImageService.saveDto(reviewImageDto);
+
+        id = reviewImageDto.getId();
+        String expected = objectMapper.writeValueAsString(reviewImageDto);
+
+        reviewImageDto.setName(null);
+        reviewImageDto.setData(null);
+
+        String jsonReviewImageDto = objectMapper.writeValueAsString(reviewImageDto);
+
+        mockMvc.perform(patch(REVIEW_IMAGE_URI + "/{id}", id)
+                        .content(jsonReviewImageDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(expected));
+    }
+
+    @Test
+    void should_return_not_found_when_update_reviewImage_by_non_existent_id() throws Exception {
+        long id;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        var reviewImageDto = TestUtil.generateReviewImageDto(reviewDto.getId());
+        reviewImageDto = reviewImageService.saveDto(reviewImageDto);
+
+        id = reviewImageDto.getId();
+
+        reviewImageService.deleteDto(id);
         reviewImageDto.setName("updatedName");
+
         String jsonReviewImageDto = objectMapper.writeValueAsString(reviewImageDto);
 
         mockMvc.perform(patch(REVIEW_IMAGE_URI + "/{id}", id)
@@ -174,12 +329,26 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_reviewImage_by_id() throws Exception {
-        ReviewImage reviewImage = reviewImageService.save(reviewImageMapper.toEntity(generateReviewDto()));
-        long id = reviewImageService.findById(reviewImage.getId()).get().getId();
+        long id;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        var reviewImageDto = TestUtil.generateReviewImageDto(reviewDto.getId());
+        reviewImageDto = reviewImageService.saveDto(reviewImageDto);
+
+        id = reviewImageDto.getId();
 
         mockMvc.perform(delete(REVIEW_IMAGE_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isOk());
+
+        assert reviewImageService.findById(id).isEmpty();
 
         mockMvc.perform(get(REVIEW_IMAGE_URI + "/{id}", id))
                 .andDo(print())
@@ -187,10 +356,47 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void should_return_not_found_when_delete_reviewImage_by_non_existent_id() throws Exception {
+        long id;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        var reviewImageDto = TestUtil.generateReviewImageDto(reviewDto.getId());
+
+        ReviewImage reviewImage = reviewImageService.save(
+                reviewImageMapper.toEntity(reviewImageDto));
+
+        id = reviewImage.getId();
+
+        reviewImageService.delete(id);
+
+        mockMvc.perform(delete(REVIEW_IMAGE_URI + "/{id}", id))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void should_get_images_ids_by_review_id() throws Exception {
-        ReviewDto reviewDto = new ReviewDto();
-        reviewDto.setId(3L);
-        long id = reviewDto.getId();
+        long id;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        reviewImageService.saveDto(TestUtil.generateReviewImageDto(reviewDto.getId()));
+        reviewImageService.saveDto(TestUtil.generateReviewImageDto(reviewDto.getId()));
+
+        id = reviewDto.getId();
 
         Optional<Review> reviewOptional = reviewService.findById(id);
         assert reviewOptional.orElse(null) != null;
@@ -206,31 +412,197 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(content().json(expected));
     }
 
-    private ReviewImageDto generateReviewDto() {
-        ReviewImageDto reviewImageDto = new ReviewImageDto();
-        reviewImageDto.setReviewId(1L);
-        reviewImageDto.setName("file.txt");
-        reviewImageDto.setData(new byte[]{1, 2, 3});
+    @Test
+    void should_return_not_found_when_get_images_ids_by_review_id_by_non_existent_review_id()
+            throws Exception {
+        long id;
 
-        return reviewImageDto;
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        id = reviewDto.getId();
+
+        reviewService.delete(id);
+
+        mockMvc.perform(get(URL + "/api/review" + "/{id}" + "/images", id))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void should_use_user_assigned_id_in_database_for_review_image() throws Exception {
-        ReviewImageDto reviewImageDto = generateReviewDto();
-        reviewImageDto.setId(9999L);
-        String jsonReviewImageDto = objectMapper.writeValueAsString(reviewImageDto);
+    void should_return_no_content_when_get_images_ids_by_review_id_when_accepting_an_empty_array_images_ids()
+            throws Exception {
+        long id;
 
-        MockHttpServletResponse response = mockMvc.perform(post(REVIEW_IMAGE_URI)
-                        .content(jsonReviewImageDto)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andReturn().getResponse();
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
 
-        ReviewImageDto createdReviewImageDto = objectMapper.readValue(response.getContentAsString(), ReviewImageDto.class);
-        Assertions.assertNotEquals(reviewImageDto.getId(), createdReviewImageDto.getId());
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        id = reviewDto.getId();
+
+
+        mockMvc.perform(get(URL + "/api/review" + "/{id}" + "/images", id))
+                .andDo(print())
+                .andExpect(status().isNoContent());
     }
 
+    @Test
+    void should_upload_images_by_review_id() throws Exception {
+        long id;
 
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        id = reviewDto.getId();
+
+        byte[] imageData = TestUtil.getBytesFromImage();
+
+        MockMultipartFile file1 =
+                new MockMultipartFile(
+                        "files", "product.png", MediaType.IMAGE_PNG_VALUE, imageData);
+        MockMultipartFile file2 =
+                new MockMultipartFile(
+                        "files", "product.png", MediaType.IMAGE_PNG_VALUE, imageData);
+
+        mockMvc.perform(multipart(URL + REVIEW_URN + "/{id}" + "/images", id)
+                        .file(file1)
+                        .file(file2)
+                        .accept(MediaType.IMAGE_PNG))
+                .andDo(print())
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void should_return_not_found_upload_images_by_review_id_by_non_existent_review_id() throws Exception {
+        long id;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        id = reviewDto.getId();
+
+        reviewService.delete(id);
+
+        byte[] imageData = TestUtil.getBytesFromImage();
+
+        MockMultipartFile file1 =
+                new MockMultipartFile(
+                        "files", "product.png", MediaType.IMAGE_PNG_VALUE, imageData);
+        MockMultipartFile file2 =
+                new MockMultipartFile(
+                        "files", "product.png", MediaType.IMAGE_PNG_VALUE, imageData);
+
+        mockMvc.perform(multipart(URL + REVIEW_URN + "/{id}" + "/images", id)
+                        .file(file1)
+                        .file(file2)
+                        .accept(MediaType.IMAGE_PNG))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void should_return_bad_request_upload_images_by_review_id_without_image_file() throws Exception {
+        long id;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        id = reviewDto.getId();
+
+        mockMvc.perform(multipart(URL + REVIEW_URN + "/{id}" + "/images", id)
+                        .accept(MediaType.IMAGE_PNG))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void should_delete_all_images_by_review_id() throws Exception {
+        long id;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        id = reviewDto.getId();
+
+        reviewImageService.saveDto(TestUtil.generateReviewImageDto(id));
+        reviewImageService.saveDto(TestUtil.generateReviewImageDto(id));
+        reviewImageService.saveDto(TestUtil.generateReviewImageDto(id));
+
+        mockMvc.perform(delete(URL + REVIEW_URN + "/{id}" + "/images", id))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        mockMvc.perform(delete(URL + REVIEW_URN + "/{id}" + "/images", id))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void should_return_not_found_when_delete_all_images_by_review_id_non_existent_review_id() throws Exception {
+        long id;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        id = reviewDto.getId();
+
+        reviewService.delete(id);
+
+        mockMvc.perform(delete(URL + REVIEW_URN + "/{id}" + "/images", id))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void should_return_no_content_when_delete_all_images_by_review_id_has_no_images() throws Exception {
+        long id;
+
+        var productDto = TestUtil.generateProductDto();
+        productDto = productService.save(productDto).orElse(null);
+
+        assert productDto != null;
+
+        var reviewDto = TestUtil.generateReviewDto(productDto.getId());
+        reviewDto = reviewService.saveDto(reviewDto);
+
+        id = reviewDto.getId();
+
+        mockMvc.perform(delete(URL + REVIEW_URN + "/{id}" + "/images", id))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+    }
 }
