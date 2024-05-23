@@ -2,11 +2,16 @@ package com.gitlab.mapper;
 
 import com.gitlab.dto.ProductDto;
 import com.gitlab.model.Product;
+import com.gitlab.model.Review;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -80,6 +85,27 @@ class ProductMapperTest {
             assertEquals(dto.getCode(), entity.getCode());
             assertEquals(dto.getWeight(), entity.getWeight());
         }
+    }
+
+    @Test
+    void should_map_productSetReview_to_productDtoStringRating() {
+        Product product = new Product();
+        Set<Review> reviewSet = new HashSet<>();
+        Review review = new Review();
+        Review review2 = new Review();
+        review2.setRating((byte) 4);
+        review.setRating((byte) 2);
+        reviewSet.add(review);
+        reviewSet.add(review2);
+        product.setReview(reviewSet);
+
+        double averageRating = reviewSet.stream()
+                .mapToDouble(Review::getRating)
+                .average()
+                .orElse(0.0);
+        String expectedRating = String.format(Locale.ENGLISH, "%.2f", averageRating);
+
+        Assert.assertEquals(expectedRating, "3.00");
     }
 
     @NotNull
