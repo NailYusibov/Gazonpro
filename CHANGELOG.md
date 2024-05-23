@@ -6,6 +6,7 @@
 - #146 - created a log starter
 - #185 - Add Spotbugs
 - #186 - Add CheckStyle
+- #156 - Add exception handler to starter
 
 ## [1.4.0] - 2.04.2024
 - #167 - Testing the conversion of Product review to productDTO rating
