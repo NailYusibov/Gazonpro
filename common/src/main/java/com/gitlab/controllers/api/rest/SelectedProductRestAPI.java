@@ -20,7 +20,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @Api(tags = "SelectedProduct REST")
-@Tag(name = "SelectedProduct REST", description = "SelectedProduct API description")
+@Tag(name = "SelectedProduct REST", description = "API для работы с товарами, добавленными в корзину")
 public interface SelectedProductRestAPI {
 
 

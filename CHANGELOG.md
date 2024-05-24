@@ -2,7 +2,14 @@
 
 ## [Unreleased]
 - #task_number - short task description
+- #136 - Checking functionality ReviewImage Rest
+- #146 - created a log starter
 - #185 - Add Spotbugs
+- #186 - Add CheckStyle
+- #156 - Add exception handler to starter
+
+## [1.4.0] - 2.04.2024
+- #167 - Testing the conversion of Product review to productDTO rating
 
 ## [1.3.0] - 2.04.2024
 - #119 - Status model for Role and Integration test fix

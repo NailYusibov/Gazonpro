@@ -176,7 +176,7 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_review_by_non_existent_id() throws Exception {
-        long id = 10L;
+        long id = 9999L;
         ReviewDto reviewDto = generateReviewDto();
 
         String jsonReviewDto = objectMapper.writeValueAsString(reviewDto);

@@ -2,6 +2,7 @@ package com.gitlab.controller;
 
 import com.gitlab.controllers.api.rest.ReviewImageRestApi;
 import com.gitlab.dto.ReviewImageDto;
+import com.gitlab.dto.ReviewImageUpdateDto;
 import com.gitlab.model.Review;
 import com.gitlab.model.ReviewImage;
 import com.gitlab.service.ReviewImageService;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 @Slf4j
 @Validated
 @RestController
@@ -51,8 +53,8 @@ public class ReviewImageController implements ReviewImageRestApi {
     }
 
     @Override
-    public ResponseEntity<ReviewImageDto> update(Long id, ReviewImageDto reviewImageDto) {
-        Optional<ReviewImageDto> updatedReviewImageDto = reviewImageService.updateDto(id, reviewImageDto);
+    public ResponseEntity<ReviewImageDto> update(Long id, ReviewImageUpdateDto reviewImageUpdateDto) {
+        Optional<ReviewImageDto> updatedReviewImageDto = reviewImageService.updateDto(id, reviewImageUpdateDto);
         return updatedReviewImageDto
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -73,9 +75,12 @@ public class ReviewImageController implements ReviewImageRestApi {
     public ResponseEntity<long[]> getImagesIDsByReviewId(Long id) {
         Optional<Review> reviewOptional = reviewService.findById(id);
 
-        if (reviewOptional.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        if (reviewOptional.get().getReviewImages().isEmpty()) return ResponseEntity
-                .status(HttpStatus.NO_CONTENT).build();
+        if (reviewOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        if (reviewOptional.get().getReviewImages().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
 
         long[] images = reviewOptional.orElse(null).getReviewImages().stream()
                 .map(ReviewImage::getId).mapToLong(Long::valueOf).toArray();
@@ -87,10 +92,14 @@ public class ReviewImageController implements ReviewImageRestApi {
     public ResponseEntity<String> uploadImagesByReviewId(MultipartFile[] files, Long id) throws IOException {
         Optional<Review> reviewOptional = reviewService.findById(id);
 
-        if (reviewOptional.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("There is no reviewOptional with such id");
-        if (files.length == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("At least one file should be included");
+        if (reviewOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("There is no reviewOptional with such id");
+        }
+        if (files.length == 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("At least one file should be included");
+        }
 
         List<ReviewImage> imageList = new ArrayList<>();
         for (MultipartFile file : files) {
@@ -107,15 +116,18 @@ public class ReviewImageController implements ReviewImageRestApi {
     @Override
     public ResponseEntity<String> deleteAllImagesByReviewId(Long id) {
         Optional<Review> reviewOptional = reviewService.findById(id);
+        if (reviewOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("There is no reviewOptional with such id");
+        }
+        if (reviewOptional.get().getReviewImages().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                    .body("reviewOptional with such id has no images");
+        }
 
-        if (reviewOptional.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("There is no reviewOptional with such id");
-        if (reviewOptional.get().getReviewImages().isEmpty()) return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .body("reviewOptional with such id has no images");
-
-        reviewOptional.get().getReviewImages().stream().map(ReviewImage::getId).forEach(reviewImageService::delete);
-
+        reviewOptional.get().getReviewImages().stream()
+                .map(ReviewImage::getId)
+                .forEach(reviewImageService::delete);
         return ResponseEntity.ok().build();
-
     }
 }
