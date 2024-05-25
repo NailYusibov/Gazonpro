@@ -2,6 +2,7 @@ package com.gitlab.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 
 @Data
 @Setter
+@Getter
 public class ReviewDto {
 
     @ReadOnlyProperty

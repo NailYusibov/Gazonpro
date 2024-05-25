@@ -5,7 +5,9 @@ import com.gitlab.clients.ProductPageClient;
 import com.gitlab.clients.ReviewClient;
 import com.gitlab.dto.ProductDto;
 import com.gitlab.dto.ProductImageDto;
+import com.gitlab.dto.ReviewDto;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H2;
@@ -13,7 +15,6 @@ import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -37,14 +38,14 @@ import java.util.Map;
 public class ProductPageView extends CommonView implements HasUrlParameter<String> {
     private final ProductImageClient productImageClient;
     private final ProductPageClient productPageClient;
-    private final VerticalLayout contentContainer;
-    private final ReviewClient reviewClient;
+    private static VerticalLayout contentContainer;
+    private static ReviewClient reviewClient;
     private final Map<Long, Image> fullSizedImages = new HashMap<>();
 
     public ProductPageView(ProductImageClient productImageClient, ProductPageClient productPageClient, ReviewClient reviewClient) {
         this.productImageClient = productImageClient;
         this.productPageClient = productPageClient;
-        this.reviewClient = reviewClient;
+        ProductPageView.reviewClient = reviewClient;
         contentContainer = new VerticalLayout();
         contentContainer.setMargin(true);
         contentContainer.setWidth("1100px");
@@ -93,6 +94,10 @@ public class ProductPageView extends CommonView implements HasUrlParameter<Strin
     private Long getReviewAmount(ProductDto productDto) {
         ResponseEntity<Long> reviewAmount = reviewClient.getReviewAmount(productDto.getId());
         return reviewAmount.getBody();
+    }
+
+    private static List<ReviewDto> getReviewList(Long product_id) {
+        return reviewClient.getAllReviewsForAProductByProductId(product_id).getBody();
     }
 
     /**
@@ -151,7 +156,7 @@ public class ProductPageView extends CommonView implements HasUrlParameter<Strin
 
 //        double rating = Double.parseDouble(productDto.getRating());
         NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
-        Number number = null;
+        Number number;
         try {
             number = format.parse(productDto.getRating());
         } catch (ParseException e) {
@@ -186,6 +191,31 @@ public class ProductPageView extends CommonView implements HasUrlParameter<Strin
         return horizontalLayout;
     }
 
+    private static void getReviews(Long productId) {
+        UI.getCurrent().access(() -> {
+            List<ReviewDto> reviews = getReviewList(productId);
+            if (reviews != null) {
+//                  contentContainer.add(new Label("<b>Отзывы:</b>", ContentMode.HTML));
+                contentContainer.add(new Label("Отзывы: "));
+                reviews.forEach(review -> {
+//                  contentContainer.add(new Label(reviews.toString()));
+                    contentContainer.add(new Label("Рейтинг: "));
+                    contentContainer.add(new Label(review.getRating().toString()));
+                    contentContainer.add(new Label("Достоинства: "));
+                    contentContainer.add(new Label(review.getPros()));
+                    contentContainer.add(new Label("Недостатки: "));
+                    contentContainer.add(new Label(review.getCons()));
+                    contentContainer.add(new Label("Комментарии: "));
+                    contentContainer.add(new Label(review.getComment()));
+                    contentContainer.add(new Label(""));
+                    contentContainer.add(new Label(""));
+                });
+            } else {
+                contentContainer.add(new Label("Отзывы не найдены"));
+            }
+        });
+    }
+
     private static VerticalLayout displayPreviewImages(Map<Long, Image> previewImages) {
         VerticalLayout verticalLayout = new VerticalLayout();
         for (Map.Entry<Long, Image> entry : previewImages.entrySet()) {
@@ -200,11 +230,11 @@ public class ProductPageView extends CommonView implements HasUrlParameter<Strin
             Label productName = new Label(productDto.getName());
             Label productPrice = new Label(productDto.getPrice().toString() + " руб.");
             Label productDescription = new Label(productDto.getDescription());
-            Label productReviews = new Label(reviewAmount + " отзывов");
+            Label productReviewsAmount = new Label(reviewAmount + " отзывов");
             Button addToListButton = new Button("Добавить в корзину");
             HorizontalLayout rating = evaluateRating(productDto);
             VerticalLayout previewImages = displayPreviewImages(previewImagesMap);
-            rating.add(productReviews);
+            rating.add(productReviewsAmount);
 
             productName.getElement().getStyle().set("cursor", "text");
             productName.getElement().getStyle().set("font-weight", "bold");
@@ -229,7 +259,7 @@ public class ProductPageView extends CommonView implements HasUrlParameter<Strin
                     .set("border-bottom", "1px solid var(--lumo-contrast-20pct)")
                     .set("padding", "var(--lumo-space-m)");
 
-            bottomPart.setAlignItems(FlexComponent.Alignment.STRETCH);
+            bottomPart.setAlignItems(Alignment.STRETCH);
             bottomPart.add(previewImages);
             bottomPart.add(fullSizedImagesMap.get(1L));
             productDescription.setHeight("400px");
@@ -238,9 +268,12 @@ public class ProductPageView extends CommonView implements HasUrlParameter<Strin
             bottomPart.add(price);
 
             getContent().setPadding(true);
-            getContent().setAlignItems(FlexComponent.Alignment.STRETCH);
+            getContent().setAlignItems(Alignment.STRETCH);
             getContent().add(topPart);
             getContent().add(bottomPart);
+            getContent().add(new Hr());
+
+            getReviews(productDto.getId());
         }
     }
 }
