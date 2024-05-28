@@ -195,10 +195,8 @@ public class ProductPageView extends CommonView implements HasUrlParameter<Strin
         UI.getCurrent().access(() -> {
             List<ReviewDto> reviews = getReviewList(productId);
             if (reviews != null) {
-//                  contentContainer.add(new Label("<b>Отзывы:</b>", ContentMode.HTML));
                 contentContainer.add(new Label("Отзывы: "));
                 reviews.forEach(review -> {
-//                  contentContainer.add(new Label(reviews.toString()));
                     contentContainer.add(new Label("Рейтинг: "));
                     contentContainer.add(new Label(review.getRating().toString()));
                     contentContainer.add(new Label("Достоинства: "));
