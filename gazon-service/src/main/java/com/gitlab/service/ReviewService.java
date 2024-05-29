@@ -3,6 +3,7 @@ package com.gitlab.service;
 import com.gitlab.dto.ReviewDto;
 import com.gitlab.enums.EntityStatus;
 import com.gitlab.mapper.ReviewMapper;
+import com.gitlab.mapper.ReviewMapperImpl;
 import com.gitlab.model.Review;
 import com.gitlab.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +26,20 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ProductService productService;
     private final ReviewMapper reviewMapper;
+    private final ReviewMapperImpl reviewMapperImpl;
 
     public List<Review> findAll() {
         return reviewRepository.findAll();
+    }
+
+    public List<ReviewDto> findListOfAllReviewsByProductId(Long id) {
+
+        if (productService.findById(id).isEmpty()) {
+            throw new EntityNotFoundException("Товар не найден");
+        }
+
+        List<Review> reviewList = reviewRepository.findAllByProductId(id);
+        return reviewMapperImpl.toDtoList(reviewList);
     }
 
     public List<ReviewDto> findAllDto() {
