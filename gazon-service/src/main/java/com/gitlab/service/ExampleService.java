@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ public class ExampleService {
         return findAll()
                 .stream()
                 .map(exampleMapper::toDto)
+                .sorted(Comparator.comparing(ExampleDto::getId))
                 .collect(Collectors.toList());
     }
 
