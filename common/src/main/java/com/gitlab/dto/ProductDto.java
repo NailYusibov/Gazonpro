@@ -1,16 +1,19 @@
 package com.gitlab.dto;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.annotation.ReadOnlyProperty;
 
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Data
 @Setter
+@Getter
 public class ProductDto {
 
     @ReadOnlyProperty
@@ -50,6 +53,8 @@ public class ProductDto {
     private Long storeId;
 
     private String rating;
+
+    private List<ReviewDto> review;
 
     private String productCategory;
 

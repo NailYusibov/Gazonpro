@@ -3,18 +3,12 @@ package com.gitlab.controller;
 import com.gitlab.controllers.api.rest.ReviewRestApi;
 import com.gitlab.dto.ReviewDto;
 import com.gitlab.model.Review;
-import com.gitlab.model.ReviewImage;
-import com.gitlab.service.ReviewImageService;
 import com.gitlab.service.ReviewService;
-import com.gitlab.util.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,8 +17,6 @@ import java.util.Optional;
 public class ReviewController implements ReviewRestApi {
 
     private final ReviewService reviewService;
-
-    private final ReviewImageService reviewImageService;
 
     public ResponseEntity<List<ReviewDto>> getPage(Integer page, Integer size) {
         var reviewPage = reviewService.getPageDto(page, size);
@@ -41,6 +33,11 @@ public class ReviewController implements ReviewRestApi {
         return reviewDtoOptional.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
+    @Override
+    public ResponseEntity<List<ReviewDto>> getAllReviewsForAProductByProductId(Long productId) {
+        List<ReviewDto> reviewsDto = reviewService.findListOfAllReviewsByProductId(productId);
+        return ResponseEntity.ok(reviewsDto);
+    }
 
     public ResponseEntity<Long> getReviewAmount(Long id) {
         Long reviewAmount = reviewService.findByProductId(id);

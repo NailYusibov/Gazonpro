@@ -1,7 +1,6 @@
 package com.gitlab.repository;
 
 import com.gitlab.enums.EntityStatus;
-import com.gitlab.model.Example;
 import com.gitlab.model.Review;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
@@ -22,6 +21,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @EntityGraph(value = "Review.reviewImages")
     Optional<Review> findById(@NonNull Long id);
 
+
+    @NonNull
+    @EntityGraph(value = "Review.reviewImages")
+    List<Review> findAllByProductId(@NonNull Long id);
+
     @Override
     @NonNull
     @EntityGraph(value = "Review.reviewImages")
@@ -31,7 +35,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Override
     @NonNull
     @Query("SELECT r FROM Review r WHERE r.entityStatus = 'ACTIVE'")
-    Page<Review> findAll(Pageable pageable);
+    Page<Review> findAll(@NonNull Pageable pageable);
 
     Long countReviewByProduct_IdAndEntityStatus(Long id, EntityStatus entityStatus);
 }
