@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.List;
 
 public class TestUtil {
 
@@ -34,13 +35,13 @@ public class TestUtil {
         return reviewDto;
     }
 
-    public static ProductDto generateProductDto() {
+    public static ProductDto generateProductDto(String uniqueCode) {
         var productDto = new ProductDto();
         productDto.setName("test");
         productDto.setStockCount(1);
         productDto.setDescription("test");
         productDto.setIsAdult(true);
-        productDto.setCode("test");
+        productDto.setCode(uniqueCode);
         productDto.setWeight(1L);
         productDto.setPrice(BigDecimal.ONE);
         return productDto;
@@ -51,5 +52,26 @@ public class TestUtil {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(image, "png", baos);
         return baos.toByteArray();
+    }
+
+    public static String generateUniqueCode(List<ProductDto> products) {
+
+        String code = "10";
+
+        int count;
+
+        do {
+            count = 0;
+
+            for (ProductDto productDto : products) {
+                if (productDto.getCode().equals(code)) {
+                    code = String.valueOf(Integer.parseInt(code) + 1);
+                    count = 1;
+                }
+            }
+
+        } while (count != 0);
+
+        return code;
     }
 }

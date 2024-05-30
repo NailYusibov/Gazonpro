@@ -17,6 +17,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -200,6 +201,7 @@ class PassportRestControllerIT extends AbstractIntegrationTest {
     @Test
     void should_delete_passport_by_id() throws Exception {
         PassportDto passportDto = generatePassportDto();
+        passportDto.setPassportNumber("2200 123456");
 
         PassportDto saved = passportService.saveDto(passportDto);
 
@@ -219,11 +221,35 @@ class PassportRestControllerIT extends AbstractIntegrationTest {
         passportDto.setPatronym("Aleksandrovich");
         passportDto.setBirthDate(LocalDate.of(2000, 5, 20));
         passportDto.setIssueDate(LocalDate.of(2014, 6, 10));
-        passportDto.setPassportNumber("1100 123456");
+        passportDto.setPassportNumber(generateUniquePassportNumber());
         passportDto.setIssuer("MVD RUSSIA №10 in Moscow");
         passportDto.setIssuerNumber("123-456");
 
         return passportDto;
+    }
+
+    private String generateUniquePassportNumber() {
+        List<Passport> passports = passportService.findAllActive();
+        String passportNumber = "1100123456";
+        String passportNumberInDB = "1100 123456";
+
+        int count;
+
+        do {
+            count = 0;
+
+            for (Passport passport : passports) {
+
+                if (passport.getPassportNumber().equals(passportNumberInDB)) {
+                    passportNumber = String.valueOf(Integer.parseInt(passportNumber) + 1);
+                    passportNumberInDB = new StringBuilder(passportNumber).insert(4, ' ').toString();
+                    count = 1;
+                }
+            }
+
+        } while (count != 0);
+
+        return passportNumberInDB;
     }
 
     @Test

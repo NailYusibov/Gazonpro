@@ -11,6 +11,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.MediaType;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -137,6 +139,7 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(expected));
     }
+
     @Test
     void should_return_not_found_if_role_not_exists() throws Exception {
         RoleDto dto = generateRoleDto();
@@ -153,7 +156,10 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_role_by_id() throws Exception {
-        long savedRoleId = roleService.save(roleMapper.toEntity(generateRoleDto())).getId();
+        RoleDto roleDto = generateRoleDto();
+        roleDto.setRoleName("TEST_ROLE2");
+
+        long savedRoleId = roleService.saveDto(roleDto).getId();
 
         mockMvc.perform(delete(ROLE_URI + "/{id}", savedRoleId))
                 .andDo(print())
@@ -165,9 +171,30 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
 
     private RoleDto generateRoleDto() {
         RoleDto roleDto = new RoleDto();
-        roleDto.setRoleName("TEST_NAME");
+        roleDto.setRoleName(generateUniqueRoleName());
 
         return roleDto;
+    }
+
+    private String generateUniqueRoleName() {
+        List<Role> roles = roleService.findAll();
+        StringBuilder roleName = new StringBuilder("TEST_ROLE");
+
+        int count;
+
+        do {
+            count = 0;
+
+            for (Role role : roles) {
+                if (role.getName().contentEquals(roleName)) {
+                    roleName.append(1);
+                    count = 1;
+                }
+            }
+
+        } while (count != 0);
+
+        return roleName.toString();
     }
 
     @Test
@@ -186,6 +213,5 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
         RoleDto createdRoleDto = objectMapper.readValue(response.getContentAsString(), RoleDto.class);
         Assertions.assertNotEquals(roleDto.getId(), createdRoleDto.getId());
     }
-
 
 }

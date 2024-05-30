@@ -2,10 +2,12 @@ package com.gitlab.controller;
 
 
 import com.gitlab.dto.ProductCategoryDto;
+import com.gitlab.model.ProductCategory;
 import com.gitlab.service.ProductCategoryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -32,7 +34,7 @@ class ProductCategoryControllerIT extends AbstractIntegrationTest {
     void should_get_all_productCategory() throws Exception {
         String expected = objectMapper.writeValueAsString(
                 new ArrayList<>(productCategoryService
-                        .getPageDto(null,null)
+                        .getPageDto(null, null)
                         .stream()
                         .collect(Collectors.toList()))
         );
@@ -64,17 +66,24 @@ class ProductCategoryControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_productCategory_by_id() throws Exception {
-        long id = 1L;
+        long id;
+
+        ProductCategoryDto productCategoryDto = new ProductCategoryDto();
+        productCategoryDto.setName("Name");
+        id = productCategoryService.saveDto(productCategoryDto).getId();
+
         String expected = objectMapper.writeValueAsString(
-                        productCategoryService
-                                .findByIdDto(id)
-                                .orElse(null)
+                productCategoryService
+                        .findByIdDto(id)
+                        .orElse(null)
         );
 
         mockMvc.perform(get(PRODUCTCATEGORY_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(expected));
+
+        productCategoryService.delete(id);
     }
 
     @Test
@@ -91,12 +100,16 @@ class ProductCategoryControllerIT extends AbstractIntegrationTest {
         productCategoryDto.setName("Name");
         String jsonProductCategoryDto = objectMapper.writeValueAsString(productCategoryDto);
 
-        mockMvc.perform(post(PRODUCTCATEGORY_URI)
+        MockHttpServletResponse response = mockMvc.perform(post(PRODUCTCATEGORY_URI)
                         .content(jsonProductCategoryDto)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        long id = objectMapper.readValue(response.getContentAsString(), ProductCategory.class).getId();
+        productCategoryService.delete(id);
     }
 
     @Test
@@ -119,6 +132,8 @@ class ProductCategoryControllerIT extends AbstractIntegrationTest {
                 .andExpect(content().json(expected))
                 .andExpect(result -> assertThat(productCategoryService.findAllDto().size(),
                         equalTo(numberOfEntitiesExpected)));
+
+        productCategoryService.delete(id);
     }
 
     @Test

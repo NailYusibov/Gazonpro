@@ -186,7 +186,6 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
-
     }
 
     @Test
@@ -224,6 +223,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
 
         BankCardDto createdBankCardDto = objectMapper.readValue(response.getContentAsString(), BankCardDto.class);
         Assertions.assertNotEquals(bankCardDto.getId(), createdBankCardDto.getId());
+        bankCardService.delete(createdBankCardDto.getId());
     }
 
 }

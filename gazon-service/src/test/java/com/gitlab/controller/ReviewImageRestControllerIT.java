@@ -99,7 +99,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_get_reviewImage_by_id() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -129,7 +130,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_return_not_found_when_get_reviewImage_by_non_existent_id() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -151,7 +153,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_reviewImage() throws Exception {
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -173,7 +176,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_created_reviewImage_ignored_id_in_the_request_body() throws Exception {
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -204,7 +208,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
         long id;
         int numberOfEntitiesExpected;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -238,7 +243,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_update_reviewImage_ignored_id_in_the_request_body() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -269,7 +275,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_update_reviewImage_by_id_do_not_overwrite_fields_with_null() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -301,7 +308,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_return_not_found_when_update_reviewImage_by_non_existent_id() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -331,7 +339,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_delete_reviewImage_by_id() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -359,7 +368,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_return_not_found_when_delete_reviewImage_by_non_existent_id() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -385,7 +395,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_get_images_ids_by_review_id() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -417,7 +428,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
             throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -439,7 +451,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
             throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -459,7 +472,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_upload_images_by_review_id() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -490,7 +504,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_return_not_found_upload_images_by_review_id_by_non_existent_review_id() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -523,7 +538,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_return_bad_request_upload_images_by_review_id_without_image_file() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -543,7 +559,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_delete_all_images_by_review_id() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -570,7 +587,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_return_not_found_when_delete_all_images_by_review_id_non_existent_review_id() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;
@@ -591,7 +609,8 @@ class ReviewImageRestControllerIT extends AbstractIntegrationTest {
     void should_return_no_content_when_delete_all_images_by_review_id_has_no_images() throws Exception {
         long id;
 
-        var productDto = TestUtil.generateProductDto();
+        var productDto = TestUtil.generateProductDto(
+                TestUtil.generateUniqueCode(productService.findAll()));
         productDto = productService.save(productDto).orElse(null);
 
         assert productDto != null;

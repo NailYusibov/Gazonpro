@@ -5,6 +5,7 @@ import com.gitlab.dto.SelectedProductDto;
 import com.gitlab.dto.ShippingAddressDto;
 import com.gitlab.enums.OrderStatus;
 import com.gitlab.mapper.OrderMapper;
+import com.gitlab.model.Order;
 import com.gitlab.service.OrderService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -144,8 +146,6 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(content().json(checkJsonOrderDto))
                 .andExpect(result -> assertThat(orderService.findAll().size(),
                         equalTo(numberOfEntitiesExpected)));
-
-
     }
 
     @Test
@@ -185,7 +185,10 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_order_by_id() throws Exception {
-        OrderDto orderDto = orderService.saveDto(generateOrderDto());
+        OrderDto orderDto = generateOrderDto();
+        orderDto.setOrderCode("12345");
+
+        orderDto = orderService.saveDto(orderDto);
         long id = orderDto.getId();
         mockMvc.perform(delete(ORDER_URI + "/{id}", id))
                 .andDo(print())
@@ -227,7 +230,7 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
         orderDto.setSelectedProducts(Set.of(new SelectedProductDto()));
         orderDto.setShippingAddressDto(shippingAddressDto);
         orderDto.setUserId(1L);
-        orderDto.setOrderCode("123");
+        orderDto.setOrderCode(generateUniqueOrderCode());
         orderDto.setShippingDate(LocalDate.parse("2027-05-01"));
         orderDto.setCreateDateTime(LocalDateTime.now());
         orderDto.setSum(new BigDecimal(5));
@@ -235,6 +238,27 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
         orderDto.setBagCounter((byte) 5);
         orderDto.setOrderStatus(OrderStatus.DONE);
         return orderDto;
+    }
+
+    private String generateUniqueOrderCode() {
+        List<Order> orders = orderService.findAll();
+        String orderCode = "1234";
+
+        int count;
+
+        do {
+            count = 0;
+
+            for (Order order : orders) {
+                if (order.getOrderCode().equals(orderCode)) {
+                    orderCode = String.valueOf(Integer.parseInt(orderCode) + 1);
+                    count = 1;
+                }
+            }
+
+        } while (count != 0);
+
+        return orderCode;
     }
 
     @Test

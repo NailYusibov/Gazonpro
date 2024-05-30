@@ -1,7 +1,9 @@
 package com.gitlab.controller;
 
+import com.gitlab.TestUtil;
 import com.gitlab.dto.SelectedProductDto;
 import com.gitlab.enums.EntityStatus;
+import com.gitlab.mapper.ProductMapper;
 import com.gitlab.mapper.SelectedProductMapper;
 import com.gitlab.model.Product;
 import com.gitlab.model.SelectedProduct;
@@ -37,6 +39,8 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
     private ProductService productService;
     @Autowired
     private SelectedProductMapper selectedProductMapper;
+    @Autowired
+    private ProductMapper productMapper;
 
     @Test
     @Transactional(readOnly = true)
@@ -165,6 +169,11 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
     @Test
     void should_delete_selectedProduct_by_id() throws Exception {
         SelectedProduct selectedProduct = createAndSaveSelectedProduct_SelectedProduct();
+
+        Product product = selectedProduct.getProduct();
+        product.setCode("10000");
+        productService.update(product.getId(), productMapper.toDto(product));
+
         long id = selectedProduct.getId();
         mockMvc.perform(delete(SELECTED_PRODUCT_URI + "/{id}", id))
                 .andDo(print())
@@ -199,7 +208,7 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
         savedProduct.setStockCount(5);
         savedProduct.setDescription("testDescription");
         savedProduct.setIsAdult(false);
-        savedProduct.setCode("testCode");
+        savedProduct.setCode(TestUtil.generateUniqueCode(productService.findAll()));
         savedProduct.setPrice(BigDecimal.ONE);
         savedProduct.setWeight(7L);
         savedProduct.setEntityStatus(EntityStatus.ACTIVE);

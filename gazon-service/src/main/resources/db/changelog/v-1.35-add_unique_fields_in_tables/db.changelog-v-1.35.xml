@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <include file="01-create_unique_card_number_column_in_bank_card_table.sql" relativeToChangelogFile="true"/>
+    <include file="02-create_unique_order_code_column_in_order_table.sql" relativeToChangelogFile="true"/>
+    <include file="03-create_unique_passport_number_column_in_passport_table.sql" relativeToChangelogFile="true"/>
+    <include file="04-create_unique_code_column_in_product_table.sql" relativeToChangelogFile="true"/>
+    <include file="05-create_unique_name_column_in_product_category_table.sql" relativeToChangelogFile="true"/>
+    <include file="06-create_unique_name_column_in_role_table.sql" relativeToChangelogFile="true"/>
+    <include file="07-update_phone_number_colum_in_users_table.sql" relativeToChangelogFile="true"/>
+    <include file="08-create_unique_phone_number_columns_in_user_tables.sql" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

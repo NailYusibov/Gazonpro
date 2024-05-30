@@ -1,23 +1,25 @@
 package com.gitlab.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gitlab.dto.*;
 import com.gitlab.enums.Citizenship;
 import com.gitlab.enums.Gender;
 import com.gitlab.mapper.UserMapper;
+import com.gitlab.model.BankCard;
+import com.gitlab.model.Passport;
 import com.gitlab.model.User;
-import com.gitlab.service.ShoppingCartService;
+import com.gitlab.service.BankCardService;
+import com.gitlab.service.PassportService;
 import com.gitlab.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -41,7 +43,9 @@ class UserRestControllerIT extends AbstractIntegrationTest {
     @Autowired
     private UserMapper userMapper;
     @Autowired
-    private ShoppingCartService shoppingCartService;
+    private BankCardService bankCardService;
+    @Autowired
+    private PassportService passportService;
 
     @Test
     @Transactional(readOnly = true)
@@ -112,7 +116,6 @@ class UserRestControllerIT extends AbstractIntegrationTest {
     }
 
 
-
     @Test
     void should_return_not_found_when_get_user_by_non_existent_id() throws Exception {
         long id = 100L;
@@ -126,16 +129,11 @@ class UserRestControllerIT extends AbstractIntegrationTest {
 
         String jsonExampleDto = objectMapper.writeValueAsString(generateUser(6L));
 
-        ShoppingCartDto shoppingCartDto = new ShoppingCartDto();
-        shoppingCartDto.setUserId(6L);
-
         mockMvc.perform(post(USER_URI)
                         .content(jsonExampleDto)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(x -> assertThat(shoppingCartService.saveDto(shoppingCartDto).getUserId(),
-                        equalTo(shoppingCartDto.getUserId())))
                 .andExpect(status().isCreated());
     }
 
@@ -185,6 +183,9 @@ class UserRestControllerIT extends AbstractIntegrationTest {
     @Test
     void should_delete_user_by_id() throws Exception {
         User entity = userMapper.toEntity(generateUser(5L));
+        entity.setEmail("mailno@mail.ru");
+        entity.setPhoneNumber("89005557725");
+
         User user = userService.save(entity);
         long id = userService.findById(user.getId()).get().getId();
 
@@ -194,7 +195,6 @@ class UserRestControllerIT extends AbstractIntegrationTest {
         mockMvc.perform(get(USER_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
-
     }
 
     private UserDto generateUser(Long id) {
@@ -202,12 +202,7 @@ class UserRestControllerIT extends AbstractIntegrationTest {
         roleSet.add("ROLE_ADMIN");
 
         Set<BankCardDto> bankCardSet = new HashSet<>();
-        bankCardSet.add(new BankCardDto(
-                10L,
-                "1111222233334444",
-                LocalDate.now(),
-                423
-        ));
+        bankCardSet.add(generateUniqueBankCard());
 
         Set<ShippingAddressDto> personalAddress = new HashSet<>();
         personalAddress.add(new PersonalAddressDto(
@@ -228,14 +223,14 @@ class UserRestControllerIT extends AbstractIntegrationTest {
                 "patronym",
                 LocalDate.now(),
                 LocalDate.now(),
-                "098765",
+                generateUniquePassportNumber(),
                 "issuer",
                 "issuerN");
 
 
         return new UserDto(
                 10L,
-                "mail" + id + "@mail.ru",
+                generateUniqueEmail(),
                 "username" + id,
                 "user",
                 "answer",
@@ -244,13 +239,100 @@ class UserRestControllerIT extends AbstractIntegrationTest {
                 "user",
                 LocalDate.now(),
                 Gender.MALE,
-                "89007777777",
+                generateUniquePhoneNumber(),
                 passportDto,
                 personalAddress,
                 bankCardSet,
                 roleSet
         );
     }
+
+    private BankCardDto generateUniqueBankCard() {
+        List<BankCard> bankCards = bankCardService.findAll();
+        String cardNumber = "11111111";
+
+        int count;
+
+        do {
+            count = 0;
+            for (BankCard bankCard : bankCards) {
+                if (bankCard.getCardNumber().equals(cardNumber)) {
+                    cardNumber = String.valueOf(Integer.parseInt(cardNumber) + 1);
+                    count = 1;
+                }
+            }
+        } while (count != 0);
+
+        return new BankCardDto(10L, cardNumber, LocalDate.now(), 423);
+    }
+
+    private String generateUniquePassportNumber() {
+        List<Passport> passports = passportService.findAllActive();
+        String passportNumber = "1100123456";
+        String passportNumberInDB = "1100 123456";
+
+        int count;
+
+        do {
+            count = 0;
+
+            for (Passport passport : passports) {
+
+                if (passport.getPassportNumber().equals(passportNumberInDB)) {
+                    passportNumber = String.valueOf(Integer.parseInt(passportNumber) + 1);
+                    passportNumberInDB = new StringBuilder(passportNumber).insert(4, ' ').toString();
+                    count = 1;
+                }
+            }
+
+        } while (count != 0);
+
+        return passportNumberInDB;
+    }
+
+    private String generateUniqueEmail() {
+        List<User> users = userService.findAll();
+
+        String mail = "@mail.ru";
+        StringBuilder nameEmail = new StringBuilder("mail");
+
+        int count;
+
+        do {
+            count = 0;
+
+            for (User user : users) {
+
+                if (user.getEmail().equals(nameEmail + mail)) {
+                    nameEmail.append('a');
+                    count = 1;
+                }
+            }
+
+        } while (count != 0);
+
+        return (nameEmail + mail);
+    }
+
+    private String generateUniquePhoneNumber() {
+        List<User> users = userService.findAll();
+        String phoneNumber = "89002257723";
+
+        int count;
+
+        do {
+            count = 0;
+            for (User user : users) {
+                if (user.getPhoneNumber().equals(phoneNumber)) {
+                    phoneNumber = String.valueOf(Long.parseLong(phoneNumber) + 1L);
+                    count = 1;
+                }
+            }
+        } while (count != 0);
+
+        return phoneNumber;
+    }
+
     @Test
     void should_use_user_assigned_id_in_database_for_user() throws Exception {
         UserDto userDto = generateUser(null);
@@ -267,7 +349,5 @@ class UserRestControllerIT extends AbstractIntegrationTest {
         UserDto createdUserDto = objectMapper.readValue(response.getContentAsString(), UserDto.class);
         Assertions.assertNotEquals(userDto.getId(), createdUserDto.getId());
     }
-
-
 
 }
