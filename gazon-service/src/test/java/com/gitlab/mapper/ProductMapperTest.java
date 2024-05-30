@@ -105,7 +105,7 @@ class ProductMapperTest {
                 .orElse(0.0);
         String expectedRating = String.format(Locale.ENGLISH, "%.2f", averageRating);
 
-        Assert.assertEquals(expectedRating, "3.00");
+        assertEquals(expectedRating, "3.00");
     }
 
     @NotNull

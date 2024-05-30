@@ -150,7 +150,7 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
         String response = result.getResponse().getContentAsString();
         Long idAfter = objectMapper.readValue(response, ReviewDto.class).getId();
 
-        assertNotEquals(idBefore, idAfter);
+        Assertions.assertNotEquals(idBefore, idAfter);
     }
 
     @Test
@@ -208,7 +208,7 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
         String response = result.getResponse().getContentAsString();
         Long idAfter = objectMapper.readValue(response, ReviewDto.class).getId();
 
-        assertEquals(idBefore, idAfter);
+        Assertions.assertEquals(idBefore, idAfter);
     }
 
     @Test
