@@ -190,10 +190,10 @@
     </changeSet>
 
     <include
-            file="v-1.36-add_unique_fields_in_tables/db.changelog-v-1.35.xml"
+            file="v-1.36-add_unique_fields_in_tables/db.changelog-v-1.36.xml"
              relativeToChangelogFile="true"/>
-    <changeSet id="1.35" author="vladislav_laskin">
-        <tagDatabase tag="v-1.35"/>
+    <changeSet id="1.36" author="vladislav_laskin">
+        <tagDatabase tag="v-1.36"/>
     </changeSet>
 
 </databaseChangeLog>
