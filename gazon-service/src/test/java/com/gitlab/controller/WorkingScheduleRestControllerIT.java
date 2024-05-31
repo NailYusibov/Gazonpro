@@ -13,15 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
-import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class WorkingScheduleRestControllerIT extends AbstractIntegrationTest {
@@ -101,7 +96,7 @@ class WorkingScheduleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_working_schedule_by_non_existent_id() throws Exception {
-        long id = 10000L;
+        Long id = workingScheduleService.findAllDto().size() + 2L;
         mockMvc.perform(get(WORKING_SCHEDULE_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -147,7 +142,7 @@ class WorkingScheduleRestControllerIT extends AbstractIntegrationTest {
     void should_update_working_schedule_by_id() throws Exception {
         WorkingScheduleDto workingScheduleDto = workingScheduleService.saveDto(generateWorkingScheduleDto());
         Long id = workingScheduleDto.getId();
-        String jsonWorkingScheduleDto = objectMapper.writeValueAsString(workingScheduleDto);
+        String jsonWorkingScheduleDto;
 
         workingScheduleDto.setDayOfWeek(DayOfWeek.THURSDAY);
         workingScheduleDto.setFrom(LocalTime.parse("05:05"));
@@ -173,7 +168,7 @@ class WorkingScheduleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_working_schedule_by_non_existent_id() throws Exception {
-        long id = 10000L;
+        Long id = workingScheduleService.findAllDto().size() + 2L;
         WorkingScheduleDto workingScheduleDto = generateWorkingScheduleDto();
         String jsonWorkingScheduleDto = objectMapper.writeValueAsString(workingScheduleDto);
 
