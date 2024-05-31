@@ -1,6 +1,8 @@
 package com.gitlab.controller;
 
+import com.gitlab.TestUtil;
 import com.gitlab.dto.RoleDto;
+import com.gitlab.enums.EntityStatus;
 import com.gitlab.mapper.RoleMapper;
 import com.gitlab.model.Role;
 import com.gitlab.service.RoleService;
@@ -10,8 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.MediaType;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -26,6 +26,7 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
 
     private static final String ROLE_URN = "/api/role";
     private static final String ROLE_URI = URL + ROLE_URN;
+
     @Autowired
     private RoleService roleService;
     @Autowired
@@ -33,12 +34,14 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_payment_by_id() throws Exception {
-        long id = 1L;
-        String expected = objectMapper.writeValueAsString(
-                roleMapper.toDto(
-                        (roleService.findById(id)
-                                .orElse(null)))
-        );
+        long id;
+
+        RoleDto savedRoleDto = TestUtil.generateRoleDto();
+
+        id = roleService.saveDto(savedRoleDto).getId();
+        savedRoleDto.setId(id);
+
+        String expected = objectMapper.writeValueAsString(savedRoleDto);
 
         mockMvc.perform(get(ROLE_URI + "/{id}", id))
                 .andDo(print())
@@ -49,6 +52,7 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
     @Test
     void should_return_not_found_when_role_not_existent() throws Exception {
         long id = -1L;
+
         mockMvc.perform(get(ROLE_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -57,7 +61,6 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional(readOnly = true)
     void should_get_all_roles() throws Exception {
-
         var response = roleService.getPage(null, null);
         var expected = objectMapper.writeValueAsString(roleMapper.toDtoList(response.getContent()));
 
@@ -110,7 +113,7 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_role() throws Exception {
-        RoleDto paymentDto = generateRoleDto();
+        RoleDto paymentDto = TestUtil.generateRoleDto();
 
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
 
@@ -124,10 +127,10 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_update_role_by_id() throws Exception {
-        Role savedRole = roleService.save(roleMapper.toEntity(generateRoleDto()));
+        Role savedRole = roleService.save(roleMapper.toEntity(TestUtil.generateRoleDto()));
         RoleDto dto = roleMapper.toDto(savedRole);
 
-        dto.setRoleName("NEW_TEST_NAME");
+        dto.setRoleName("UPDATE_TEST_NAME");
         String jsonRoleDto = objectMapper.writeValueAsString(dto);
         String expected = objectMapper.writeValueAsString(dto);
 
@@ -142,7 +145,7 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_if_role_not_exists() throws Exception {
-        RoleDto dto = generateRoleDto();
+        RoleDto dto = TestUtil.generateRoleDto();
 
         String jsonRoleDto = objectMapper.writeValueAsString(dto);
 
@@ -156,9 +159,7 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_role_by_id() throws Exception {
-        RoleDto roleDto = generateRoleDto();
-        roleDto.setRoleName("TEST_ROLE2");
-
+        RoleDto roleDto = TestUtil.generateRoleDto();
         long savedRoleId = roleService.saveDto(roleDto).getId();
 
         mockMvc.perform(delete(ROLE_URI + "/{id}", savedRoleId))
@@ -169,38 +170,11 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    private RoleDto generateRoleDto() {
-        RoleDto roleDto = new RoleDto();
-        roleDto.setRoleName(generateUniqueRoleName());
-
-        return roleDto;
-    }
-
-    private String generateUniqueRoleName() {
-        List<Role> roles = roleService.findAll();
-        StringBuilder roleName = new StringBuilder("TEST_ROLE");
-
-        int count;
-
-        do {
-            count = 0;
-
-            for (Role role : roles) {
-                if (role.getName().contentEquals(roleName)) {
-                    roleName.append(1);
-                    count = 1;
-                }
-            }
-
-        } while (count != 0);
-
-        return roleName.toString();
-    }
-
     @Test
     void should_use_user_assigned_id_in_database_for_role() throws Exception {
-        RoleDto roleDto = generateRoleDto();
+        RoleDto roleDto = TestUtil.generateRoleDto();
         roleDto.setId(9999L);
+
         String jsonRoleDto = objectMapper.writeValueAsString(roleDto);
 
         MockHttpServletResponse response = mockMvc.perform(post(ROLE_URI)
@@ -213,5 +187,4 @@ class RoleRestControllerIT extends AbstractIntegrationTest {
         RoleDto createdRoleDto = objectMapper.readValue(response.getContentAsString(), RoleDto.class);
         Assertions.assertNotEquals(roleDto.getId(), createdRoleDto.getId());
     }
-
 }

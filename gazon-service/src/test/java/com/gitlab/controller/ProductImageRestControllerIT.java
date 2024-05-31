@@ -1,9 +1,10 @@
 package com.gitlab.controller;
 
+import com.gitlab.TestUtil;
 import com.gitlab.dto.ProductImageDto;
 import com.gitlab.mapper.ProductImageMapper;
-import com.gitlab.model.ProductImage;
 import com.gitlab.service.ProductImageService;
+import com.gitlab.service.ProductService;
 import com.gitlab.util.ImageUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -12,11 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -38,6 +34,8 @@ class ProductImageRestControllerIT extends AbstractIntegrationTest {
     private ProductImageService productImageService;
     @Autowired
     private ProductImageMapper productImageMapper;
+    @Autowired
+    private ProductService productService;
 
     @Test
     @Transactional(readOnly = true)
@@ -94,7 +92,9 @@ class ProductImageRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_productImage_by_id() throws Exception {
-        ProductImageDto saveDto = productImageService.saveDto(generateProductDto());
+        ProductImageDto saveDto = productImageService.saveDto(
+                TestUtil.generateProductImageDto(
+                        productService.save(TestUtil.generateProductDto()).get().getId()));
 
         byte[] expected = ImageUtils.decompressImage(saveDto.getData());
 
@@ -102,13 +102,14 @@ class ProductImageRestControllerIT extends AbstractIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().bytes(expected));
-
-        productImageService.delete(saveDto.getId());
     }
 
     @Test
     void should_get_productImages_by_productId() throws Exception {
-        long id = 1L;
+        long id = productService.save(TestUtil.generateProductDto()).get().getId();
+
+        productImageService.saveDto(TestUtil.generateProductImageDto(id));
+
         String expected = objectMapper.writeValueAsString(
                 productImageService
                         .findAllByProductId(id)
@@ -125,7 +126,8 @@ class ProductImageRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_productImage_by_non_existent_id() throws Exception {
-        long id = 100L;
+        long id = 9999L;
+
         mockMvc.perform(get(PRODUCT_IMAGE_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -133,9 +135,10 @@ class ProductImageRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_productImage() throws Exception {
-        ProductImageDto productImageDto = generateProductDto();
+        ProductImageDto saveDto = TestUtil.generateProductImageDto(
+                productService.save(TestUtil.generateProductDto()).get().getId());
 
-        String jsonProductImageDto = objectMapper.writeValueAsString(productImageDto);
+        String jsonProductImageDto = objectMapper.writeValueAsString(saveDto);
 
         mockMvc.perform(post(PRODUCT_IMAGE_URI)
                         .content(jsonProductImageDto)
@@ -147,11 +150,14 @@ class ProductImageRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_update_productImage_by_id() throws Exception {
-        ProductImageDto productImageDto = generateProductDto();
-        ProductImageDto saveDto = productImageService.saveDto(productImageDto);
+        ProductImageDto saveDto = productImageService.saveDto(
+                TestUtil.generateProductImageDto(
+                        productService.save(TestUtil.generateProductDto()).get().getId()));
+
         int numberOfEntitiesExpected = productImageService.findAll().size();
 
         saveDto.setName("updatedName");
+
         String jsonProductImageDto = objectMapper.writeValueAsString(saveDto);
         String expected = objectMapper.writeValueAsString(saveDto);
 
@@ -164,17 +170,19 @@ class ProductImageRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(content().json(expected))
                 .andExpect(result -> assertThat(productImageService.findAll().size(),
                         equalTo(numberOfEntitiesExpected)));
-
-        productImageService.delete(saveDto.getId());
     }
 
     @Test
     void should_return_not_found_when_update_productImage_by_non_existent_id() throws Exception {
-        long id = 100L;
+        long id = 9999L;
 
-        ProductImageDto productImageDto = generateProductDto();
-        productImageDto.setName("updatedName");
-        String jsonProductImageDto = objectMapper.writeValueAsString(productImageDto);
+        ProductImageDto saveDto = productImageService.saveDto(
+                TestUtil.generateProductImageDto(
+                        productService.save(TestUtil.generateProductDto()).get().getId()));
+
+        saveDto.setName("updatedName");
+
+        String jsonProductImageDto = objectMapper.writeValueAsString(saveDto);
 
         mockMvc.perform(patch(PRODUCT_IMAGE_URI + "/{id}", id)
                         .content(jsonProductImageDto)
@@ -186,11 +194,15 @@ class ProductImageRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_productImage_by_id() throws Exception {
-        ProductImage productImage = productImageService.save(productImageMapper.toEntity(generateProductDto()));
-        long id = productImageService.findById(productImage.getId()).get().getId();
+        long id = productImageService.saveDto(
+                        TestUtil.generateProductImageDto(
+                                productService.save(TestUtil.generateProductDto()).get().getId()))
+                .getId();
+
         mockMvc.perform(delete(PRODUCT_IMAGE_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isOk());
+
         mockMvc.perform(get(PRODUCT_IMAGE_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -198,29 +210,20 @@ class ProductImageRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_productImage_by_not_exist_id() throws Exception {
-        long id = 100L;
+        long id = 9999L;
+
         mockMvc.perform(delete(PRODUCT_IMAGE_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
-    private ProductImageDto generateProductDto() throws IOException {
-        ProductImageDto productImageDto = new ProductImageDto();
-        productImageDto.setProductId(1L);
-        productImageDto.setName("file.txt");
-        BufferedImage image = ImageIO.read(new File("src/test/resources/image/product.png"));
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(image, "png", baos);
-        byte[] imageData = baos.toByteArray();
-        productImageDto.setData(imageData);
-
-        return productImageDto;
-    }
-
     @Test
     void should_use_user_assigned_id_in_database_for_product_image() throws Exception {
-        ProductImageDto productImageDto = generateProductDto();
+        ProductImageDto productImageDto = TestUtil.generateProductImageDto(
+                productService.save(TestUtil.generateProductDto()).get().getId());
+
         productImageDto.setId(9999L);
+
         String jsonProductImageDto = objectMapper.writeValueAsString(productImageDto);
 
         MockHttpServletResponse response = mockMvc.perform(post(PRODUCT_IMAGE_URI)
@@ -233,6 +236,4 @@ class ProductImageRestControllerIT extends AbstractIntegrationTest {
         ProductImageDto createdProductImageDto = objectMapper.readValue(response.getContentAsString(), ProductImageDto.class);
         Assertions.assertNotEquals(productImageDto.getId(), createdProductImageDto.getId());
     }
-
-
 }

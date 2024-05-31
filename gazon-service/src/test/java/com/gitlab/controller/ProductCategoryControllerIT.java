@@ -1,13 +1,12 @@
 package com.gitlab.controller;
 
 
+import com.gitlab.TestUtil;
 import com.gitlab.dto.ProductCategoryDto;
-import com.gitlab.model.ProductCategory;
 import com.gitlab.service.ProductCategoryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -68,8 +67,8 @@ class ProductCategoryControllerIT extends AbstractIntegrationTest {
     void should_get_productCategory_by_id() throws Exception {
         long id;
 
-        ProductCategoryDto productCategoryDto = new ProductCategoryDto();
-        productCategoryDto.setName("Name");
+        ProductCategoryDto productCategoryDto = TestUtil.generateProductCategoryDto();
+
         id = productCategoryService.saveDto(productCategoryDto).getId();
 
         String expected = objectMapper.writeValueAsString(
@@ -82,13 +81,12 @@ class ProductCategoryControllerIT extends AbstractIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(expected));
-
-        productCategoryService.delete(id);
     }
 
     @Test
     void should_return_not_found_when_get_productCategory_by_non_existent_id() throws Exception {
-        long id = 10L;
+        long id = 9999L;
+
         mockMvc.perform(get(PRODUCTCATEGORY_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -96,31 +94,32 @@ class ProductCategoryControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_productCategory() throws Exception {
-        ProductCategoryDto productCategoryDto = new ProductCategoryDto();
-        productCategoryDto.setName("Name");
+        ProductCategoryDto productCategoryDto = TestUtil.generateProductCategoryDto();
+
         String jsonProductCategoryDto = objectMapper.writeValueAsString(productCategoryDto);
 
-        MockHttpServletResponse response = mockMvc.perform(post(PRODUCTCATEGORY_URI)
+        mockMvc.perform(post(PRODUCTCATEGORY_URI)
                         .content(jsonProductCategoryDto)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isCreated())
-                .andReturn().getResponse();
-
-        long id = objectMapper.readValue(response.getContentAsString(), ProductCategory.class).getId();
-        productCategoryService.delete(id);
+                .andExpect(status().isCreated());
     }
 
     @Test
     void should_update_productCategory_by_id() throws Exception {
-        long id = 1L;
-        int numberOfEntitiesExpected = productCategoryService.findAllDto().size();
+        long id;
+        int numberOfEntitiesExpected;
 
-        ProductCategoryDto productCategoryDto = new ProductCategoryDto();
-        productCategoryDto.setName("Name");
-        String jsonProductCategoryDto = objectMapper.writeValueAsString(productCategoryDto);
+        ProductCategoryDto productCategoryDto = TestUtil.generateProductCategoryDto();
+
+        id = productCategoryService.saveDto(productCategoryDto).getId();
+        numberOfEntitiesExpected = productCategoryService.findAllDto().size();
+
         productCategoryDto.setId(id);
+        productCategoryDto.setName("updateName");
+
+        String jsonProductCategoryDto = objectMapper.writeValueAsString(productCategoryDto);
         String expected = objectMapper.writeValueAsString(productCategoryDto);
 
         mockMvc.perform(patch(PRODUCTCATEGORY_URI + "/{id}", id)
@@ -138,9 +137,11 @@ class ProductCategoryControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_productCategory_by_non_existent_id() throws Exception {
-        long id = 10L;
-        ProductCategoryDto productCategoryDto = new ProductCategoryDto();
-        productCategoryDto.setName("Name");
+        long id = 9999L;
+
+        ProductCategoryDto productCategoryDto = TestUtil.generateProductCategoryDto();
+        productCategoryDto.setName("testName");
+
         String jsonProductCategoryDto = objectMapper.writeValueAsString(productCategoryDto);
 
         mockMvc.perform(patch(PRODUCTCATEGORY_URI + "/{id}", id)
@@ -153,7 +154,8 @@ class ProductCategoryControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_productCategory_by_id() throws Exception {
-        long id = 2L;
+        long id = productCategoryService.saveDto(TestUtil.generateProductCategoryDto()).getId();
+
         mockMvc.perform(delete(PRODUCTCATEGORY_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isOk());

@@ -1,12 +1,12 @@
 package com.gitlab.controller;
 
+import com.gitlab.TestUtil;
 import com.gitlab.dto.OrderDto;
-import com.gitlab.dto.SelectedProductDto;
-import com.gitlab.dto.ShippingAddressDto;
 import com.gitlab.enums.OrderStatus;
 import com.gitlab.mapper.OrderMapper;
-import com.gitlab.model.Order;
 import com.gitlab.service.OrderService;
+import com.gitlab.service.PersonalAddressService;
+import com.gitlab.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -35,14 +31,21 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
 
     @Autowired
     private OrderService orderService;
-
     @Autowired
     private OrderMapper orderMapper;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private PersonalAddressService personalAddressService;
 
     @Test
     @Transactional
     void should_get_all_orders() throws Exception {
-        orderService.saveDto(generateOrderDto());
+        orderService.saveDto(
+                TestUtil.generateOrderDto(
+                        userService.saveDto(TestUtil.generateUserDto()).getId(),
+                        personalAddressService.saveDto(TestUtil.generatePersonalAddressDto())));
+
         var response = orderService.getPage(null, null);
         var expected = objectMapper.writeValueAsString(orderMapper.toDtoList(response.getContent()));
 
@@ -55,7 +58,11 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void should_get_page() throws Exception {
-        orderService.saveDto(generateOrderDto());
+        orderService.saveDto(
+                TestUtil.generateOrderDto(
+                        userService.saveDto(TestUtil.generateUserDto()).getId(),
+                        personalAddressService.saveDto(TestUtil.generatePersonalAddressDto())));
+
         int page = 0;
         int size = 2;
         String parameters = "?page=" + page + "&size=" + size;
@@ -96,7 +103,12 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_order_by_id() throws Exception {
-        long id = orderService.saveDto(generateOrderDto()).getId();
+        long id = orderService.saveDto(
+                        TestUtil.generateOrderDto(
+                                userService.saveDto(TestUtil.generateUserDto()).getId(),
+                                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto())))
+                .getId();
+
         var orderDto = orderService.findByIdDto(id).orElse(null);
         String expected = objectMapper.writeValueAsString(orderDto);
 
@@ -108,7 +120,9 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_order() throws Exception {
-        OrderDto orderDto = generateOrderDto();
+        OrderDto orderDto = TestUtil.generateOrderDto(
+                userService.saveDto(TestUtil.generateUserDto()).getId(),
+                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()));
 
         String jsonOrderDto = objectMapper.writeValueAsString(orderDto);
 
@@ -123,10 +137,14 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void check_null_update() throws Exception {
-        OrderDto testOrderDto = orderService.saveDto(generateOrderDto());
+        OrderDto testOrderDto = orderService.saveDto(
+                TestUtil.generateOrderDto(
+                        userService.saveDto(TestUtil.generateUserDto()).getId(),
+                        personalAddressService.saveDto(TestUtil.generatePersonalAddressDto())));
+
         int numberOfEntitiesExpected = orderService.findAll().size();
 
-        String checkJsonOrderDto = objectMapper.writeValueAsString(orderService.findByIdDto(testOrderDto.getId()).orElse(null));
+        String checkJsonOrderDto = objectMapper.writeValueAsString(testOrderDto);
 
         testOrderDto.setShippingAddressDto(null);
         testOrderDto.setOrderCode(null);
@@ -151,24 +169,17 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void should_update_order_by_id() throws Exception {
-        OrderDto orderDto = orderService.saveDto(generateOrderDto());
+        long id;
+        OrderDto orderDto = TestUtil.generateOrderDto(userService.saveDto(TestUtil.generateUserDto()).getId(),
+                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()));
+        orderDto = orderService.saveDto(orderDto);
 
-        ShippingAddressDto shippingAddressDto = new ShippingAddressDto();
-        shippingAddressDto.setId(1L);
-        shippingAddressDto.setAddress("ffffffffffffff");
-        shippingAddressDto.setDirections("fffffffffff");
-
-        orderDto.setSelectedProducts(Set.of(new SelectedProductDto()));
-        orderDto.setShippingAddressDto(shippingAddressDto);
-        orderDto.setOrderCode("321");
-        orderDto.setShippingDate(LocalDate.parse("2077-07-07"));
-        orderDto.setCreateDateTime(LocalDateTime.of(2023, 1, 15, 22, 2));
-        orderDto.setSum(new BigDecimal(7));
-        orderDto.setDiscount(new BigDecimal(7));
-        orderDto.setBagCounter((byte) 7);
-
-        long id = orderDto.getId();
+        id = orderDto.getId();
         int numberOfEntitiesExpected = orderService.findAll().size();
+
+        orderDto.setOrderStatus(OrderStatus.IN_PROGRESS);
+        orderDto.setCreateDateTime(LocalDateTime.now());
+
         String jsonOrderDto = objectMapper.writeValueAsString(orderDto);
         String expected = objectMapper.writeValueAsString(orderDto);
 
@@ -185,8 +196,9 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_order_by_id() throws Exception {
-        OrderDto orderDto = generateOrderDto();
-        orderDto.setOrderCode("12345");
+        OrderDto orderDto =
+                TestUtil.generateOrderDto(userService.saveDto(TestUtil.generateUserDto()).getId(),
+                        personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()));
 
         orderDto = orderService.saveDto(orderDto);
         long id = orderDto.getId();
@@ -209,7 +221,8 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
     @Test
     void should_return_not_found_when_update_order_by_non_existent_id() throws Exception {
         long id = 10L;
-        OrderDto orderDto = generateOrderDto();
+        OrderDto orderDto = TestUtil.generateOrderDto(userService.saveDto(TestUtil.generateUserDto()).getId(),
+                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()));
         String jsonOrderDto = objectMapper.writeValueAsString(orderDto);
 
         mockMvc.perform(patch(ORDER_URI + "/{id}", id)
@@ -220,50 +233,11 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-
-    private OrderDto generateOrderDto() {
-        OrderDto orderDto = new OrderDto();
-        ShippingAddressDto shippingAddressDto = new ShippingAddressDto();
-        shippingAddressDto.setId(1L);
-        shippingAddressDto.setAddress("dfdefdf");
-        shippingAddressDto.setDirections("dgfgg");
-        orderDto.setSelectedProducts(Set.of(new SelectedProductDto()));
-        orderDto.setShippingAddressDto(shippingAddressDto);
-        orderDto.setUserId(1L);
-        orderDto.setOrderCode(generateUniqueOrderCode());
-        orderDto.setShippingDate(LocalDate.parse("2027-05-01"));
-        orderDto.setCreateDateTime(LocalDateTime.now());
-        orderDto.setSum(new BigDecimal(5));
-        orderDto.setDiscount(new BigDecimal(6));
-        orderDto.setBagCounter((byte) 5);
-        orderDto.setOrderStatus(OrderStatus.DONE);
-        return orderDto;
-    }
-
-    private String generateUniqueOrderCode() {
-        List<Order> orders = orderService.findAll();
-        String orderCode = "1234";
-
-        int count;
-
-        do {
-            count = 0;
-
-            for (Order order : orders) {
-                if (order.getOrderCode().equals(orderCode)) {
-                    orderCode = String.valueOf(Integer.parseInt(orderCode) + 1);
-                    count = 1;
-                }
-            }
-
-        } while (count != 0);
-
-        return orderCode;
-    }
-
     @Test
     void should_use_user_assigned_id_in_database_for_order() throws Exception {
-        OrderDto orderDto = generateOrderDto();
+        OrderDto orderDto = TestUtil.generateOrderDto(userService.saveDto(TestUtil.generateUserDto()).getId(),
+                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()));
+
         orderDto.setId(9999L);
         String jsonOrderDto = objectMapper.writeValueAsString(orderDto);
 
@@ -277,5 +251,4 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
         OrderDto createdOrderDto = objectMapper.readValue(response.getContentAsString(), OrderDto.class);
         Assertions.assertNotEquals(orderDto.getId(), createdOrderDto.getId());
     }
-
 }

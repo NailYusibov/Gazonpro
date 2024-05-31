@@ -2,21 +2,17 @@ package com.gitlab.controller;
 
 import com.gitlab.TestUtil;
 import com.gitlab.dto.SelectedProductDto;
-import com.gitlab.enums.EntityStatus;
-import com.gitlab.mapper.ProductMapper;
 import com.gitlab.mapper.SelectedProductMapper;
-import com.gitlab.model.Product;
 import com.gitlab.model.SelectedProduct;
 import com.gitlab.service.ProductService;
 import com.gitlab.service.SelectedProductService;
+import com.gitlab.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -33,6 +29,7 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
 
     private static final String SELECTED_PRODUCT_URN = "/api/selected-product";
     private static final String SELECTED_PRODUCT_URI = URL + SELECTED_PRODUCT_URN;
+
     @Autowired
     private SelectedProductService selectedProductService;
     @Autowired
@@ -40,7 +37,7 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
     @Autowired
     private SelectedProductMapper selectedProductMapper;
     @Autowired
-    private ProductMapper productMapper;
+    private UserService userService;
 
     @Test
     @Transactional(readOnly = true)
@@ -60,9 +57,12 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
     void should_get_page() throws Exception {
         int page = 0;
         int size = 2;
+
         String parameters = "?page=" + page + "&size=" + size;
+
         var response = selectedProductService.getPage(page, size);
         assertFalse(response.getContent().isEmpty());
+
         var expected = objectMapper.writeValueAsString(selectedProductMapper.toDtoList(response.getContent()));
 
         mockMvc.perform(get(SELECTED_PRODUCT_URI + parameters))
@@ -95,10 +95,16 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_selectedProduct_by_id() throws Exception {
-        SelectedProduct selectedProduct = createAndSaveSelectedProduct_SelectedProduct();
-        long id = selectedProduct.getId();
-        SelectedProductDto selectedProductDto = selectedProductMapper.toDto(selectedProduct);
+        SelectedProductDto selectedProductDto = selectedProductService.saveDto
+                (TestUtil.generateSelectedProductDto(
+                        productService.save(TestUtil.generateProductDto()).get().getId(),
+                        userService.saveDto(TestUtil.generateUserDto()).getId()));
+
+        long id = selectedProductDto.getId();
+
+        SelectedProduct selectedProduct = selectedProductMapper.toEntity(selectedProductDto);
         selectedProductMapper.calculatedUnmappedFields(selectedProductDto, selectedProduct);
+
         String expected = objectMapper.writeValueAsString(selectedProductDto);
 
         mockMvc.perform(get(SELECTED_PRODUCT_URI + "/{id}", id))
@@ -109,8 +115,8 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_selectedProduct_by_non_existent_id() throws Exception {
-        SelectedProduct selectedProduct = createAndSaveSelectedProduct_SelectedProduct();
-        long id = selectedProduct.getId() + 1L;
+        long id = 9999L;
+
         mockMvc.perform(get(SELECTED_PRODUCT_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -118,8 +124,10 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_selectedProduct() throws Exception {
-        SelectedProduct selectedProduct = createAndSaveSelectedProduct_SelectedProduct();
-        SelectedProductDto selectedProductDto = selectedProductMapper.toDto(selectedProduct);
+        SelectedProductDto selectedProductDto = TestUtil.generateSelectedProductDto(
+                productService.save(TestUtil.generateProductDto()).get().getId(),
+                userService.saveDto(TestUtil.generateUserDto()).getId());
+
         String jsonSelectedProductDto = objectMapper.writeValueAsString(selectedProductDto);
 
         mockMvc.perform(post(SELECTED_PRODUCT_URI)
@@ -132,12 +140,16 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_update_selectedProduct_by_id() throws Exception {
-        SelectedProduct selectedProduct = createAndSaveSelectedProduct_SelectedProduct();
-        long id = selectedProduct.getId();
-        SelectedProductDto selectedProductDto = selectedProductMapper.toDto(selectedProduct);
+        SelectedProductDto selectedProductDto = selectedProductService.saveDto(TestUtil.generateSelectedProductDto(
+                productService.save(TestUtil.generateProductDto()).get().getId(),
+                userService.saveDto(TestUtil.generateUserDto()).getId()));
+
+        long id = selectedProductDto.getId();
+
         int numberOfEntitiesExpected = selectedProductService.findAll().size();
+        selectedProductDto.setCount(99);
+
         String jsonSelectedProductDto = objectMapper.writeValueAsString(selectedProductDto);
-        selectedProductDto.setId(id);
         String expected = objectMapper.writeValueAsString(selectedProductDto);
 
         mockMvc.perform(patch(SELECTED_PRODUCT_URI + "/{id}", id)
@@ -153,9 +165,12 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_selectedProduct_by_non_existent_id() throws Exception {
-        SelectedProduct selectedProduct = createAndSaveSelectedProduct_SelectedProduct();
-        long id = selectedProduct.getId() + 1L;
-        SelectedProductDto selectedProductDto = selectedProductMapper.toDto(selectedProduct);
+        SelectedProductDto selectedProductDto = selectedProductService.saveDto(TestUtil.generateSelectedProductDto(
+                productService.save(TestUtil.generateProductDto()).get().getId(),
+                userService.saveDto(TestUtil.generateUserDto()).getId()));
+
+        long id = 9999L;
+
         String jsonSelectedProductDto = objectMapper.writeValueAsString(selectedProductDto);
 
         mockMvc.perform(patch(SELECTED_PRODUCT_URI + "/{id}", id)
@@ -168,13 +183,12 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_selectedProduct_by_id() throws Exception {
-        SelectedProduct selectedProduct = createAndSaveSelectedProduct_SelectedProduct();
+        long id = selectedProductService.saveDto(
+                        TestUtil.generateSelectedProductDto(
+                                productService.save(TestUtil.generateProductDto()).get().getId(),
+                                userService.saveDto(TestUtil.generateUserDto()).getId()))
+                .getId();
 
-        Product product = selectedProduct.getProduct();
-        product.setCode("10000");
-        productService.update(product.getId(), productMapper.toDto(product));
-
-        long id = selectedProduct.getId();
         mockMvc.perform(delete(SELECTED_PRODUCT_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -185,8 +199,10 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_use_user_assigned_id_in_database_for_selected_product() throws Exception {
-        SelectedProduct selectedProduct = createAndSaveSelectedProduct_SelectedProduct();
-        SelectedProductDto selectedProductDto = selectedProductMapper.toDto(selectedProduct);
+        SelectedProductDto selectedProductDto = TestUtil.generateSelectedProductDto(
+                productService.save(TestUtil.generateProductDto()).get().getId(),
+                userService.saveDto(TestUtil.generateUserDto()).getId());
+
         selectedProductDto.setId(9999L);
         String jsonSelectedProductDto = objectMapper.writeValueAsString(selectedProductDto);
 
@@ -199,23 +215,5 @@ class SelectedProductRestControllerIT extends AbstractIntegrationTest {
 
         SelectedProductDto createdSelectedProductDto = objectMapper.readValue(response.getContentAsString(), SelectedProductDto.class);
         Assertions.assertNotEquals(selectedProductDto.getId(), createdSelectedProductDto.getId());
-    }
-
-    private SelectedProduct createAndSaveSelectedProduct_SelectedProduct() {
-        SelectedProduct savedSelectedProduct = new SelectedProduct();
-        Product savedProduct = new Product();
-        savedProduct.setName("testProduct");
-        savedProduct.setStockCount(5);
-        savedProduct.setDescription("testDescription");
-        savedProduct.setIsAdult(false);
-        savedProduct.setCode(TestUtil.generateUniqueCode(productService.findAll()));
-        savedProduct.setPrice(BigDecimal.ONE);
-        savedProduct.setWeight(7L);
-        savedProduct.setEntityStatus(EntityStatus.ACTIVE);
-        productService.save(savedProduct);
-        savedSelectedProduct.setProduct(savedProduct);
-        savedSelectedProduct.setCount(7);
-        selectedProductService.save(savedSelectedProduct);
-        return savedSelectedProduct;
     }
 }

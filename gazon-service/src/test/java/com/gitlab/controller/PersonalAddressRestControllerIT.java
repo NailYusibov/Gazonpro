@@ -1,5 +1,6 @@
 package com.gitlab.controller;
 
+import com.gitlab.TestUtil;
 import com.gitlab.dto.PersonalAddressDto;
 import com.gitlab.mapper.PersonalAddressMapper;
 import com.gitlab.service.PersonalAddressService;
@@ -82,7 +83,7 @@ class PersonalAddressRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_personalAddress_by_id() throws Exception {
-        PersonalAddressDto personalAddressDto = generatePersonalAddressDto();
+        PersonalAddressDto personalAddressDto = TestUtil.generatePersonalAddressDto();
         PersonalAddressDto savedPersonalAddress = personalAddressService.saveDto(personalAddressDto);
 
         String expected = objectMapper.writeValueAsString(
@@ -100,7 +101,7 @@ class PersonalAddressRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_personalAddress_by_non_existent_id() throws Exception {
-        long id = 9000L;
+        long id = 9999L;
         mockMvc.perform(get(URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -108,7 +109,8 @@ class PersonalAddressRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_personalAddress() throws Exception {
-        PersonalAddressDto personalAddressDto = generatePersonalAddressDto();
+        PersonalAddressDto personalAddressDto = TestUtil.generatePersonalAddressDto();
+        ;
         String jsonPersonalAddressDto = objectMapper.writeValueAsString(personalAddressDto);
 
         mockMvc.perform(post(URI)
@@ -121,11 +123,14 @@ class PersonalAddressRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_update_personalAddress_by_id() throws Exception {
-        PersonalAddressDto personalAddressDto = generatePersonalAddressDto();
+        PersonalAddressDto personalAddressDto = TestUtil.generatePersonalAddressDto();
+        ;
         PersonalAddressDto savedPersonalAddressDto = personalAddressService.saveDto(personalAddressDto);
+
         int numberOfEntitiesExpected = personalAddressService.findAll().size();
 
-        PersonalAddressDto uptadedPersonalAddressDto = generatePersonalAddressDto();
+        PersonalAddressDto uptadedPersonalAddressDto = TestUtil.generatePersonalAddressDto();
+        ;
         uptadedPersonalAddressDto.setId(savedPersonalAddressDto.getId());
 
         String jsonPersonalAddressDto = objectMapper.writeValueAsString(uptadedPersonalAddressDto);
@@ -145,8 +150,9 @@ class PersonalAddressRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_personalAddress_by_non_existent_id() throws Exception {
-        long id = 9000;
-        PersonalAddressDto personalAddressDto = generatePersonalAddressDto();
+        long id = 9999L;
+        PersonalAddressDto personalAddressDto = TestUtil.generatePersonalAddressDto();
+        ;
         String jsonPersonalAddressDto = objectMapper.writeValueAsString(personalAddressDto);
 
         mockMvc.perform(patch(URI + "/{id}", id)
@@ -159,7 +165,7 @@ class PersonalAddressRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_personalAddress_by_id() throws Exception {
-        PersonalAddressDto personalAddressDto = generatePersonalAddressDto();
+        PersonalAddressDto personalAddressDto = TestUtil.generatePersonalAddressDto();
         PersonalAddressDto savedPersonalAddress = personalAddressService.saveDto(personalAddressDto);
 
         mockMvc.perform(delete(URI + "/{id}", savedPersonalAddress.getId()))
@@ -170,22 +176,9 @@ class PersonalAddressRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    private PersonalAddressDto generatePersonalAddressDto() {
-        PersonalAddressDto personalAddressDto = new PersonalAddressDto();
-        personalAddressDto.setAddress("New Address");
-        personalAddressDto.setDirections("New Directions");
-        personalAddressDto.setApartment("111");
-        personalAddressDto.setFloor("14");
-        personalAddressDto.setEntrance("7");
-        personalAddressDto.setDoorCode("1244");
-        personalAddressDto.setPostCode("123446");
-
-        return personalAddressDto;
-    }
-
     @Test
     void should_use_user_assigned_id_in_database_for_personal_address() throws Exception {
-        PersonalAddressDto personalAddressDto = generatePersonalAddressDto();
+        PersonalAddressDto personalAddressDto = TestUtil.generatePersonalAddressDto();
         personalAddressDto.setId(9999L);
 
         String jsonPersonalAddressDto = objectMapper.writeValueAsString(personalAddressDto);
@@ -199,6 +192,4 @@ class PersonalAddressRestControllerIT extends AbstractIntegrationTest {
         PersonalAddressDto createdPersonalAddressDto = objectMapper.readValue(response.getContentAsString(), PersonalAddressDto.class);
         Assertions.assertNotEquals(personalAddressDto.getId(), createdPersonalAddressDto.getId());
     }
-
-
 }

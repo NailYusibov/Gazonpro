@@ -1,5 +1,6 @@
 package com.gitlab.controller;
 
+import com.gitlab.TestUtil;
 import com.gitlab.dto.ExampleDto;
 import com.gitlab.mapper.ExampleMapper;
 import com.gitlab.service.ExampleService;
@@ -36,7 +37,7 @@ class ExampleRestControllerIT extends AbstractIntegrationTest {
     void should_get_all_examples() throws Exception {
         String expected = objectMapper.writeValueAsString(
                 new ArrayList<>(exampleService
-                        .getPage(null,null)
+                        .getPage(null, null)
                         .stream()
                         .map(exampleMapper::toDto)
                         .collect(Collectors.toList()))
@@ -69,7 +70,11 @@ class ExampleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_example_by_id() throws Exception {
-        long id = 1L;
+        long id;
+
+        ExampleDto exampleDto = TestUtil.generateExampleDto();
+        id = exampleService.saveDto(exampleDto).getId();
+
         String expected = objectMapper.writeValueAsString(
                 exampleMapper.toDto(
                         exampleService
@@ -85,7 +90,7 @@ class ExampleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_example_by_non_existent_id() throws Exception {
-        long id = 10L;
+        long id = 9999L;
         mockMvc.perform(get(EXAMPLE_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -93,8 +98,8 @@ class ExampleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_example() throws Exception {
-        ExampleDto exampleDto = new ExampleDto();
-        exampleDto.setExampleText("testText");
+        ExampleDto exampleDto = TestUtil.generateExampleDto();
+
         String jsonExampleDto = objectMapper.writeValueAsString(exampleDto);
 
         mockMvc.perform(post(EXAMPLE_URI)
@@ -107,10 +112,14 @@ class ExampleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_update_example_by_id() throws Exception {
-        long id = 1L;
-        int numberOfEntitiesExpected = exampleService.findAll().size();
+        long id;
+        int numberOfEntitiesExpected;
 
-        ExampleDto exampleDto = new ExampleDto();
+        ExampleDto exampleDto = TestUtil.generateExampleDto();
+        id = exampleService.saveDto(exampleDto).getId();
+
+        numberOfEntitiesExpected = exampleService.findAll().size();
+
         exampleDto.setExampleText("updatedText");
         String jsonExampleDto = objectMapper.writeValueAsString(exampleDto);
         exampleDto.setId(id);
@@ -129,8 +138,8 @@ class ExampleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_example_by_non_existent_id() throws Exception {
-        long id = 10L;
-        ExampleDto exampleDto = new ExampleDto();
+        long id = 9999L;
+        ExampleDto exampleDto = TestUtil.generateExampleDto();
         exampleDto.setExampleText("updatedText");
         String jsonExampleDto = objectMapper.writeValueAsString(exampleDto);
 
@@ -144,7 +153,11 @@ class ExampleRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_example_by_id() throws Exception {
-        long id = 2L;
+        long id;
+
+        ExampleDto exampleDto = TestUtil.generateExampleDto();
+        id = exampleService.saveDto(exampleDto).getId();
+
         mockMvc.perform(delete(EXAMPLE_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isOk());
