@@ -41,10 +41,11 @@ openApi.json
 *.ts
 *.json
 /gazon-service/frontend/
+/gazon-service/gazon-microservice-starter/logs.log
 /gazon-service/node_modules
 /common/node_modules
 /gazon-frontend/frontend/
 /gazon-frontend/node_modules/
 /gazon-microservice-starter/logs.log
-logs.log
+*.log
 
