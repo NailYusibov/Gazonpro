@@ -33,7 +33,6 @@ public class ExampleService {
         return findAll()
                 .stream()
                 .map(exampleMapper::toDto)
-                .sorted(Comparator.comparing(ExampleDto::getId))
                 .collect(Collectors.toList());
     }
 
