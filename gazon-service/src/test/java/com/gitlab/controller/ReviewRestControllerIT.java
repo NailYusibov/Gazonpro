@@ -260,6 +260,7 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
         reviewDto.setRating((byte) 9);
         reviewDto.setHelpfulCounter(17);
         reviewDto.setNotHelpfulCounter(2);
+        reviewDto.setUserId(3L);
 
         return reviewDto;
     }

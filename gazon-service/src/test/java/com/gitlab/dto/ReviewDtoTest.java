@@ -15,6 +15,7 @@ public class ReviewDtoTest extends AbstractDtoTest {
         reviewDto.setRating((byte) 2);
         reviewDto.setHelpfulCounter(11);
         reviewDto.setNotHelpfulCounter(1);
+        reviewDto.setUserId(8L);
         return reviewDto;
     }
 

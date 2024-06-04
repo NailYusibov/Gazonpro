@@ -4,6 +4,7 @@ import com.gitlab.dto.ReviewDto;
 import com.gitlab.model.Product;
 import com.gitlab.model.Review;
 import com.gitlab.model.ReviewImage;
+import com.gitlab.model.User;
 import com.gitlab.service.ProductService;
 import com.gitlab.service.ReviewImageService;
 import org.mapstruct.Mapper;
@@ -27,6 +28,7 @@ public abstract class ReviewMapper {
 
     @Mapping(source = "reviewImages", target = "reviewImagesId")
     @Mapping(source = "product", target = "productId")
+    @Mapping(source = "user", target = "userId")
     public abstract ReviewDto toDto(Review review);
 
     public Long[] mapReviewImagesToReviewImagesId(Set<ReviewImage> reviewImages) {
@@ -43,6 +45,13 @@ public abstract class ReviewMapper {
             return null;
         }
         return product.getId();
+    }
+
+    public Long mapUserToUserId(User user) {
+        if (user == null) {
+            return null;
+        }
+        return user.getId();
     }
 
     @Mapping(source = "reviewImagesId", target = "reviewImages")

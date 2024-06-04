@@ -6,6 +6,7 @@ import com.gitlab.mapper.ReviewMapper;
 import com.gitlab.mapper.ReviewMapperImpl;
 import com.gitlab.model.Review;
 import com.gitlab.repository.ReviewRepository;
+import com.gitlab.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -27,6 +28,7 @@ public class ReviewService {
     private final ProductService productService;
     private final ReviewMapper reviewMapper;
     private final ReviewMapperImpl reviewMapperImpl;
+    private final UserRepository userRepository;
 
     public List<Review> findAll() {
         return reviewRepository.findAll();
@@ -139,6 +141,9 @@ public class ReviewService {
         if (review.getNotHelpfulCounter() != null) {
             currentReview.setNotHelpfulCounter(review.getNotHelpfulCounter());
         }
+        if (review.getUser() != null) {
+            currentReview.setUser(review.getUser());
+        }
         return Optional.of(reviewRepository.save(currentReview));
     }
 
@@ -167,6 +172,9 @@ public class ReviewService {
         }
         if (reviewDto.getNotHelpfulCounter() != null) {
             currentReview.setNotHelpfulCounter(reviewDto.getNotHelpfulCounter());
+        }
+        if (reviewDto.getUserId() != null) {
+            currentReview.setUser(userRepository.findById(reviewDto.getUserId()).orElseThrow());
         }
 
         Review updatedReview = reviewRepository.save(currentReview);
