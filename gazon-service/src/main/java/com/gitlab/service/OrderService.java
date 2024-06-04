@@ -8,6 +8,7 @@ import com.gitlab.mapper.SelectedProductMapper;
 import com.gitlab.mapper.ShippingAddressMapper;
 import com.gitlab.mapper.UserMapper;
 import com.gitlab.model.Order;
+import com.gitlab.model.SelectedProduct;
 import com.gitlab.repository.OrderRepository;
 import com.gitlab.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -185,11 +186,7 @@ public class OrderService {
                             Optional.ofNullable(order.getSelectedProducts())
                                     .stream()
                                     .flatMap(Collection::stream)
-                                    .forEach(selectedProduct -> {
-                                        var product = selectedProduct.getProduct();
-                                        product.setStockCount(product.getStockCount() + selectedProduct.getCount());
-                                        productRepository.save(product);
-                                    });
+                                    .forEach(this::increaseStockCount);
                         }
                 );
     }
@@ -198,5 +195,11 @@ public class OrderService {
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime fifteenMinutesAgo = currentTime.minusMinutes(15);
         return creationTime.isBefore(fifteenMinutesAgo);
+    }
+
+    private void increaseStockCount(SelectedProduct selectedProduct) {
+        var product = selectedProduct.getProduct();
+        product.setStockCount(product.getStockCount() + selectedProduct.getCount());
+        productRepository.save(product);
     }
 }
