@@ -189,9 +189,17 @@
         <tagDatabase tag="v-1.35"/>
     </changeSet>
 
-    <include file="v-1.36-add_new_field_user_id_in_review/db.changelog-v-1.36.xml" relativeToChangelogFile="true"/>
-    <changeSet id="1.36" author="vladimir_gerasimov">
+    <include
+            file="v-1.36-add_unique_fields_in_tables/db.changelog-v-1.36.xml"
+             relativeToChangelogFile="true"/>
+    <changeSet id="1.36" author="vladislav_laskin">
         <tagDatabase tag="v-1.36"/>
     </changeSet>
+
+    <include file="v-1.37-add_new_field_user_id_in_review/db.changelog-v-1.36.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1.37" author="vladimir_gerasimov">
+        <tagDatabase tag="v-1.37"/>
+    </changeSet>
+
 
 </databaseChangeLog>

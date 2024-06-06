@@ -18,6 +18,7 @@ public class ReviewController implements ReviewRestApi {
 
     private final ReviewService reviewService;
 
+    @Override
     public ResponseEntity<List<ReviewDto>> getPage(Integer page, Integer size) {
         var reviewPage = reviewService.getPageDto(page, size);
         if (reviewPage == null || reviewPage.getContent().isEmpty()) {
@@ -39,6 +40,7 @@ public class ReviewController implements ReviewRestApi {
         return ResponseEntity.ok(reviewsDto);
     }
 
+    @Override
     public ResponseEntity<Long> getReviewAmount(Long id) {
         Long reviewAmount = reviewService.findByProductId(id);
         return ResponseEntity.ok(reviewAmount);
