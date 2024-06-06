@@ -166,7 +166,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_bankCard_by_non_existent_id() throws Exception {
-        long id = 10L;
+        long id = -10L;
         BankCardDto testBankCardDto = TestUtil.generateBankCardDto();
         String jsonBankCardDto = objectMapper.writeValueAsString(testBankCardDto);
 
