@@ -1,8 +1,12 @@
 package com.gitlab.controller;
 
+import com.gitlab.TestUtil;
+import com.gitlab.dto.SelectedProductDto;
 import com.gitlab.dto.ShoppingCartDto;
 import com.gitlab.mapper.ShoppingCartMapper;
+import com.gitlab.service.ProductService;
 import com.gitlab.service.ShoppingCartService;
+import com.gitlab.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +14,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -29,6 +34,10 @@ class ShoppingCartRestControllerIT extends AbstractIntegrationTest {
     private ShoppingCartService shoppingCartService;
     @Autowired
     private ShoppingCartMapper shoppingCartMapper;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private ProductService productService;
 
     @Test
     @Transactional(readOnly = true)
@@ -83,10 +92,11 @@ class ShoppingCartRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNoContent());
     }
 
-    @Transactional
     @Test
+    @Transactional
     void should_return_not_found_when_get_shoppingCart_by_non_existent_id() throws Exception {
-        long id = 10L;
+        long id = 9999L;
+
         mockMvc.perform(get(SHOPPING_CART_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -94,7 +104,9 @@ class ShoppingCartRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_shoppingCart() throws Exception {
-        ShoppingCartDto shoppingCartDto = generateShoppingCartDto();
+        ShoppingCartDto shoppingCartDto = TestUtil.generateShoppingCartDto(
+                userService.saveDto(TestUtil.generateUserDto()).getId());
+
         String jsonShoppingCartDto = objectMapper.writeValueAsString(shoppingCartDto);
 
         mockMvc.perform(post(SHOPPING_CART_URI)
@@ -105,25 +117,23 @@ class ShoppingCartRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isCreated());
     }
 
-    @Transactional
     @Test
+    @Transactional
     void should_update_shoppingCart_by_id() throws Exception {
-        long id = 10L;
-        ShoppingCartDto shoppingCartDto = new ShoppingCartDto();
-        shoppingCartDto.setId(id);
-        shoppingCartDto.setUserId(1L);
+        long id;
+        ShoppingCartDto shoppingCartDto = TestUtil.generateShoppingCartDto(
+                userService.saveDto(TestUtil.generateUserDto()).getId());
 
         ShoppingCartDto saved = shoppingCartService.saveDto(shoppingCartDto);
+
         int numberOfEntitiesExpected = shoppingCartService.findAll().size();
+        id = saved.getId();
+        saved.setSelectedProducts(Set.of(new SelectedProductDto()));
 
-        ShoppingCartDto updated = new ShoppingCartDto();
-        updated.setId(saved.getId());
-        updated.setUserId(1L);
-        String jsonShoppingCartDto = objectMapper.writeValueAsString(updated);
+        String jsonShoppingCartDto = objectMapper.writeValueAsString(saved);
+        String expected = objectMapper.writeValueAsString(saved);
 
-        String expected = objectMapper.writeValueAsString(updated);
-
-        mockMvc.perform(patch(SHOPPING_CART_URI + "/{id}", saved.getId())
+        mockMvc.perform(patch(SHOPPING_CART_URI + "/{id}", id)
                         .content(jsonShoppingCartDto)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -133,11 +143,14 @@ class ShoppingCartRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(result -> assertThat(shoppingCartService.findAll().size(), equalTo(numberOfEntitiesExpected)));
     }
 
-    @Transactional
     @Test
+    @Transactional
     void should_return_not_found_when_update_shoppingCart_by_non_existent_id() throws Exception {
-        long id = 10L;
-        ShoppingCartDto shoppingCartDto = generateShoppingCartDto();
+        long id = 9999L;
+
+        ShoppingCartDto shoppingCartDto = TestUtil.generateShoppingCartDto(
+                userService.saveDto(TestUtil.generateUserDto()).getId());
+
         String jsonShoppingCartDto = objectMapper.writeValueAsString(shoppingCartDto);
 
         mockMvc.perform(patch(SHOPPING_CART_URI + "/{id}", id)
@@ -150,9 +163,15 @@ class ShoppingCartRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_shoppingCart_by_id() throws Exception {
-        long id = 1L;
-        var shoppingCart = shoppingCartService.findById(id).orElse(null);
-        var shoppingCartDto = shoppingCartMapper.toDto(shoppingCart);
+        long id;
+
+        ShoppingCartDto shoppingCartDto = TestUtil.generateShoppingCartDto(
+                userService.saveDto(TestUtil.generateUserDto()).getId());
+
+        shoppingCartDto = shoppingCartService.saveDto(shoppingCartDto);
+        shoppingCartDto.setSelectedProducts(new HashSet<>());
+        id = shoppingCartDto.getId();
+
         String expected = objectMapper.writeValueAsString(shoppingCartDto);
 
         mockMvc.perform(get(SHOPPING_CART_URI + "/{id}", id))
@@ -161,10 +180,11 @@ class ShoppingCartRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(content().json(expected));
     }
 
-    @Transactional
     @Test
+    @Transactional
     void should_delete_shoppingCart_by_id() throws Exception {
-        long id = 3L;
+        long id = shoppingCartService.saveDto(TestUtil.generateShoppingCartDto(
+                userService.saveDto(TestUtil.generateUserDto()).getId())).getId();
 
         mockMvc.perform(delete(SHOPPING_CART_URI + "/{id}", id))
                 .andDo(print())
@@ -174,18 +194,11 @@ class ShoppingCartRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    private ShoppingCartDto generateShoppingCartDto() {
-        ShoppingCartDto shoppingCartDto = new ShoppingCartDto();
-        shoppingCartDto.setUserId(3L);
-        shoppingCartDto.setSum(BigDecimal.valueOf(100));
-        shoppingCartDto.setTotalWeight(500L);
-
-        return shoppingCartDto;
-    }
-
     @Test
     void should_use_user_assigned_id_in_database_for_shopping_cart() throws Exception {
-        ShoppingCartDto shoppingCartDto = generateShoppingCartDto();
+        ShoppingCartDto shoppingCartDto = TestUtil.generateShoppingCartDto(
+                userService.saveDto(TestUtil.generateUserDto()).getId());
+
         shoppingCartDto.setId(9999L);
 
         String jsonShoppingCartDto = objectMapper.writeValueAsString(shoppingCartDto);
@@ -199,5 +212,4 @@ class ShoppingCartRestControllerIT extends AbstractIntegrationTest {
         ShoppingCartDto createdShoppingCartDto = objectMapper.readValue(response.getContentAsString(), ShoppingCartDto.class);
         Assertions.assertNotEquals(shoppingCartDto.getId(), createdShoppingCartDto.getId());
     }
-
 }

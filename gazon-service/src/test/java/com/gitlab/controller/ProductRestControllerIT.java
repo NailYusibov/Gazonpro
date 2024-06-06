@@ -1,10 +1,7 @@
 package com.gitlab.controller;
 
+import com.gitlab.TestUtil;
 import com.gitlab.dto.ProductDto;
-import com.gitlab.dto.ProductImageDto;
-import com.gitlab.mapper.ProductMapper;
-import com.gitlab.model.Product;
-import com.gitlab.model.ProductImage;
 import com.gitlab.service.ProductImageService;
 import com.gitlab.service.ProductService;
 import org.junit.jupiter.api.Test;
@@ -12,9 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -32,12 +26,11 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
 
     private static final String PRODUCT_URN = "/api/product";
     private static final String PRODUCT_URI = URL + PRODUCT_URN;
+
     @Autowired
     private ProductService productService;
     @Autowired
     private ProductImageService productImageService;
-    @Autowired
-    private ProductMapper productMapper;
 
     @Test
     @Transactional(readOnly = true)
@@ -96,7 +89,7 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void should_get_product_by_id() throws Exception {
-        ProductDto productDto = generateProductDTO();
+        ProductDto productDto = TestUtil.generateProductDto();
         ProductDto savedProductDto = productService.save(productDto).get();
 
         String expected = objectMapper.writeValueAsString(
@@ -111,7 +104,8 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_product_by_non_existent_id() throws Exception {
-        long id = 9000L;
+        long id = 9999L;
+
         mockMvc.perform(get(PRODUCT_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -120,7 +114,7 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void should_create_product() throws Exception {
-        ProductDto productDto = generateProductDTO();
+        ProductDto productDto = TestUtil.generateProductDto();
         String jsonProductDto = objectMapper.writeValueAsString(productDto);
 
         mockMvc.perform(post(PRODUCT_URI)
@@ -130,10 +124,11 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isCreated());
     }
+
     @Test
     @Transactional
     void should_return_bad_request_when_creating_product_with_invalid_data() throws Exception {
-        ProductDto productDto = generateProductDTO();
+        ProductDto productDto = TestUtil.generateProductDto();
         productDto.setName("");
 
         String jsonProductDto = objectMapper.writeValueAsString(productDto);
@@ -148,18 +143,15 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void should_update_product_by_id() throws Exception {
-        ProductDto productDto = generateProductDTO();
+        ProductDto productDto = TestUtil.generateProductDto();
         ProductDto savedProduct = productService.save(productDto).get();
 
-        ProductDto updatedProductDto = generateProductDTO();
-        updatedProductDto.setRating(productService.findByIdDto(savedProduct.getId()).get().getRating());
-        updatedProductDto.setId(savedProduct.getId());
+        savedProduct.setName("updateName");
 
         int numberOfEntitiesExpected = productService.findAll().size();
 
-        String jsonProductDto = objectMapper.writeValueAsString(updatedProductDto);
-        String expected = objectMapper.writeValueAsString(updatedProductDto);
-
+        String jsonProductDto = objectMapper.writeValueAsString(savedProduct);
+        String expected = objectMapper.writeValueAsString(savedProduct);
 
         mockMvc.perform(patch(PRODUCT_URI + "/{id}", savedProduct.getId())
                         .content(jsonProductDto)
@@ -175,8 +167,9 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void should_return_not_found_when_update_product_by_non_existent_id() throws Exception {
-        long id = 9000L;
-        ProductDto productDto = generateProductDTO();
+        long id = 9999L;
+        ProductDto productDto = TestUtil.generateProductDto();
+
         String jsonProductDto = objectMapper.writeValueAsString(productDto);
 
         mockMvc.perform(patch(PRODUCT_URI + "/{id}", id)
@@ -190,8 +183,9 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void should_delete_product_by_id() throws Exception {
-        ProductDto productDto = productService.save(generateProductDTO()).get();
+        ProductDto productDto = productService.save(TestUtil.generateProductDto()).get();
         long id = productDto.getId();
+
         mockMvc.perform(delete(PRODUCT_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -203,14 +197,17 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_images_ids_by_product_id() throws Exception {
-        long id = 3L;
-        Optional<Product> product = productService.findById(id);
-        assert product.orElse(null) != null;
+        long id;
 
-        String expected = objectMapper.writeValueAsString(
-                product.orElse(null).getProductImages().stream()
-                        .map(ProductImage::getId).mapToLong(Long::valueOf).toArray()
-        );
+        ProductDto productDto = productService.save(TestUtil.generateProductDto()).get();
+        id = productDto.getId();
+
+        productImageService.saveDto(TestUtil.generateProductImageDto(id));
+        productImageService.saveDto(TestUtil.generateProductImageDto(id));
+
+        productDto = productService.findByIdDto(id).get();
+
+        String expected = objectMapper.writeValueAsString(productDto.getImagesId());
 
         mockMvc.perform(get(PRODUCT_URI + "/{id}" + "/images", id))
                 .andDo(print())
@@ -220,7 +217,7 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_multiple_productImages_by_product_id() throws Exception {
-        long id = 1L;
+        long id = productService.save(TestUtil.generateProductDto()).get().getId();
 
         mockMvc.perform(multipart(PRODUCT_URI + "/{id}" + "/images", id)
                         .file(new MockMultipartFile("files",
@@ -234,8 +231,9 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_all_productImages_by_product_id() throws Exception {
-        long id = 10L;
-        productImageService.saveDto(generateProductImageDto(id));
+        long id = productService.save(TestUtil.generateProductDto()).get().getId();
+
+        productImageService.saveDto(TestUtil.generateProductImageDto(id));
 
         mockMvc.perform(delete(PRODUCT_URI + "/{id}" + "/images", id))
                 .andDo(print())
@@ -243,27 +241,5 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
         mockMvc.perform(get(PRODUCT_URI + "/{id}" + "/images", id))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-    }
-
-    private ProductDto generateProductDTO() {
-        ProductDto productDto = new ProductDto();
-        productDto.setName("name1");
-        productDto.setStockCount(1);
-        productDto.setImagesId(productMapper.toDto(productService.findById(1L).get()).getImagesId());
-        productDto.setDescription("name");
-        productDto.setIsAdult(true);
-        productDto.setCode("name");
-        productDto.setWeight(1L);
-        productDto.setPrice(BigDecimal.ONE);
-        return productDto;
-    }
-
-    private ProductImageDto generateProductImageDto(Long productId) {
-        ProductImageDto productImageDto = new ProductImageDto();
-        productImageDto.setProductId(productId);
-        productImageDto.setName("file.txt");
-        productImageDto.setData(new byte[]{1, 2, 3});
-
-        return productImageDto;
     }
 }

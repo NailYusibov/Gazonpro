@@ -1,11 +1,10 @@
 package com.gitlab.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.gitlab.dto.BankCardDto;
+import com.gitlab.TestUtil;
 import com.gitlab.dto.PaymentDto;
-import com.gitlab.enums.PaymentStatus;
 import com.gitlab.mapper.PaymentMapper;
-import com.gitlab.service.PaymentService;
+import com.gitlab.service.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +14,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -27,10 +24,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PaymentRestControllerIT extends AbstractIntegrationTest {
     private static final String PAYMENT_URN = "/api/payment";
     private static final String PAYMENT_URI = URL + PAYMENT_URN;
+
     @Autowired
     private PaymentService paymentService;
     @Autowired
     private PaymentMapper paymentMapper;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private PersonalAddressService personalAddressService;
+    @Autowired
+    private BankCardService bankCardService;
 
     @Test
     @Transactional(readOnly = true)
@@ -43,7 +49,6 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(expected));
-
     }
 
     @Test
@@ -113,7 +118,15 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_payment() throws Exception {
-        PaymentDto paymentDto = generatePaymentDto();
+        long userId = userService.saveDto(TestUtil.generateUserDto()).getId();
+
+        PaymentDto paymentDto = TestUtil.generatePaymentDto(
+                orderService.saveDto(
+                        TestUtil.generateOrderDto(
+                                userId,
+                                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()))).getId(),
+                userId,
+                bankCardService.saveDto(TestUtil.generateBankCardDto()));
 
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
 
@@ -127,7 +140,15 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_update_payment_by_id() throws Exception {
-        PaymentDto paymentDto = generatePaymentDto();
+        long userId = userService.saveDto(TestUtil.generateUserDto()).getId();
+
+        PaymentDto paymentDto = TestUtil.generatePaymentDto(
+                orderService.saveDto(
+                        TestUtil.generateOrderDto(
+                                userId,
+                                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()))).getId(),
+                userId,
+                bankCardService.saveDto(TestUtil.generateBankCardDto()));
 
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
 
@@ -165,8 +186,16 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_payment_by_non_existent_id() throws Exception {
-        long id = 9000L;
-        PaymentDto paymentDto = generatePaymentDto();
+        long id = 9999L;
+        long userId = userService.saveDto(TestUtil.generateUserDto()).getId();
+
+        PaymentDto paymentDto = TestUtil.generatePaymentDto(
+                orderService.saveDto(
+                        TestUtil.generateOrderDto(
+                                userId,
+                                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()))).getId(),
+                userId,
+                bankCardService.saveDto(TestUtil.generateBankCardDto()));
 
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
 
@@ -189,26 +218,18 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    private PaymentDto generatePaymentDto() {
-        PaymentDto paymentDto = new PaymentDto();
-        paymentDto.setId(1L);
-        BankCardDto bankCardDto = new BankCardDto();
-        bankCardDto.setId(1L);
-        bankCardDto.setCardNumber("4929078434696627");
-        bankCardDto.setDueDate(LocalDate.parse("2027-05-01"));
-        bankCardDto.setSecurityCode(775);
-        paymentDto.setBankCardDto(bankCardDto);
-        paymentDto.setPaymentStatus(PaymentStatus.PAID);
-        paymentDto.setCreateDateTime(LocalDateTime.now());
-        paymentDto.setOrderId(1L);
-        paymentDto.setSum(new BigDecimal(500));
-        paymentDto.setUserId(2L);
-        return paymentDto;
-    }
-
     @Test
     void should_use_user_assigned_id_in_database_for_payment() throws Exception {
-        PaymentDto paymentDto = generatePaymentDto();
+        long userId = userService.saveDto(TestUtil.generateUserDto()).getId();
+
+        PaymentDto paymentDto = TestUtil.generatePaymentDto(
+                orderService.saveDto(
+                        TestUtil.generateOrderDto(
+                                userId,
+                                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()))).getId(),
+                userId,
+                bankCardService.saveDto(TestUtil.generateBankCardDto()));
+
         paymentDto.setId(9999L);
 
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
@@ -222,5 +243,4 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
         PaymentDto createdPaymentDto = objectMapper.readValue(response.getContentAsString(), PaymentDto.class);
         Assertions.assertNotEquals(paymentDto.getId(), createdPaymentDto.getId());
     }
-
 }

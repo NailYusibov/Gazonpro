@@ -1,5 +1,6 @@
 package com.gitlab.controller;
 
+import com.gitlab.TestUtil;
 import com.gitlab.dto.PostomatDto;
 import com.gitlab.mapper.PostomatMapper;
 import com.gitlab.service.PostomatService;
@@ -86,7 +87,7 @@ class PostomatRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_postomat_by_id() throws Exception {
-        long id = 4L;
+        long id = postomatService.saveDto(TestUtil.generatePostomatDto()).getId();
         String expected = objectMapper.writeValueAsString(
                 postomatMapper.toDto(
                         postomatService
@@ -102,7 +103,8 @@ class PostomatRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_postomat_by_non_existent_id() throws Exception {
-        long id = -20L;
+        long id = 9999L;
+
         mockMvc.perform(get(URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -110,7 +112,7 @@ class PostomatRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_postomat() throws Exception {
-        PostomatDto postomatDto = generatePostomateDto();
+        PostomatDto postomatDto = TestUtil.generatePostomatDto();
         String jsonPostomatDto = objectMapper.writeValueAsString(postomatDto);
 
         mockMvc.perform(post(URI)
@@ -123,13 +125,17 @@ class PostomatRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_update_postomat_by_id() throws Exception {
-        long id = 4L;
-        int numberOfEntitiesExpected = postomatService.findAll().size();
+        long id;
+        int numberOfEntitiesExpected;
 
-        PostomatDto postomatDto = generatePostomateDto();
+        PostomatDto postomatDto = postomatService.saveDto(TestUtil.generatePostomatDto());
+
+        numberOfEntitiesExpected = postomatService.findAll().size();
+        id = postomatDto.getId();
+        postomatDto.setAddress("upateAdress");
+
         String jsonPostomatDto = objectMapper.writeValueAsString(postomatDto);
 
-        postomatDto.setId(postomatService.findByIdDto(id).get().getId());
         String expected = objectMapper.writeValueAsString(postomatDto);
 
         mockMvc.perform(patch(URI + "/{id}", id)
@@ -145,8 +151,9 @@ class PostomatRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_postomat_by_non_existent_id() throws Exception {
-        long id = -20L;
-        PostomatDto postomatDto = generatePostomateDto();
+        long id = 9999L;
+        PostomatDto postomatDto = TestUtil.generatePostomatDto();
+
         String jsonPostomatDto = objectMapper.writeValueAsString(postomatDto);
 
         mockMvc.perform(patch(URI + "/{id}", id)
@@ -159,8 +166,7 @@ class PostomatRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_postomat_by_id() throws Exception {
-
-        PostomatDto postomatDto = postomatService.saveDto(generatePostomateDto());
+        PostomatDto postomatDto = postomatService.saveDto(TestUtil.generatePostomatDto());
         long id = postomatDto.getId();
 
         mockMvc.perform(delete(URI + "/{id}", id))
@@ -171,18 +177,11 @@ class PostomatRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    private PostomatDto generatePostomateDto(){
-        PostomatDto postomatDto = new PostomatDto();
-        postomatDto.setAddress("TestAddress");
-        postomatDto.setDirections("TestDirections");
-        postomatDto.setShelfLifeDays((byte) 10);
-        return postomatDto;
-    }
-
     @Test
     void should_use_user_assigned_id_in_database_for_postomat() throws Exception {
-        PostomatDto postomatDto = generatePostomateDto();
+        PostomatDto postomatDto = TestUtil.generatePostomatDto();
         postomatDto.setId(9999L);
+
         String jsonPostomatDto = objectMapper.writeValueAsString(postomatDto);
 
         MockHttpServletResponse response = mockMvc.perform(post(URI)
@@ -195,5 +194,4 @@ class PostomatRestControllerIT extends AbstractIntegrationTest {
         PostomatDto createdPostomatDto = objectMapper.readValue(response.getContentAsString(), PostomatDto.class);
         Assertions.assertNotEquals(postomatDto.getId(), createdPostomatDto.getId());
     }
-
 }

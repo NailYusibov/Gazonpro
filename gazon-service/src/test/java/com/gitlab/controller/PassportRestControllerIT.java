@@ -1,7 +1,7 @@
 package com.gitlab.controller;
 
+import com.gitlab.TestUtil;
 import com.gitlab.dto.PassportDto;
-import com.gitlab.enums.Citizenship;
 import com.gitlab.mapper.PassportMapper;
 import com.gitlab.model.Passport;
 import com.gitlab.service.PassportService;
@@ -16,7 +16,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.time.LocalDate;
+
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -94,7 +94,8 @@ class PassportRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_passport_by_id() throws Exception {
-        long id = 1L;
+        long id = passportService.saveDto(TestUtil.generatePassportDto()).getId();
+
         String expected = objectMapper.writeValueAsString(
                 passportMapper.toDto(
                         passportService
@@ -110,7 +111,7 @@ class PassportRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_passport_by_non_existent_id() throws Exception {
-        long id = 10L;
+        long id = 9999L;
         mockMvc.perform(get(PASSPORT_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -118,7 +119,7 @@ class PassportRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_passport() throws Exception {
-        PassportDto passportDto = generatePassportDto();
+        PassportDto passportDto = TestUtil.generatePassportDto();
         String jsonPassportDto = objectMapper.writeValueAsString(passportDto);
 
         mockMvc.perform(post(PASSPORT_URI)
@@ -131,12 +132,12 @@ class PassportRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_update_passport_by_id() throws Exception {
-        PassportDto passportDto = generatePassportDto();
+        PassportDto passportDto = TestUtil.generatePassportDto();
         PassportDto saved = passportService.saveDto(passportDto);
 
         int numberOfEntitiesExpected = passportService.findAllActive().size();
 
-        PassportDto updated = generatePassportDto();
+        PassportDto updated = TestUtil.generatePassportDto();
         updated.setId(saved.getId());
 
         String jsonPassportDto = objectMapper.writeValueAsString(updated);
@@ -159,7 +160,7 @@ class PassportRestControllerIT extends AbstractIntegrationTest {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         Validator validator = validatorFactory.getValidator();
 
-        PassportDto passportDto = generatePassportDto();
+        PassportDto passportDto = TestUtil.generatePassportDto();
 
         Passport entity = passportService.save(passportMapper.toEntity(passportDto));
         PassportDto savedPassport = passportMapper.toDto(entity);
@@ -185,7 +186,7 @@ class PassportRestControllerIT extends AbstractIntegrationTest {
     void should_return_not_found_when_update_passport_by_non_existent_id() throws Exception {
         long id = 1000000L;
 
-        PassportDto passportDto = generatePassportDto();
+        PassportDto passportDto = TestUtil.generatePassportDto();
 
         String jsonPassportDto = objectMapper.writeValueAsString(passportDto);
 
@@ -199,7 +200,7 @@ class PassportRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_passport_by_id() throws Exception {
-        PassportDto passportDto = generatePassportDto();
+        PassportDto passportDto = TestUtil.generatePassportDto();
 
         PassportDto saved = passportService.saveDto(passportDto);
 
@@ -211,24 +212,9 @@ class PassportRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    private PassportDto generatePassportDto() {
-        PassportDto passportDto = new PassportDto();
-        passportDto.setCitizenship(Citizenship.RUSSIA);
-        passportDto.setFirstName("Ivan");
-        passportDto.setLastName("Petrov");
-        passportDto.setPatronym("Aleksandrovich");
-        passportDto.setBirthDate(LocalDate.of(2000, 5, 20));
-        passportDto.setIssueDate(LocalDate.of(2014, 6, 10));
-        passportDto.setPassportNumber("1100 123456");
-        passportDto.setIssuer("MVD RUSSIA №10 in Moscow");
-        passportDto.setIssuerNumber("123-456");
-
-        return passportDto;
-    }
-
     @Test
     void should_use_user_assigned_id_in_database_for_passport() throws Exception {
-        PassportDto passportDto = generatePassportDto();
+        PassportDto passportDto = TestUtil.generatePassportDto();
         passportDto.setId(9999L);
 
         String jsonPassportDto = objectMapper.writeValueAsString(passportDto);
@@ -242,5 +228,4 @@ class PassportRestControllerIT extends AbstractIntegrationTest {
         PassportDto createdPassportDto = objectMapper.readValue(response.getContentAsString(), PassportDto.class);
         Assertions.assertNotEquals(passportDto.getId(), createdPassportDto.getId());
     }
-
 }
