@@ -7,7 +7,7 @@
 - #185 - Add Spotbugs
 - #186 - Add CheckStyle
 - #156 - Add exception handler to starter
-- #187 - Add method for increasing stock count
+- #193 - Checking and add uniqueness_restrictions in the database
 
 ## [1.4.0] - 2.04.2024
 - #167 - Testing the conversion of Product review to productDTO rating

@@ -1,7 +1,7 @@
 package com.gitlab.controller;
 
+import com.gitlab.TestUtil;
 import com.gitlab.dto.PickupPointDto;
-import com.gitlab.enums.PickupPointFeatures;
 import com.gitlab.mapper.PickupPointMapper;
 import com.gitlab.service.PickupPointService;
 import org.junit.jupiter.api.Assertions;
@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -86,7 +84,7 @@ class PickupPointRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_get_pickupPoint_by_id() throws Exception {
-        PickupPointDto pickupPointDto = generatePickupPointDto();
+        PickupPointDto pickupPointDto = TestUtil.generatePickupPointDto();
         PickupPointDto savedPickupPoint = pickupPointService.saveDto(pickupPointDto);
 
         String expected = objectMapper.writeValueAsString(
@@ -104,7 +102,7 @@ class PickupPointRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_pickupPoint_by_non_existent_id() throws Exception {
-        long id = 9000L;
+        long id = 9999L;
         mockMvc.perform(get(URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -112,7 +110,7 @@ class PickupPointRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_create_pickupPoint() throws Exception {
-        PickupPointDto pickupPointDto = generatePickupPointDto();
+        PickupPointDto pickupPointDto = TestUtil.generatePickupPointDto();
 
         String jsonPickupPointDto = objectMapper.writeValueAsString(pickupPointDto);
 
@@ -126,10 +124,10 @@ class PickupPointRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_update_pickupPoint_by_id() throws Exception {
-        PickupPointDto pickupPointDto = generatePickupPointDto();
+        PickupPointDto pickupPointDto = TestUtil.generatePickupPointDto();
         PickupPointDto savedPickupPoint = pickupPointService.saveDto(pickupPointDto);
 
-        PickupPointDto updatedPickPointDto = generatePickupPointDto();
+        PickupPointDto updatedPickPointDto = TestUtil.generatePickupPointDto();
         updatedPickPointDto.setId(savedPickupPoint.getId());
 
         int numberOfEntitiesExpected = pickupPointService.findAll().size();
@@ -150,8 +148,8 @@ class PickupPointRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_pickupPoint_by_non_existent_id() throws Exception {
-        long id = 9000L;
-        PickupPointDto pickupPointDto = generatePickupPointDto();
+        long id = 9999L;
+        PickupPointDto pickupPointDto = TestUtil.generatePickupPointDto();
 
         String jsonPickupPointDto = objectMapper.writeValueAsString(pickupPointDto);
 
@@ -165,8 +163,9 @@ class PickupPointRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_delete_pickupPoint_by_id() throws Exception {
-        PickupPointDto pickupPointDto = pickupPointService.saveDto(generatePickupPointDto());
+        PickupPointDto pickupPointDto = pickupPointService.saveDto(TestUtil.generatePickupPointDto());
         long id = pickupPointDto.getId();
+
         mockMvc.perform(delete(URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -175,20 +174,9 @@ class PickupPointRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    private PickupPointDto generatePickupPointDto() {
-        PickupPointDto pickupPointDto = new PickupPointDto();
-
-        pickupPointDto.setAddress("TestAddress");
-        pickupPointDto.setDirections("TestDirections");
-        pickupPointDto.setShelfLifeDays((byte) 16);
-        pickupPointDto.setPickupPointFeatures(Set.of(PickupPointFeatures.values()));
-
-        return pickupPointDto;
-    }
-
     @Test
     void should_use_user_assigned_id_in_database_for_pickup_point() throws Exception {
-        PickupPointDto pickupPointDto = generatePickupPointDto();
+        PickupPointDto pickupPointDto = TestUtil.generatePickupPointDto();
         pickupPointDto.setId(9999L);
         String jsonPickupPointDto = objectMapper.writeValueAsString(pickupPointDto);
 
@@ -202,5 +190,4 @@ class PickupPointRestControllerIT extends AbstractIntegrationTest {
         PickupPointDto createdPickupPointDto = objectMapper.readValue(response.getContentAsString(), PickupPointDto.class);
         Assertions.assertNotEquals(pickupPointDto.getId(), createdPickupPointDto.getId());
     }
-
 }
