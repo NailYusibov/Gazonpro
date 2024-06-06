@@ -5,6 +5,7 @@ import com.gitlab.model.Product;
 import com.gitlab.model.Review;
 import com.gitlab.model.ReviewImage;
 import com.gitlab.model.User;
+import com.gitlab.repository.UserRepository;
 import com.gitlab.service.ProductService;
 import com.gitlab.service.ReviewImageService;
 import org.mapstruct.Mapper;
@@ -25,6 +26,8 @@ public abstract class ReviewMapper {
     protected ReviewImageService reviewImageService;
     @Autowired
     protected ProductService productService;
+    @Autowired
+    protected UserRepository userRepository;
 
     @Mapping(source = "reviewImages", target = "reviewImagesId")
     @Mapping(source = "product", target = "productId")
@@ -56,6 +59,7 @@ public abstract class ReviewMapper {
 
     @Mapping(source = "reviewImagesId", target = "reviewImages")
     @Mapping(source = "productId", target = "product")
+    @Mapping(source = "userId", target = "user")
     public abstract Review toEntity(ReviewDto reviewDto);
 
     public Set<ReviewImage> mapReviewImagesIdToReviewImages(Long[] imagesId) {
@@ -72,6 +76,14 @@ public abstract class ReviewMapper {
         }
         return productService.findById(productId).
                 orElseThrow(() -> new RuntimeException("Product wasn't found"));
+    }
+
+    public User mapUserIdToUser(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+        return userRepository.findById(userId).
+                orElseThrow(() -> new RuntimeException("User wasn't found"));
     }
 
     public abstract List<ReviewDto> toDtoList(List<Review> reviewList);
