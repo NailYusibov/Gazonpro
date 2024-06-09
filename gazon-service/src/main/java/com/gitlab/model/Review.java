@@ -4,7 +4,6 @@ import com.gitlab.enums.EntityStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.util.Lazy;
 
 
 import javax.persistence.*;
