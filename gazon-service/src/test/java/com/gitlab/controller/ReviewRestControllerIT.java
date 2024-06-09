@@ -175,6 +175,7 @@ class ReviewRestControllerIT extends AbstractIntegrationTest {
         reviewDto.setRating((byte) 10);
 
         String jsonReviewDto = objectMapper.writeValueAsString(reviewDto);
+        reviewDto.setId(id);
         String expected = objectMapper.writeValueAsString(reviewDto);
 
         mockMvc.perform(patch(REVIEW_URI + "/{id}", id)

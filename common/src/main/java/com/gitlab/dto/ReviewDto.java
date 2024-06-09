@@ -23,6 +23,9 @@ public class ReviewDto {
     @NotNull(message = "Review's productId should not be empty")
     private Long productId;
 
+    @NotNull(message = "User's ID should not be empty")
+    private Long userId;
+
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDate createDate;
 

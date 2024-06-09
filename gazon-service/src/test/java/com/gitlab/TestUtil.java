@@ -225,6 +225,7 @@ public class TestUtil {
         reviewDto.setRating((byte) 1);
         reviewDto.setHelpfulCounter(11);
         reviewDto.setNotHelpfulCounter(1);
+        reviewDto.setUserId(3L);
 
         return reviewDto;
     }
