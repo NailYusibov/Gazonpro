@@ -1,20 +1,18 @@
 package com.gitlab.service;
 
-import com.gitlab.enums.PaymentStatus;
-import com.gitlab.model.*;
+import com.gitlab.model.Payment;
 import com.gitlab.repository.PaymentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,7 +26,7 @@ class PaymentServiceTest {
     @Test
     void should_find_all_payments() {
         List<Payment> expectedResult = generatePayments();
-        when(paymentRepository.findAll()).thenReturn(generatePayments());
+        when(paymentRepository.findAll((Sort) any())).thenReturn(generatePayments());
 
         List<Payment> actualResult = paymentService.findAll();
 
