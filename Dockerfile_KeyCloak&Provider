@@ -1,4 +1,4 @@
-FROM maven:3.8.4-openjdk-17-slim AS BUILD
+FROM maven:3.8.4-openjdk-17-slim AS builder
 
 WORKDIR /build
 COPY custom-user-provider/pom.xml .
@@ -8,7 +8,7 @@ RUN mvn -f /build/pom.xml clean package
 
 FROM quay.io/keycloak/keycloak:23.0.1
 
-COPY --from=BUILD /build/target/custom-user-provider.jar /opt/keycloak/providers/custom-user-provider.jar
+COPY --from=builder /build/target/custom-user-provider.jar /opt/keycloak/providers/custom-user-provider.jar
 
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true

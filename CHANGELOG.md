@@ -10,6 +10,7 @@
 - #156 - Add exception handler to starter
 - #193 - Checking and add uniqueness_restrictions in the database
 - #198 - Add sorting of payments by ID
+- #175 - Updated security
 
 ## [1.4.0] - 2.04.2024
 - #167 - Testing the conversion of Product review to productDTO rating
