@@ -14,7 +14,7 @@ spring:
   application:
     name: gazon-service
   profiles:
-    active: dev
+    active: dev,security
   cache:
     type: SIMPLE
 
@@ -47,8 +47,11 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
 
-vaadin:
-  excludeUrls: /swagger-ui/**
+jwt:
+  auth:
+    converter:
+      principle-attribute: preferred_username
+      resource-id: roles
 
 logging:
   level:

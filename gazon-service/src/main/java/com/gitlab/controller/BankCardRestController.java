@@ -3,9 +3,11 @@ package com.gitlab.controller;
 import com.gitlab.controllers.api.rest.BankCardRestApi;
 import com.gitlab.dto.BankCardDto;
 import com.gitlab.service.BankCardService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,6 +17,8 @@ import java.util.Optional;
 @Validated
 @RestController
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
+@SecurityRequirement(name = "bearerAuth")
 public class BankCardRestController implements BankCardRestApi {
 
     private final BankCardService bankCardService;

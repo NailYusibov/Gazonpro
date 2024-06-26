@@ -48,6 +48,12 @@
             <artifactId>hibernate-search-orm</artifactId>
             <version>5.11.8.Final</version>
         </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-services</artifactId>
+            <version>23.0.1</version>
+            <scope>test</scope>
+        </dependency>
      </dependencies>
 
     <build>

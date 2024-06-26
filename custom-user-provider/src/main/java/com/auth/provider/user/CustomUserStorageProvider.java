@@ -44,7 +44,7 @@ public class CustomUserStorageProvider implements UserStorageProvider,
 
     @Override
     public UserModel getUserById(RealmModel realm, String id) {
-        log.info("[I35] getUserById({})",id);
+        log.info("[I35] getUserById({})", id);
         StorageId sid = new StorageId(id);
         return getUserByUsername(realm, sid.getExternalId());
     }
@@ -60,49 +60,63 @@ public class CustomUserStorageProvider implements UserStorageProvider,
             st.setString(1, username);
             st.execute();
             ResultSet rs = st.getResultSet();
-            if ( rs.next()) {
-                return mapUser(realm,rs);
-            }
-            else {
+            PreparedStatement roles = c.prepareStatement(
+                    "SELECT r.name\n" +
+                            "FROM roles r\n" +
+                            "JOIN users_roles ur ON r.id = ur.role_id\n" +
+                            "JOIN users u ON ur.user_id = u.id\n" +
+                            "WHERE u.username = ?");
+            roles.setString(1, username);
+            roles.execute();
+            ResultSet rsRoles = roles.getResultSet();
+            if (rs.next()) {
+                return mapUser(realm, rs, rsRoles);
+            } else {
                 return null;
             }
-        }
-        catch(SQLException ex) {
-            throw new RuntimeException("Database error:" + ex.getMessage(),ex);
+        } catch (SQLException ex) {
+            throw new RuntimeException("Database error:" + ex.getMessage(), ex);
         }
     }
 
     @Override
     public UserModel getUserByEmail(RealmModel realm, String email) {
-        log.info("[I48] getUserByEmail({})",email);
-        try ( Connection c = DbUtil.getConnection(this.model)) {
+        log.info("[I48] getUserByEmail({})", email);
+        try (Connection c = DbUtil.getConnection(this.model)) {
             PreparedStatement st = c.prepareStatement(
                     "select username, first_name,last_name, email, birth_date " +
                     "from users where email = ?");
             st.setString(1, email);
             st.execute();
             ResultSet rs = st.getResultSet();
-            if ( rs.next()) {
-                return mapUser(realm,rs);
-            }
-            else {
+            PreparedStatement roles = c.prepareStatement(
+                    "SELECT r.name\n" +
+                            "FROM roles r\n" +
+                            "JOIN users_roles ur ON r.id = ur.role_id\n" +
+                            "JOIN users u ON ur.user_id = u.id\n" +
+                            "WHERE u.username = ?");
+            roles.setString(1, email);
+            roles.execute();
+            ResultSet rsRoles = roles.getResultSet();
+            if (rs.next()) {
+                return mapUser(realm, rs, rsRoles);
+            } else {
                 return null;
             }
-        }
-        catch(SQLException ex) {
-            throw new RuntimeException("Database error:" + ex.getMessage(),ex);
+        } catch (SQLException ex) {
+            throw new RuntimeException("Database error:" + ex.getMessage(), ex);
         }
     }
 
     @Override
     public boolean supportsCredentialType(String credentialType) {
-        log.info("[I57] supportsCredentialType({})",credentialType);
+        log.info("[I57] supportsCredentialType({})", credentialType);
         return PasswordCredentialModel.TYPE.endsWith(credentialType);
     }
 
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
-        log.info("[I57] isConfiguredFor(realm={},user={},credentialType={})",realm.getName(), user.getUsername(), credentialType);
+        log.info("[I57] isConfiguredFor(realm={},user={},credentialType={})", realm.getName(), user.getUsername(), credentialType);
         // In our case, password is the only type of credential, so we allways return 'true' if
         // this is the credentialType
         return supportsCredentialType(credentialType);
@@ -110,28 +124,27 @@ public class CustomUserStorageProvider implements UserStorageProvider,
 
     @Override
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput credentialInput) {
-        log.info("[I57] isValid(realm={},user={},credentialInput.type={})",realm.getName(), user.getUsername(), credentialInput.getType());
-        if( !this.supportsCredentialType(credentialInput.getType())) {
+        log.info("[I57] isValid(realm={},user={},credentialInput.type={})", realm.getName(), user.getUsername(), credentialInput.getType());
+        if (!this.supportsCredentialType(credentialInput.getType())) {
             return false;
         }
         StorageId sid = new StorageId(user.getId());
         String username = sid.getExternalId();
 
-        try ( Connection c = DbUtil.getConnection(this.model)) {
+        try (Connection c = DbUtil.getConnection(this.model)) {
             PreparedStatement st = c.prepareStatement("select password from users where username = ?");
             st.setString(1, username);
             st.execute();
             ResultSet rs = st.getResultSet();
-            if ( rs.next()) {
+            if (rs.next()) {
                 String pwd = rs.getString(1);
-                return pwd.equals(credentialInput.getChallengeResponse());
-            }
-            else {
+                String providedPassword = credentialInput.getChallengeResponse();
+                return pwd.equals(providedPassword);
+            } else {
                 return false;
             }
-        }
-        catch(SQLException ex) {
-            throw new RuntimeException("Database error:" + ex.getMessage(),ex);
+        } catch (SQLException ex) {
+            throw new RuntimeException("Database error:" + ex.getMessage(), ex);
         }
     }
 
@@ -139,8 +152,8 @@ public class CustomUserStorageProvider implements UserStorageProvider,
 
     @Override
     public int getUsersCount(RealmModel realm) {
-        log.info("[I93] getUsersCount: realm={}", realm.getName() );
-        try ( Connection c = DbUtil.getConnection(this.model)) {
+        log.info("[I93] getUsersCount: realm={}", realm.getName());
+        try (Connection c = DbUtil.getConnection(this.model)) {
             Statement st = c.createStatement();
             st.execute("select count(*) from users");
             ResultSet rs = st.getResultSet();
@@ -166,8 +179,9 @@ public class CustomUserStorageProvider implements UserStorageProvider,
             st.execute();
             ResultSet rs = st.getResultSet();
             List<UserModel> users = new ArrayList<>();
-            while(rs.next()) {
-                users.add(mapUser(realm,rs));
+
+            while (rs.next()) {
+                users.add(mapUser(realm, rs, null));
             }
             return users.stream();
         }
@@ -192,7 +206,7 @@ public class CustomUserStorageProvider implements UserStorageProvider,
             ResultSet rs = st.getResultSet();
             List<UserModel> users = new ArrayList<>();
             while (rs.next()) {
-                users.add(mapUser(realm, rs));
+                users.add(mapUser(realm, rs, null));
             }
             return users.stream();
         } catch (SQLException ex) {
@@ -207,12 +221,26 @@ public class CustomUserStorageProvider implements UserStorageProvider,
 
     @Override
     public Stream<UserModel> searchForUserByUserAttributeStream(RealmModel realm, String attrName, String attrValue) {
-        return Stream.empty();
+        log.info("[I142] searchForUserByUserAttribute: realm={}", realm.getName());
+
+        try (Connection c = DbUtil.getConnection(this.model)) {
+            PreparedStatement st = c.prepareStatement("select username, first_name,last_name, email, birth_date from users where ? like ?");
+            st.setString(1, attrName);
+            st.setString(2, attrValue);
+            st.execute();
+            ResultSet rs = st.getResultSet();
+            List<UserModel> users = new ArrayList<>();
+            while (rs.next()) {
+                users.add(mapUser(realm, rs, null));
+            }
+            return users.stream();
+        } catch (SQLException ex) {
+            throw new RuntimeException("Database error:" + ex.getMessage(), ex);
+        }
     }
 
     //------------------- Implementation
-    private UserModel mapUser(RealmModel realm, ResultSet rs) throws SQLException {
-
+    private UserModel mapUser(RealmModel realm, ResultSet rs, ResultSet rolesRs) throws SQLException {
         DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
         CustomUser user = new CustomUser.Builder(ksession, realm, model, rs.getString("username"))
                 .email(rs.getString("email"))
@@ -220,8 +248,9 @@ public class CustomUserStorageProvider implements UserStorageProvider,
                 .lastName(rs.getString("last_name"))
                 .birthDate(rs.getDate("birth_date"))
                 .build();
-
+        if (rolesRs != null) {
+            user.setRoles(rolesRs);
+        }
         return user;
     }
-
 }

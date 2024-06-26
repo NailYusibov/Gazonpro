@@ -30,7 +30,7 @@
 Чтобы не писать boilerplate-код, используем [Lombok](https://projectlombok.org/features/all).
 
 Все контроллеры и их методы нужно сразу описывать аннотациями [Swagger](https://docs.swagger.io/swagger-core/v1.5.0/apidocs/allclasses-noframe.html).
-Swagger UI при запущенном приложении находится [здесь](http://localhost:8080/swagger-ui/).
+Swagger UI при запущенном приложении находится [здесь](http://localhost:8080/swagger-ui/index.html).
 
 Таск-борд находится в [Gitlab](https://gitlab.com/de.pronin/p_dp_ecommerce_1/-/boards).
 
@@ -68,7 +68,7 @@ Dev-stand будем поднимать и разворачивать через
 <li>изучи весь проект - начни с контроллеров gazon-service</li>
 <li>изучи гайд guide_docker из директории guides и выполните указанные в нем действия</li>
 <li>если на предыдущем шаге не получилось создать контейнер с БД, то создай локальную базу данных с названием <code>gazon_db</code></li>
-<li>добейся успешного запуска основного сервиса (gazon-service) и попробуй обратиться к его контроллерам. <a href="http://localhost:8080/swagger-ui/"> Проверить</a></li>
+<li>добейся успешного запуска основного сервиса (gazon-service) и попробуй обратиться к его контроллерам. <a href="http://localhost:8080/swagger-ui/index.html"> Проверить</a></li>
 <li>изучи <a href="https://gitlab.com/de.pronin/p_dp_ecommerce_1/-/boards">таск-борд</a>
 <li>изучи гайд guide_kubernetes.md из директории guides. Самый сложный пункт из-за большого количества новой информации. Глубоко изучать Kubernetes не нужно, достаточно базового понимания, чтобы знать, как деплоятся микросервисы</li>
 <li>напиши тимлиду(ментору), что успешно выполнил все пункты и готов получить первую задачу</li>
