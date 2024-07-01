@@ -1,14 +1,15 @@
-version: "2"
+version: "3.8"
 
 services:
   gazon-no-app-db:
     image: 'postgres:12.12'
+    container_name: gazon-no-app-db
+    environment:
+      - POSTGRES_DB=gazon_db
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
     ports:
       - "5432:5432"
-    environment:
-      POSTGRES_DB: gazon_db
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
   gazon-no-app-keycloak:
     build:
       context: .
@@ -21,9 +22,10 @@ services:
       KC_DB: postgres
       KC_DB_USERNAME: root
       KC_DB_PASSWORD: root
-      KC_DB_URL_HOST: gazon-no-app-db
-      KC_DB_URL_DATABASE: gazon_db
       KC_DB_SCHEMA: public
+      KC_DB_URL: jdbc:postgresql://gazon-no-app-db:5432/gazon_db
+      KC_DB_URL_DATABASE: gazon_db
+      KC_DB_URL_HOST: gazon-no-app-db
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:

@@ -1,17 +1,14 @@
 package com.auth.provider.user;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.LegacyUserCredentialManager;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.SubjectCredentialManager;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.storage.adapter.AbstractUserAdapter;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 class CustomUser extends AbstractUserAdapter {
 
@@ -20,6 +17,7 @@ class CustomUser extends AbstractUserAdapter {
     private final String firstName;
     private final String lastName;
     private final Date birthDate;
+    private Set<RoleModel> roles;
 
     private CustomUser(KeycloakSession session, RealmModel realm,
                        ComponentModel storageProviderModel,
@@ -119,12 +117,26 @@ class CustomUser extends AbstractUserAdapter {
                     firstName,
                     lastName,
                     birthDate);
-
         }
     }
 
     @Override
     public SubjectCredentialManager credentialManager() {
         return new LegacyUserCredentialManager(session, realm, this);
+    }
+
+    @Override
+    protected Set<RoleModel> getRoleMappingsInternal() {
+        return roles;
+    }
+
+    public void setRoles(ResultSet resultSet) throws SQLException {
+        Set<RoleModel> roleModelSet = new HashSet<>();
+        while (resultSet.next()) {
+            roleModelSet.add(new UserRoleModel(resultSet.getString("name"), realm));
+        }
+        if (!roleModelSet.isEmpty()) {
+            this.roles = roleModelSet;
+        }
     }
 }
