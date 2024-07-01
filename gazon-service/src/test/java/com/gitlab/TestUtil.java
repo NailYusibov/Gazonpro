@@ -175,6 +175,14 @@ public class TestUtil {
         return productDto;
     }
 
+    public static List<ProductDto> generateProductDtos() {
+        List<ProductDto> productDtoList = new ArrayList<>();
+        for (int i = 0; i < 15; i++) {
+            productDtoList.add(generateProductDto());
+            i++;
+        }
+        return productDtoList;
+    }
     public static RoleDto generateRoleDto() {
         long min = 1L;
         long max = 10000L;
