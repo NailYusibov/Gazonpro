@@ -31,7 +31,7 @@ spring:
         search:
           default:
             directory_provider: filesystem
-            indexBase: src/main/java/com/gitlab/indexFuzzySearch
+            indexBase: fuzzy-search-indexes
         dialect: org.hibernate.dialect.PostgreSQLDialect
         storage_engine: innodb
         current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
