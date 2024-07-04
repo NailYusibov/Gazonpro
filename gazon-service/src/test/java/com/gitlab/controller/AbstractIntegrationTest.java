@@ -11,7 +11,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "security"})
 @TestPropertySource("/application-test.yml")
 @SpringBootTest
 @ContextConfiguration(initializers = {

@@ -6,9 +6,13 @@ import com.gitlab.mapper.BankCardMapper;
 import com.gitlab.service.BankCardService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -20,6 +24,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.testcontainers.shaded.org.hamcrest.CoreMatchers.equalTo;
 import static org.testcontainers.shaded.org.hamcrest.MatcherAssert.assertThat;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@WithMockUser(roles="ADMIN")
 class BankCardRestControllerIT extends AbstractIntegrationTest {
 
     private static final String BANK_CARD_URN = "/api/bank-card";
