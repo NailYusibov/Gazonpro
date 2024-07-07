@@ -10,12 +10,14 @@ import org.hibernate.search.jpa.FullTextQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 
 @Service
@@ -31,6 +33,7 @@ public class ProductService {
     public List<ProductDto> findAll() {
         return productMapper.toDtoList(productRepository.findAll());
     }
+
 
     @Transactional(readOnly = true)
     public List<ProductDto> findAllByStoreId(Long storeId) {
@@ -168,5 +171,21 @@ public class ProductService {
                 .getEntityStatus()
                 .equals(EntityStatus.ACTIVE))
                 .map(productMapper::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductDto> findByNameIgnoreCaseContaining(String name, Pageable pageable) throws InterruptedException {
+
+        Page<Product> productPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
+        if (!productPage.isEmpty()) {
+            return productPage.map(productMapper::toDto);
+        } else {
+            FullTextQuery jpaQuery = fuzzySearchService.getFullTextQuery(name);
+            jpaQuery.setFirstResult(pageable.getPageSize() * pageable.getPageNumber())
+                    .setMaxResults(pageable.getPageSize());
+            Page<Product> fuzzyPage = new PageImpl<>(jpaQuery.getResultList(), pageable, jpaQuery.getResultSize());
+
+            return fuzzyPage.map(productMapper::toDto)                    ;
+        }
     }
 }

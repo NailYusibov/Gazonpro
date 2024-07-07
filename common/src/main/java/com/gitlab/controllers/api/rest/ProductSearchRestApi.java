@@ -3,6 +3,7 @@ package com.gitlab.controllers.api.rest;
 import com.gitlab.dto.ProductDto;
 import io.swagger.annotations.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,7 +30,7 @@ public interface ProductSearchRestApi {
             @ApiResponse(code = 204, message = "Products not present")}
     )
     ResponseEntity<List<ProductDto>> searchPaginate(
-            @RequestParam("name") String name,
+            @ApiParam(name = "name") @RequestParam(required = false, defaultValue = "", value = "name") String name,
             @ApiParam(name = "page") @RequestParam(required = false, defaultValue = "0", value = "page") Integer page,
             @ApiParam(name = "size") @RequestParam(required = false, defaultValue = "10", value = "size") Integer size)
             throws InterruptedException;
