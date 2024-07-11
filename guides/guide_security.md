@@ -4,7 +4,7 @@
 который интегрирован с сервером авторизации Keycloak.
 
 # Запуск
-В нашем проекте Keycloak запускается в docker контейнере вместе с базой данных командой <code>docker-compose -f docker-compose-keycloak-non-app.yml</code>. (в дальнейшем вы можете запускать одновременно БД и Keycloak с помощью этого способа, а не способом, описанном в [guide_docker.md](guide_docker.md))
+В нашем проекте Keycloak запускается в docker контейнере вместе с базой данных командой <code>docker-compose -f docker-compose-non-app.yml</code>. (в дальнейшем вы можете запускать одновременно БД и Keycloak с помощью этого способа, а не способом, описанном в [guide_docker.md](guide_docker.md))
 Консоль keycloak [тут](http://localhost:8180). Логин admin пароль admin.
 
 > **Важно!** При первом запуске KeyCloak будет вылетать, пока запустишь gazon-service. Это происходит из-за того, что KeyCloak не может найти нужные таблицы, которые появляются только после первого запуска приложения. Поэтому после **docker-compose** запусти приложение **gazon-service**. И перезагрузи контейнер keycloak.
