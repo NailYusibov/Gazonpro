@@ -14,11 +14,11 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Set;
 
-@NamedEntityGraph(name = "product",
+/*@NamedEntityGraph(name = "product",
         attributeNodes = {
                 @NamedAttributeNode("productImages"),
                 @NamedAttributeNode("store")
-        })
+        })*/
 @Entity
 @EqualsAndHashCode(exclude = {"productImages", "selectedProducts", "review", "store"})
 @Data
@@ -39,11 +39,11 @@ public class Product {
     @Column(name = "stock_count")
     private Integer stockCount;
 
-    /*@OneToMany(mappedBy = "someProduct")
+    @OneToMany(mappedBy = "someProduct")
     private Set<ProductImage> productImages;
 
     @OneToMany(mappedBy = "product")
-    private Set<Review> review;*/
+    private Set<Review> review;
 
     @Column(name = "description")
     private String description;
@@ -64,12 +64,12 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private EntityStatus entityStatus;
 
-    /*@ManyToOne
+    @ManyToOne
     @JoinColumn(name = "store_id")
     private com.gitlab.model.Store store;
 
     @ManyToOne
     @JoinColumn(name = "product_category_id")
-    private ProductCategory productCategory;*/
+    private ProductCategory productCategory;
 
 }
