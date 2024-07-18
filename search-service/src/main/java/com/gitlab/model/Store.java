@@ -26,7 +26,7 @@ public class Store {
     private Long id;
 
 
-    /*@OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
     @JoinTable(
             name = "store_managers",
             joinColumns = @JoinColumn(name = "store_id"),
@@ -36,7 +36,7 @@ public class Store {
 
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;*/
+    private User owner;
 
     @Column(name = "entity_status")
     @Enumerated(EnumType.STRING)

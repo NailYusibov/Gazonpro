@@ -3,8 +3,8 @@ package com.gitlab.mapper;
 import com.gitlab.dto.ProductDto;
 import com.gitlab.dto.StoreDto;
 import com.gitlab.model.*;
-//import com.gitlab.service.ProductImageService;
-//import com.gitlab.service.StoreService;
+import com.gitlab.service.ProductImageService;
+import com.gitlab.service.StoreService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -21,19 +21,19 @@ import java.util.stream.Collectors;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public abstract class ProductMapper {
 
-    /*@Autowired
+    @Autowired
     private ProductImageService productImageService;
     @Autowired
     private StoreService storeService;
     @Autowired
-    private StoreMapper storeMapper;*/
+    private StoreMapper storeMapper;
 
     @Mapping(source = "productImages", target = "imagesId")
     @Mapping(source = "review", target = "rating")
     @Mapping(source = "store", target = "storeId")
     public abstract ProductDto toDto(Product product);
 
-    /*public Long map(Store store) {
+    public Long map(Store store) {
         if (store == null) {
             return null;
         } else {
@@ -97,5 +97,5 @@ public abstract class ProductMapper {
 
     public abstract List<ProductDto> toDtoList(List<Product> productList);
 
-    public abstract List<Product> toEntityList(List<ProductDto> productDtoList);*/
+    public abstract List<Product> toEntityList(List<ProductDto> productDtoList);
 }
