@@ -2,7 +2,10 @@ package com.gitlab.controller;
 
 import com.gitlab.controllers.api.rest.BankCardRestApi;
 import com.gitlab.dto.BankCardDto;
+import com.gitlab.model.BankCard;
+import com.gitlab.model.Role;
 import com.gitlab.service.BankCardService;
+import com.gitlab.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,12 +20,14 @@ import java.util.Optional;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 public class BankCardRestController implements BankCardRestApi {
 
     private final BankCardService bankCardService;
+    private final UserService userService;
 
+
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<BankCardDto>> getPage(Integer page, Integer size) {
         var bankCardPage = bankCardService.getPageDto(page, size);
         if (bankCardPage == null || bankCardPage.getContent().isEmpty()) {
@@ -32,12 +37,18 @@ public class BankCardRestController implements BankCardRestApi {
     }
 
     @Override
-    public ResponseEntity<BankCardDto> get(Long id) {
-        Optional<BankCardDto> optionalBankCardDto = bankCardService.findByIdDto(id);
-
-        return optionalBankCardDto
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<BankCardDto> get(Long cardId) {
+        Long userBankCardId = userService.getUsernameFromAuthentication().getBankCardsSet().stream().map(BankCard::getId).findAny().orElse(null);
+        if ("ROLE_ADMIN".equals(userService.getUsernameFromAuthentication().getRolesSet().stream().map(Role::getName).findAny().orElse(null))) {
+            Optional<BankCardDto> optionalBankCardDto = bankCardService.findByIdDto(cardId);
+            return optionalBankCardDto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
+        } else {
+            if (userBankCardId != null && userBankCardId.equals(cardId)) {
+                Optional<BankCardDto> optionalBankCardDto = bankCardService.findByIdDto(cardId);
+                return optionalBankCardDto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
     }
 
     @Override
@@ -48,20 +59,50 @@ public class BankCardRestController implements BankCardRestApi {
     }
 
     @Override
-    public ResponseEntity<BankCardDto> update(Long id, BankCardDto bankCardDto) {
-        Optional<BankCardDto> updatedBankCardDto = bankCardService.updateDto(id, bankCardDto);
+    public ResponseEntity<BankCardDto> update(Long cardId, BankCardDto bankCardDto) {
+        Long userBankCardId = userService.getUsernameFromAuthentication().getBankCardsSet().stream().map(BankCard::getId).findAny().orElse(null);
+        if ("ROLE_ADMIN".equals(userService.getUsernameFromAuthentication().getRolesSet().stream().map(Role::getName).findAny().orElse(null))) {
+            Optional<BankCardDto> optionalBankCardDto = bankCardService.updateDto(cardId, bankCardDto);
+            if (optionalBankCardDto.isPresent()) {
+                Optional<BankCardDto> updatedBankCardDto = bankCardService.updateDto(cardId, bankCardDto);
 
-        return updatedBankCardDto
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                return ResponseEntity.ok(updatedBankCardDto.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+        } else {
+            if (userBankCardId != null && userBankCardId.equals(cardId)) {
+                Optional<BankCardDto> optionalBankCardDto = bankCardService.updateDto(cardId, bankCardDto);
+                if (optionalBankCardDto.isPresent()) {
+                    Optional<BankCardDto> updatedBankCardDto = bankCardService.updateDto(cardId, bankCardDto);
+
+                    return ResponseEntity.ok(updatedBankCardDto.get());
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                }
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
     }
 
     @Override
-    public ResponseEntity<Void> delete(Long id) {
-        if (bankCardService.delete(id)) {
-            return ResponseEntity.ok().build();
+    public ResponseEntity<Void> delete(Long cardId) {
+        Long userBankCardId = userService.getUsernameFromAuthentication().getBankCardsSet().stream().map(BankCard::getId).findAny().orElse(null);
+        if ("ROLE_ADMIN".equals(userService.getUsernameFromAuthentication().getRolesSet().stream().map(Role::getName).findAny().orElse(null))) {
+            if (bankCardService.delete(cardId)) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
         } else {
-            return ResponseEntity.notFound().build();
+            if (userBankCardId != null && userBankCardId.equals(cardId)) {
+                if (bankCardService.delete(cardId)) {
+                    return ResponseEntity.ok().build();
+                } else {
+                    return ResponseEntity.notFound().build();
+                }
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         }
     }
 }

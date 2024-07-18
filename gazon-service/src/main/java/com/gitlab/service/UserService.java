@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -247,6 +249,12 @@ public class UserService {
 
         return userMapper.toDto(optionalUser.get());
     }
+
+    public User getUsernameFromAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return userRepository.findByUsername(authentication.getName()).get();
+    }
+
 
     private User updateUserFields(User user, UserDto userDto, BankCardMapper bankCardMapper) {
         user.setEmail(userDto.getEmail());

@@ -17,7 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -26,7 +29,7 @@ import static org.testcontainers.shaded.org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@WithMockUser(roles="ADMIN")
+@WithMockUser(username = "admin1", roles = "ADMIN")
 class BankCardRestControllerIT extends AbstractIntegrationTest {
 
     private static final String BANK_CARD_URN = "/api/bank-card";
@@ -212,5 +215,56 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
 
         BankCardDto createdBankCardDto = objectMapper.readValue(response.getContentAsString(), BankCardDto.class);
         Assertions.assertNotEquals(bankCardDto.getId(), createdBankCardDto.getId());
+    }
+
+    @Test
+    @WithMockUser(username = "user1", roles = "USER")
+    void should_not_delete_bankCard_by_id_with_403() throws Exception {
+        long id = bankCardService.saveDto(TestUtil.generateBankCardDto()).getId();
+        mockMvc.perform(delete(BANK_CARD_URI + "/{id}", id))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "user1", roles = "USER")
+    void should_get_all_bankCards_with_403() throws Exception {
+        bankCardService.saveDto(TestUtil.generateBankCardDto());
+
+        mockMvc.perform(get(BANK_CARD_URI))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    @WithMockUser(username = "user1", roles = "USER")
+    void should_not_get_bankCard_by_id_with_403() throws Exception {
+        long id = bankCardService.saveDto(TestUtil.generateBankCardDto()).getId();
+
+        mockMvc.perform(get(BANK_CARD_URI + "/{id}", id))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "user1", roles = "USER")
+    void should_not_update_bankCard_by_id_with_403() throws Exception {
+        BankCardDto testBankCardDto = bankCardService.saveDto(TestUtil.generateBankCardDto());
+
+        testBankCardDto.setCardNumber("1234123412341234");
+        testBankCardDto.setSecurityCode(6969);
+        testBankCardDto.setDueDate(LocalDate.now());
+
+        String jsonTestBankCardDto = objectMapper.writeValueAsString(testBankCardDto);
+
+        mockMvc.perform(patch(BANK_CARD_URI + "/{id}", testBankCardDto.getId())
+                        .content(jsonTestBankCardDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
     }
 }
