@@ -1,0 +1,64 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: -1
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/GazonRealm
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+  application:
+    name: gazon-service
+  profiles:
+    active: dev,security
+  cache:
+    type: SIMPLE
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/gazon_db?useUnicode=yes&characterEncoding=UTF-8&serverTimezone=Europe/Moscow
+    username: root
+    password: root
+    hikari:
+      leak-detection-threshold: 60000
+      maximum-pool-size: 20
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        search:
+          default:
+            directory_provider: filesystem
+            indexBase: fuzzy-search-indexes
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        storage_engine: innodb
+        current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+        format_sql: true
+        jdbc:
+          time_zone: Europe/Moscow
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+jwt:
+  auth:
+    converter:
+      principle-attribute: preferred_username
+      resource-id: roles
+
+logging:
+  level:
+    org:
+      hibernate:
+        search=DEBUG:
