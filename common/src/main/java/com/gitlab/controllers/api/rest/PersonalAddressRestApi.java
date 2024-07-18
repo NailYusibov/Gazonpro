@@ -35,6 +35,7 @@ public interface PersonalAddressRestApi {
     @ApiOperation(value = "Get Personal Address by id")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Personal Address found"),
+            @ApiResponse(code = 401, message = "Unauthorized user found"),
             @ApiResponse(code = 404, message = "Personal Address not found")}
     )
     ResponseEntity<PersonalAddressDto> get(@ApiParam(name = "id", value = "PersonalAddress.id")
@@ -44,6 +45,7 @@ public interface PersonalAddressRestApi {
     @ApiOperation(value = "Create Personal Address")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Personal Address created"),
+            @ApiResponse(code = 401, message = "Unauthorized user found"),
             @ApiResponse(code = 400, message = "Personal Address not created")}
     )
     ResponseEntity<PersonalAddressDto> create(@ApiParam(name = "personalAddress", value = "PersonalAddressDto")
@@ -53,6 +55,7 @@ public interface PersonalAddressRestApi {
     @ApiOperation(value = "Update Personal Address")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Personal Address updated"),
+            @ApiResponse(code = 401, message = "Unauthorized user found"),
             @ApiResponse(code = 400, message = "Personal Address not updated")}
     )
     ResponseEntity<PersonalAddressDto> update(@ApiParam(name = "id", value = "PersonalAddress.id")
@@ -64,6 +67,7 @@ public interface PersonalAddressRestApi {
     @ApiOperation(value = "Delete Personal Address by id")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Personal Address deleted"),
+            @ApiResponse(code = 401, message = "Unauthorized user found"),
             @ApiResponse(code = 404, message = "Personal Address not found")}
     )
     ResponseEntity<Void> delete(@ApiParam(name = "id", value = "PersonalAddress.id")

@@ -201,5 +201,10 @@
         <tagDatabase tag="v-1.37"/>
     </changeSet>
 
+    <include file="v-1.38-fill_user_id_to_shipping_address_table/db.changelog-v-1.38.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1.38" author="vladimir_gerasimov">
+        <tagDatabase tag="v-1.38"/>
+    </changeSet>
+
 
 </databaseChangeLog>
