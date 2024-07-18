@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -252,7 +253,7 @@ public class UserService {
 
     public User getUsernameFromAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return userRepository.findByUsername(authentication.getName()).get();
+        return userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new EntityNotFoundException("Пользователь не аутентифицирован"));
     }
 
 

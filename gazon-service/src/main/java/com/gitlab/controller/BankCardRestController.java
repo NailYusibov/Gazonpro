@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,7 +39,8 @@ public class BankCardRestController implements BankCardRestApi {
 
     @Override
     public ResponseEntity<BankCardDto> get(Long cardId) {
-        Long userBankCardId = userService.getUsernameFromAuthentication().getBankCardsSet().stream().map(BankCard::getId).findAny().orElse(null);
+        Long userBankCardId = userService.getUsernameFromAuthentication().getBankCardsSet().stream().map(BankCard::getId).findAny()
+                .orElseThrow(() -> new EntityNotFoundException("Банковская карта не найдена"));
         if ("ROLE_ADMIN".equals(userService.getUsernameFromAuthentication().getRolesSet().stream().map(Role::getName).findAny().orElse(null))) {
             Optional<BankCardDto> optionalBankCardDto = bankCardService.findByIdDto(cardId);
             return optionalBankCardDto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
@@ -60,7 +62,8 @@ public class BankCardRestController implements BankCardRestApi {
 
     @Override
     public ResponseEntity<BankCardDto> update(Long cardId, BankCardDto bankCardDto) {
-        Long userBankCardId = userService.getUsernameFromAuthentication().getBankCardsSet().stream().map(BankCard::getId).findAny().orElse(null);
+        Long userBankCardId = userService.getUsernameFromAuthentication().getBankCardsSet().stream().map(BankCard::getId).findAny()
+                .orElseThrow(() -> new EntityNotFoundException("Банковская карта не найдена"));
         if ("ROLE_ADMIN".equals(userService.getUsernameFromAuthentication().getRolesSet().stream().map(Role::getName).findAny().orElse(null))) {
             Optional<BankCardDto> optionalBankCardDto = bankCardService.updateDto(cardId, bankCardDto);
             if (optionalBankCardDto.isPresent()) {
@@ -87,7 +90,8 @@ public class BankCardRestController implements BankCardRestApi {
 
     @Override
     public ResponseEntity<Void> delete(Long cardId) {
-        Long userBankCardId = userService.getUsernameFromAuthentication().getBankCardsSet().stream().map(BankCard::getId).findAny().orElse(null);
+        Long userBankCardId = userService.getUsernameFromAuthentication().getBankCardsSet().stream().map(BankCard::getId).findAny()
+                .orElseThrow(() -> new EntityNotFoundException("Банковская карта не найдена"));
         if ("ROLE_ADMIN".equals(userService.getUsernameFromAuthentication().getRolesSet().stream().map(Role::getName).findAny().orElse(null))) {
             if (bankCardService.delete(cardId)) {
                 return ResponseEntity.ok().build();
