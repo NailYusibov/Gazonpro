@@ -14,11 +14,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -41,6 +41,12 @@ public class UserService {
     @Autowired
     public void setShoppingCartService(@Lazy ShoppingCartService shoppingCartService) {
         this.shoppingCartService = shoppingCartService;
+    }
+
+    public User getAuthenticatedUser() {
+        var authenticationToken = SecurityContextHolder.getContext().getAuthentication();
+        return userRepository.findByUsername(authenticationToken.getName())
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не аутентифицирован"));
     }
 
     public List<User> findAll() {
