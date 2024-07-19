@@ -10,6 +10,7 @@ import org.hibernate.search.jpa.FullTextQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -164,6 +165,20 @@ public class ProductService {
         mergedList.removeAll(secondList);
         mergedList.addAll(secondList);
 
-        return mergedList.stream().filter(mergedList1 -> mergedList1.getEntityStatus().equals(EntityStatus.ACTIVE)).map(productMapper::toDto).toList();
+        return mergedList.stream().filter(mergedList1 -> mergedList1
+                .getEntityStatus()
+                .equals(EntityStatus.ACTIVE))
+                .map(productMapper::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductDto> findByNameIgnoreCaseContaining(String name, Pageable pageable) throws InterruptedException {
+
+        FullTextQuery jpaQuery = fuzzySearchService.getFullTextQuery(name);
+        jpaQuery.setFirstResult(pageable.getPageSize() * pageable.getPageNumber())
+                .setMaxResults(pageable.getPageSize());
+        Page<Product> fuzzyPage = new PageImpl<>(jpaQuery.getResultList(), pageable, jpaQuery.getResultSize());
+
+        return fuzzyPage.map(productMapper::toDto);
     }
 }
