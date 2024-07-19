@@ -2,9 +2,9 @@ package com.gitlab.controller;
 
 import com.gitlab.controllers.api.rest.PersonalAddressRestApi;
 import com.gitlab.dto.PersonalAddressDto;
-import com.gitlab.dto.ShippingAddressDto;
 import com.gitlab.dto.UserDto;
-import com.gitlab.mapper.ShippingAddressMapper;
+import com.gitlab.model.ShippingAddress;
+import com.gitlab.model.User;
 import com.gitlab.service.PersonalAddressService;
 import com.gitlab.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -43,12 +43,12 @@ public class PersonalAddressRestController implements PersonalAddressRestApi {
 
     @Override
     public ResponseEntity<PersonalAddressDto> get(Long id) {
-        Optional<UserDto> user = userService.getUserFromAuthentication();
-        if (user.get().getRoles().contains("ROLE_ADMIN")){
+        User user = userService.getAuthenticatedUser();
+        if (user.getRolesSet().toString().contains("ADMIN")){
             return personalAddressService.findByIdDto(id)
                     .map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
-        } else if (shippingAddressId(user, id).equals(id)) {
+        } else if (getShippingAddressId(user, id).equals(id)) {
             return personalAddressService.findByIdDto(id)
                     .map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
@@ -65,11 +65,11 @@ public class PersonalAddressRestController implements PersonalAddressRestApi {
 
     @Override
     public ResponseEntity<PersonalAddressDto> update(Long id, PersonalAddressDto personalAddressDto) {
-        Optional<UserDto> user = userService.getUserFromAuthentication();
-        if (user.get().getRoles().contains("ROLE_ADMIN")){
+        User user = userService.getAuthenticatedUser();
+        if (user.getRolesSet().toString().contains("ADMIN")){
             return ResponseEntity.ok(personalAddressService.update(id, personalAddressDto));
-        } else if (shippingAddressId(user, id).equals(id)) {
-            return ResponseEntity.ok(personalAddressService.update(user.get().getId(), personalAddressDto));
+        } else if (getShippingAddressId(user, id).equals(id)) {
+            return ResponseEntity.ok(personalAddressService.update(user.getId(), personalAddressDto));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -77,34 +77,26 @@ public class PersonalAddressRestController implements PersonalAddressRestApi {
 
     @Override
     public ResponseEntity<Void> delete(Long id) {
-        Optional<UserDto> user = userService.getUserFromAuthentication();
-        if (user.get().getRoles().contains("ROLE_ADMIN")){
-            Optional<PersonalAddressDto> deletedPersonalAddressDto = personalAddressService.deleteDto(id);
-            if (deletedPersonalAddressDto.isPresent()) {
-                return ResponseEntity.ok().build();
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } else if (shippingAddressId(user, id).equals(id)) {
-            Optional<PersonalAddressDto> deletedPersonalAddressDto = personalAddressService.deleteDto(id);
-            if (deletedPersonalAddressDto.isPresent()) {
-                return ResponseEntity.ok().build();
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+        User user = userService.getAuthenticatedUser();
+        if (user.getRolesSet().toString().contains("ADMIN")) {
+            return (personalAddressService.deleteDto(id).isPresent())
+                    ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+        } else if (getShippingAddressId(user, id).equals(id)) {
+            return (personalAddressService.deleteDto(id).isPresent())
+                    ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         }
     }
 
-    private Long shippingAddressId (Optional<UserDto> user, Long id){
-        return user.get().getShippingAddressDtos()
-                .stream()
-                .map(ShippingAddressDto::getId)
-                .filter(saId -> Objects.equals(saId, id))
-                .findAny()
-                .orElseThrow(() -> new EntityNotFoundException("The address does not belong to the user.(Адрес не принадлежит пользователю)."));
+    private Long getShippingAddressId (User user, Long id) {
+        return user.getShippingAddressSet()
+            .stream()
+            .map(ShippingAddress::getId)
+            .filter(saId -> Objects.equals(saId, id))
+            .findAny()
+            .orElseThrow(() -> new EntityNotFoundException("The address does not belong to the user.(Адрес не принадлежит пользователю)."));
     }
 
 }
