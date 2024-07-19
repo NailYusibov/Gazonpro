@@ -3,7 +3,6 @@ package com.gitlab.controllers.api.rest;
 import com.gitlab.dto.ProductDto;
 import io.swagger.annotations.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;

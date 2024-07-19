@@ -33,7 +33,6 @@ public class ProductService {
         return productMapper.toDtoList(productRepository.findAll());
     }
 
-
     @Transactional(readOnly = true)
     public List<ProductDto> findAllByStoreId(Long storeId) {
         List<Product> products;
