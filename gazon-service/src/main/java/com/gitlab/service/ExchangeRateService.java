@@ -3,7 +3,7 @@ package com.gitlab.service;
 import com.gitlab.client.ExchangeRateClient;
 import com.gitlab.model.CurrencyCode;
 import com.gitlab.model.ValCurs;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.JAXBContext;
@@ -15,10 +15,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @Service
+@RequiredArgsConstructor
 public class ExchangeRateService {
 
-    @Autowired
-    private ExchangeRateClient exchangeRateClient;
+    private final ExchangeRateClient exchangeRateClient;
 
     private String getCurrentDate() {
         LocalDate today = LocalDate.now();
