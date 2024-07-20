@@ -2,7 +2,8 @@
 
 ## [Unreleased]
 - #task_number - short task description
-- #196 - Add User to Review
+- #173 - Add pagination to ProductSearchController
+- #194 - Add User to Review
 - #136 - Checking functionality ReviewImage Rest
 - #146 - created a log starter
 - #185 - Add Spotbugs

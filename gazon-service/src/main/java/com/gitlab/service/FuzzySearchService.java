@@ -1,7 +1,9 @@
 package com.gitlab.service;
 
+import com.gitlab.exception.handler.EmptySearchStringException;
 import com.gitlab.model.Product;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.FullTextEntityManager;
@@ -29,7 +31,7 @@ public class FuzzySearchService {
      * @return FullTextQuery, представляющий запрос на нечеткий поиск.
      */
     public FullTextQuery getFullTextQuery(String name) throws InterruptedException {
-
+        if (StringUtils.isEmpty(name)) throw new EmptySearchStringException();
         // Получаем FullTextEntityManager для выполнения поиска.
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
         fullTextEntityManager.createIndexer().startAndWait();

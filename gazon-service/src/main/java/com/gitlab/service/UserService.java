@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +41,12 @@ public class UserService {
     @Autowired
     public void setShoppingCartService(@Lazy ShoppingCartService shoppingCartService) {
         this.shoppingCartService = shoppingCartService;
+    }
+
+    public User getAuthenticatedUser() {
+        var authenticationToken = SecurityContextHolder.getContext().getAuthentication();
+        return userRepository.findByUsername(authenticationToken.getName())
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не аутентифицирован"));
     }
 
     public List<User> findAll() {
@@ -250,12 +255,6 @@ public class UserService {
 
         return userMapper.toDto(optionalUser.get());
     }
-
-    public User getUsernameFromAuthentication() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new EntityNotFoundException("Пользователь не аутентифицирован"));
-    }
-
 
     private User updateUserFields(User user, UserDto userDto, BankCardMapper bankCardMapper) {
         user.setEmail(userDto.getEmail());
