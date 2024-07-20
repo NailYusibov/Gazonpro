@@ -5,7 +5,6 @@ import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface StoreRepository extends JpaRepository<Store, Long> {
+public interface StoreRepository extends ReadOnlyRepository<Store, Long> {
     @Override
     @NonNull
     @EntityGraph(value = "store")
