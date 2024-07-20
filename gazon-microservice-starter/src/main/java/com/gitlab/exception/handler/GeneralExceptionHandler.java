@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.persistence.EntityNotFoundException;
+import java.nio.file.AccessDeniedException;
 
 @RestControllerAdvice
 public class GeneralExceptionHandler {
@@ -27,5 +28,10 @@ public class GeneralExceptionHandler {
     @ExceptionHandler(value = ConstraintViolationException.class)
     public ErrorResponseDto handleConstraintViolationException(ConstraintViolationException ex) {
         return new ErrorResponseDto(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+    }
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(value = AccessDeniedException.class)
+    public ErrorResponseDto handleAccessDeniedException(AccessDeniedException ex) {
+        return new ErrorResponseDto(HttpStatus.FORBIDDEN.value(), ex.getMessage());
     }
 }

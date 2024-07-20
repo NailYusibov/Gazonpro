@@ -157,7 +157,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
         int numberOfEntitiesExpected = bankCardService.findAll().size();
 
 
-        testBankCardDto.setCardNumber("1234123412341234");
+        testBankCardDto.setCardNumber("1234123412341534");
         testBankCardDto.setSecurityCode(6969);
         testBankCardDto.setDueDate(LocalDate.now());
 
@@ -267,4 +267,6 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
+
+
 }
