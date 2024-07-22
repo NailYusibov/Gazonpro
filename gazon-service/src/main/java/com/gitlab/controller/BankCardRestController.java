@@ -100,6 +100,6 @@ public class BankCardRestController implements BankCardRestApi {
                 .map(BankCard::getId)
                 .filter(bcId -> Objects.equals(bcId, id))
                 .findAny()
-                .orElseThrow(() -> new ForbiddenException(HttpStatus.FORBIDDEN, "Карта не принадлежит пользователю"));
+                .orElseThrow(ForbiddenException::new);
     }
 }

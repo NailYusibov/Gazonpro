@@ -30,8 +30,8 @@ public class GeneralExceptionHandler {
         return new ErrorResponseDto(HttpStatus.NOT_FOUND.value(), ex.getMessage());
     }
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    @ExceptionHandler(value = AccessDeniedException.class)
-    public ErrorResponseDto handleAccessDeniedException(AccessDeniedException ex) {
+    @ExceptionHandler(value = ForbiddenException.class)
+    public ErrorResponseDto handleForbiddenException(ForbiddenException ex) {
         return new ErrorResponseDto(HttpStatus.FORBIDDEN.value(), ex.getMessage());
     }
 }
