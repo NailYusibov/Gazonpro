@@ -74,13 +74,6 @@ public class UserService {
         return optionalUser.map(userMapper::toDto);
     }
 
-    public Optional<UserDto> findByUsername(String name) {
-        Optional<User> optionalUser = userRepository.findByUsername(name);
-        if (optionalUser.isPresent() && optionalUser.get().getEntityStatus().equals(EntityStatus.DELETED)) {
-            return Optional.empty();
-        }
-        return optionalUser.map(userMapper::toDto);
-    }
 
     public Page<User> getPage(Integer page, Integer size) {
         if (page == null || size == null) {

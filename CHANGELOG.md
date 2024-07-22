@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 - #task_number - short task description
+- #176 - Add security in PersonalAddressRestApi
 - #173 - Add pagination to ProductSearchController
 - #194 - Add User to Review
 - #136 - Checking functionality ReviewImage Rest
