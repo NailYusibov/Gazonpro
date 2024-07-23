@@ -1,8 +1,8 @@
 package com.gitlab.service;
 
 import com.gitlab.client.ExchangeRateClient;
-import com.gitlab.model.CurrencyCode;
-import com.gitlab.model.ValCurs;
+import com.gitlab.model.ExchangeRateModel.CurrencyCode;
+import com.gitlab.model.ExchangeRateModel.ValCurs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

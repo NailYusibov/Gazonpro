@@ -4,7 +4,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.gitlab.client.ExchangeRateClient;
-import com.gitlab.model.CurrencyCode;
+import com.gitlab.model.ExchangeRateModel.CurrencyCode;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -25,7 +25,7 @@ public class ExchangeRateServiceTest {
     }
 
     @Test
-    public void exchange_rate_should_not_be_null() throws JAXBException {
+    public void USD_exchange_rate_should_not_be_null() throws JAXBException {
         String xmlResponse = "<ValCurs ID=\"R01235\" DateRange1=\"02.03.2024\" DateRange2=\"02.03.2024\" name=\"Foreign Currency Market Dynamic\">" +
                 "<Record Date=\"02.03.2024\" Id=\"R01235\">" +
                 "<Nominal>1</Nominal>" +

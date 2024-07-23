@@ -1,4 +1,4 @@
-package com.gitlab.model;
+package com.gitlab.model.ExchangeRateModel;
 
 import lombok.Data;
 

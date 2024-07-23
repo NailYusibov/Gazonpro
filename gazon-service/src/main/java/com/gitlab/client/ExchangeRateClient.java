@@ -4,7 +4,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "currencyClient", url = "https://www.cbr.ru")
+@FeignClient(name = "currencyClient", url = "${client_CentralBank.url}")
 public interface ExchangeRateClient {
 
     @GetMapping("/scripts/XML_dynamic.asp")
