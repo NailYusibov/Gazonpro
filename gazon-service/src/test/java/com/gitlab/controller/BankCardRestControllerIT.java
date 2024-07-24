@@ -73,6 +73,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_get_page_with_incorrect_parameters() throws Exception {
         int page = 0;
         int size = -2;
@@ -84,6 +85,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_get_page_without_content() throws Exception {
         int page = 10;
         int size = 100;
@@ -95,6 +97,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_get_bankCard_by_id() throws Exception {
         long id = bankCardService.saveDto(TestUtil.generateBankCardDto()).getId();
         String expected = objectMapper.writeValueAsString(
@@ -111,6 +114,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_return_not_found_when_get_bankCard_by_non_existent_id() throws Exception {
         long id = 9999L;
         mockMvc.perform(get(BANK_CARD_URI + "/{id}", id))
@@ -119,6 +123,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_create_bankCard() throws Exception {
         BankCardDto testBankCardDto = TestUtil.generateBankCardDto();
         String jsonBankCardDto = objectMapper.writeValueAsString(testBankCardDto);
@@ -132,6 +137,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void check_null_update() throws Exception {
         BankCardDto testBankCardDto = bankCardService.saveDto(TestUtil.generateBankCardDto());
         int numberOfEntitiesExpected = bankCardService.findAll().size();
@@ -152,6 +158,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_update_bankCard_by_id() throws Exception {
         BankCardDto testBankCardDto = bankCardService.saveDto(TestUtil.generateBankCardDto());
         int numberOfEntitiesExpected = bankCardService.findAll().size();
@@ -175,6 +182,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_return_not_found_when_update_bankCard_by_non_existent_id() throws Exception {
         long id = -10L;
         BankCardDto testBankCardDto = TestUtil.generateBankCardDto();
@@ -189,6 +197,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_delete_bankCard_by_id() throws Exception {
         BankCardDto testBankCardDto = bankCardService.saveDto(TestUtil.generateBankCardDto());
         long id = testBankCardDto.getId();
@@ -201,6 +210,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_use_user_assigned_id_in_database() throws Exception {
         BankCardDto bankCardDto = TestUtil.generateBankCardDto();
         bankCardDto.setId(9999L);

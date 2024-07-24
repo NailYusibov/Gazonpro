@@ -6,6 +6,6 @@
 
 
     <include file="01-fill-users-bank-cards.sql" relativeToChangelogFile="true"/>
-
+    <include file="02-fill-users-passport.sql" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

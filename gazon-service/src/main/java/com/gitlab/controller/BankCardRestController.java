@@ -67,7 +67,7 @@ public class BankCardRestController implements BankCardRestApi {
         Set<BankCard> userBankCardSet = user.getBankCardsSet();
         userBankCardSet.add(bankCard);
         user.setBankCardsSet(userBankCardSet);
-        userService.save(user);
+        userService.update(user.getId(), user);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedBankCardDto);
     }
 
