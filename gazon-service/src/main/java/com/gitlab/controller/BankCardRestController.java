@@ -2,7 +2,6 @@ package com.gitlab.controller;
 
 import com.gitlab.controllers.api.rest.BankCardRestApi;
 import com.gitlab.dto.BankCardDto;
-import com.gitlab.exception.handler.ForbiddenException;
 import com.gitlab.model.BankCard;
 import com.gitlab.model.User;
 import com.gitlab.service.BankCardService;
@@ -19,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.gitlab.util.UserUtils.isAdmin;
 
 @Validated
 @RestController
@@ -28,7 +28,6 @@ public class BankCardRestController implements BankCardRestApi {
 
     private final BankCardService bankCardService;
     private final UserService userService;
-
 
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<BankCardDto>> getPage(Integer page, Integer size) {
@@ -42,64 +41,63 @@ public class BankCardRestController implements BankCardRestApi {
     @Override
     public ResponseEntity<BankCardDto> get(Long cardId) {
         User user = userService.getAuthenticatedUser();
-        if (user.getRolesSet().toString().contains("ROLE_ADMIN")) {
+
+        if (isAdmin(user)) {
             return bankCardService.findByIdDto(cardId)
                     .map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
-        } else {
-            if (getBankCardId(user, cardId).equals(cardId)) {
-                return bankCardService.findByIdDto(cardId)
-                        .map(ResponseEntity::ok)
-                        .orElseGet(() -> ResponseEntity.notFound().build());
-            }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                    .orElse(ResponseEntity.notFound().build());
         }
+
+        if (isAuthorized(user, cardId)) {
+            return bankCardService.findByIdDto(cardId)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @Override
     public ResponseEntity<BankCardDto> create(BankCardDto bankCardDto) {
         BankCardDto savedBankCardDto = bankCardService.saveDto(bankCardDto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(savedBankCardDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedBankCardDto);
     }
 
     @Override
     public ResponseEntity<BankCardDto> update(Long cardId, BankCardDto bankCardDto) {
         User user = userService.getAuthenticatedUser();
         Optional<BankCardDto> optionalBankCardDto = bankCardService.updateDto(cardId, bankCardDto);
+
         if (optionalBankCardDto.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (user.getRolesSet().toString().contains("ROLE_ADMIN")) {
-            return ResponseEntity.ok(optionalBankCardDto.get());
-        } else if (getBankCardId(user, cardId).equals(cardId)) {
-            return ResponseEntity.ok(optionalBankCardDto.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
 
+        if (isAdmin(user)) {
+            return ResponseEntity.ok(optionalBankCardDto.get());
+        }
+
+        if (isAuthorized(user, cardId)) {
+            return ResponseEntity.ok(optionalBankCardDto.get());
+        } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
 
     @Override
     public ResponseEntity<Void> delete(Long cardId) {
         User user = userService.getAuthenticatedUser();
-        if (user.getRolesSet().toString().contains("ROLE_ADMIN")) {
-            return (bankCardService.deleteDto(cardId).isPresent())
-                    ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
-        } else if (getBankCardId(user, cardId).equals(cardId)) {
-            return (bankCardService.deleteDto(cardId).isPresent())
-                    ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        if (isAdmin(user)) {
+            return (bankCardService.deleteDto(cardId).isPresent()) ?
+                    ResponseEntity.ok().build() : ResponseEntity.notFound().build();
         }
+
+        if (isAuthorized(user, cardId)) {
+            return (bankCardService.deleteDto(cardId).isPresent()) ?
+                    ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+        } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    private Long getBankCardId(User user, Long id) {
+    private boolean isAuthorized(User user, Long requestedCardId) {
         return user.getBankCardsSet()
                 .stream()
                 .map(BankCard::getId)
-                .filter(bcId -> Objects.equals(bcId, id))
-                .findAny()
-                .orElseThrow(ForbiddenException::new);
+                .anyMatch(cardId -> Objects.equals(cardId, requestedCardId));
     }
 }
