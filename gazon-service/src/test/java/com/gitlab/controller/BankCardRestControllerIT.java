@@ -219,11 +219,11 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     @WithMockUser(username = "user1", roles = "USER")
-    void should_not_delete_bankCard_by_id_with_403() throws Exception {
+    void should_not_delete_bankCard_by_id_with_401() throws Exception {
         long id = bankCardService.saveDto(TestUtil.generateBankCardDto()).getId();
         mockMvc.perform(delete(BANK_CARD_URI + "/{id}", id))
                 .andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
 
     }
 
@@ -241,17 +241,17 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     @WithMockUser(username = "user1", roles = "USER")
-    void should_not_get_bankCard_by_id_with_403() throws Exception {
+    void should_not_get_bankCard_by_id_with_401() throws Exception {
         long id = bankCardService.saveDto(TestUtil.generateBankCardDto()).getId();
 
         mockMvc.perform(get(BANK_CARD_URI + "/{id}", id))
                 .andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     @WithMockUser(username = "user1", roles = "USER")
-    void should_not_update_bankCard_by_id_with_403() throws Exception {
+    void should_not_update_bankCard_by_id_with_401() throws Exception {
         BankCardDto testBankCardDto = bankCardService.saveDto(TestUtil.generateBankCardDto());
 
         testBankCardDto.setCardNumber("1234123412341234");
@@ -265,7 +265,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
 

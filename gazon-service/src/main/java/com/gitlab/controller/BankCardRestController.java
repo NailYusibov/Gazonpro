@@ -2,6 +2,7 @@ package com.gitlab.controller;
 
 import com.gitlab.controllers.api.rest.BankCardRestApi;
 import com.gitlab.dto.BankCardDto;
+import com.gitlab.mapper.BankCardMapper;
 import com.gitlab.model.BankCard;
 import com.gitlab.model.User;
 import com.gitlab.service.BankCardService;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.gitlab.util.UserUtils.isAdmin;
 
@@ -28,6 +30,8 @@ public class BankCardRestController implements BankCardRestApi {
 
     private final BankCardService bankCardService;
     private final UserService userService;
+    private final BankCardMapper bankCardMapper;
+
 
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<BankCardDto>> getPage(Integer page, Integer size) {
@@ -57,25 +61,23 @@ public class BankCardRestController implements BankCardRestApi {
 
     @Override
     public ResponseEntity<BankCardDto> create(BankCardDto bankCardDto) {
+        User user = userService.getAuthenticatedUser();
         BankCardDto savedBankCardDto = bankCardService.saveDto(bankCardDto);
+        BankCard bankCard = bankCardMapper.toEntity(savedBankCardDto);
+        Set<BankCard> userBankCardSet = user.getBankCardsSet();
+        userBankCardSet.add(bankCard);
+        user.setBankCardsSet(userBankCardSet);
+        userService.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedBankCardDto);
     }
 
     @Override
     public ResponseEntity<BankCardDto> update(Long cardId, BankCardDto bankCardDto) {
         User user = userService.getAuthenticatedUser();
-        Optional<BankCardDto> optionalBankCardDto = bankCardService.updateDto(cardId, bankCardDto);
 
-        if (optionalBankCardDto.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (isAdmin(user)) {
-            return ResponseEntity.ok(optionalBankCardDto.get());
-        }
-
-        if (isAuthorized(user, cardId)) {
-            return ResponseEntity.ok(optionalBankCardDto.get());
+        if (isAdmin(user) || isAuthorized(user, cardId)) {
+            Optional<BankCardDto> optionalBankCardDto = bankCardService.updateDto(cardId, bankCardDto);
+            return optionalBankCardDto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
         } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
