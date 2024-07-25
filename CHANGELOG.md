@@ -13,6 +13,7 @@
 - #198 - Add sorting of payments by ID
 - #175 - Updated security
 - #204 - Add a Central Bank client
+- #183 - Add Security BankCard
 
 ## [1.4.0] - 2.04.2024
 - #167 - Testing the conversion of Product review to productDTO rating

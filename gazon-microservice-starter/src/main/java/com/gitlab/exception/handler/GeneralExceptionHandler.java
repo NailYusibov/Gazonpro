@@ -28,4 +28,9 @@ public class GeneralExceptionHandler {
     public ErrorResponseDto handleConstraintViolationException(ConstraintViolationException ex) {
         return new ErrorResponseDto(HttpStatus.NOT_FOUND.value(), ex.getMessage());
     }
+
+    @ExceptionHandler(value = ForbiddenException.class)
+    public ErrorResponseDto handleForbiddenException(ForbiddenException ex) {
+        return new ErrorResponseDto(ex.getHttpStatus().value(), ex.getMessage());
+    }
 }

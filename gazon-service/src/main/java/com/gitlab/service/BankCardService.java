@@ -3,22 +3,26 @@ package com.gitlab.service;
 import com.gitlab.dto.BankCardDto;
 import com.gitlab.mapper.BankCardMapper;
 import com.gitlab.model.BankCard;
+import com.gitlab.model.User;
 import com.gitlab.repository.BankCardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BankCardService {
-    private final BankCardRepository bankCardRepository;
 
+    private final UserService userService;
+    private final BankCardRepository bankCardRepository;
     private final BankCardMapper bankCardMapper;
 
     public List<BankCard> findAll() {
@@ -74,10 +78,17 @@ public class BankCardService {
         return bankCardPage.map(bankCardMapper::toDto);
     }
 
-
+    @Transactional
     public BankCardDto saveDto(BankCardDto bankCardDto) {
-        BankCard bankCard = bankCardMapper.toEntity(bankCardDto);
-        BankCard savedBankCard = bankCardRepository.save(bankCard);
+        User user = userService.getAuthenticatedUser();
+
+        BankCard savedBankCard = bankCardRepository.save(bankCardMapper.toEntity(bankCardDto));
+
+        Set<BankCard> userBankCardSet = user.getBankCardsSet();
+        userBankCardSet.add(savedBankCard);
+        user.setBankCardsSet(userBankCardSet);
+        userService.update(user.getId(), user);
+
         return bankCardMapper.toDto(savedBankCard);
     }
 
@@ -104,25 +115,23 @@ public class BankCardService {
         }
     }
 
-    public boolean delete(Long id) {
-        Optional<BankCard> optionalSavedCard = findById(id);
-        if (optionalSavedCard.isPresent()) {
-            bankCardRepository.deleteById(id);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
+    @Transactional
     public Optional<BankCardDto> deleteDto(Long id) {
         Optional<BankCard> optionalSavedCard = findById(id);
         if (optionalSavedCard.isPresent()) {
             BankCardDto deletedDto = bankCardMapper.toDto(optionalSavedCard.get());
+
+            // fixme отрефакторить - надо каскады нормальные использовать
+            User user = userService.getAuthenticatedUser();
+            Set<BankCard> userBankCardSet = user.getBankCardsSet();
+            userBankCardSet.remove(optionalSavedCard.get());
+            user.setBankCardsSet(userBankCardSet);
+            userService.update(user.getId(), user);
+
             bankCardRepository.deleteById(id);
             return Optional.of(deletedDto);
         } else {
             return Optional.empty();
         }
     }
-
 }
