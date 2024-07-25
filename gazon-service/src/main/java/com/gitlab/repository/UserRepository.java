@@ -1,6 +1,4 @@
 package com.gitlab.repository;
-
-import com.gitlab.model.Example;
 import com.gitlab.model.User;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
@@ -31,4 +29,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @NonNull
     @EntityGraph(value = "userWithSets", type = EntityGraph.EntityGraphType.LOAD)
     Optional<User> findById(@NonNull Long id);
+
+    Optional<User> findByUsername(@NonNull String username);
 }

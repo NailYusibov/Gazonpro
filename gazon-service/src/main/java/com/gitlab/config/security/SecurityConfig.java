@@ -29,7 +29,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests(authorizeRequests -> authorizeRequests
-                        .antMatchers("/api/bank-card/**").hasRole("ADMIN")
+                        .antMatchers("/api/bank-card/**").authenticated()
                         .anyRequest().permitAll())
                 .oauth2ResourceServer()
                 .jwt()
