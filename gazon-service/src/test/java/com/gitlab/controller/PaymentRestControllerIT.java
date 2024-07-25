@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WithMockUser(username = "admin1", roles = "ADMIN")
 class PaymentRestControllerIT extends AbstractIntegrationTest {
     private static final String PAYMENT_URN = "/api/payment";
     private static final String PAYMENT_URI = URL + PAYMENT_URN;
@@ -117,6 +119,7 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_create_payment() throws Exception {
         long userId = userService.saveDto(TestUtil.generateUserDto()).getId();
 
@@ -185,6 +188,7 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_return_not_found_when_update_payment_by_non_existent_id() throws Exception {
         long id = 9999L;
         long userId = userService.saveDto(TestUtil.generateUserDto()).getId();
@@ -219,6 +223,7 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_use_user_assigned_id_in_database_for_payment() throws Exception {
         long userId = userService.saveDto(TestUtil.generateUserDto()).getId();
 

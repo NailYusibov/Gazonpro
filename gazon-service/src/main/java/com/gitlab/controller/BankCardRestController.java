@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.gitlab.util.UserUtils.isAdmin;
 
@@ -31,7 +30,6 @@ public class BankCardRestController implements BankCardRestApi {
     private final BankCardService bankCardService;
     private final UserService userService;
     private final BankCardMapper bankCardMapper;
-
 
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<BankCardDto>> getPage(Integer page, Integer size) {
@@ -61,14 +59,9 @@ public class BankCardRestController implements BankCardRestApi {
 
     @Override
     public ResponseEntity<BankCardDto> create(BankCardDto bankCardDto) {
-        User user = userService.getAuthenticatedUser();
-        BankCardDto savedBankCardDto = bankCardService.saveDto(bankCardDto);
-        BankCard bankCard = bankCardMapper.toEntity(savedBankCardDto);
-        Set<BankCard> userBankCardSet = user.getBankCardsSet();
-        userBankCardSet.add(bankCard);
-        user.setBankCardsSet(userBankCardSet);
-        userService.update(user.getId(), user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedBankCardDto);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(bankCardService.saveDto(bankCardDto));
     }
 
     @Override
