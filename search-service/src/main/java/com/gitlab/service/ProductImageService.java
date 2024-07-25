@@ -88,7 +88,7 @@ public class ProductImageService {
         return productImagePage.map(productImageMapper::toDto);
     }
 
-    @Transactional
+    /*@Transactional
     public ProductImage save(ProductImage productImage) {
         return productImageRepository.save(productImage);
     }
@@ -176,5 +176,5 @@ public class ProductImageService {
         return savedImageList.stream()
                 .map(productImageMapper::toDto)
                 .collect(Collectors.toList());
-    }
+    }*/
 }

@@ -54,7 +54,7 @@ public class StoreService {
         return storePage.map(storeMapper::toDto);
     }
 
-    @Transactional
+    /*@Transactional
     public Optional<StoreDto> save(StoreDto storeDto) {
 
         if (storeDto.getManagersId() != null) {
@@ -109,5 +109,5 @@ public class StoreService {
         storeRepository.save(deletedStore);
 
         return Optional.of(storeMapper.toDto(deletedStore));
-    }
+    }*/
 }
