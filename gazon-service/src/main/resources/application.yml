@@ -62,3 +62,6 @@ logging:
     org:
       hibernate:
         search=DEBUG:
+
+client_CentralBank:
+  url: https://www.cbr.ru

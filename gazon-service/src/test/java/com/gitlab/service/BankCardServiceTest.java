@@ -6,14 +6,17 @@ import com.gitlab.model.BankCard;
 import com.gitlab.repository.BankCardRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static com.gitlab.TestUtil.generateUser;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,11 +27,13 @@ import static org.mockito.Mockito.*;
 class BankCardServiceTest {
 
     @Mock
+    private UserService userService;
+    @Mock
     private BankCardRepository bankCardRepository;
+    @Spy
+    private BankCardMapper bankCardMapper = Mappers.getMapper(BankCardMapper.class);
     @InjectMocks
     private BankCardService bankCardService;
-    @Mock
-    private BankCardMapper bankCardMapper;
 
     @Test
     void should_find_all_bankCards() {
@@ -60,8 +65,9 @@ class BankCardServiceTest {
 
         when(bankCardMapper.toDto(any(BankCard.class))).thenReturn(bankCardDto);
         when(bankCardMapper.toEntity(bankCardDto)).thenReturn(expectedResult);
-
         when(bankCardRepository.save(expectedResult)).thenReturn(expectedResult);
+        when(userService.getAuthenticatedUser()).thenReturn(generateUser());
+
         BankCard actualResult = bankCardMapper.toEntity(bankCardService.saveDto(bankCardMapper.toDto(expectedResult)));
 
         assertEquals(expectedResult, actualResult);
@@ -108,9 +114,10 @@ class BankCardServiceTest {
     @Test
     void should_delete_bankCard() {
         long id = 1L;
+        when(userService.getAuthenticatedUser()).thenReturn(generateUser());
         when(bankCardRepository.findById(id)).thenReturn(Optional.of(generateBankCard()));
 
-        bankCardService.delete(id);
+        bankCardService.deleteDto(id);
 
         verify(bankCardRepository).deleteById(id);
     }
@@ -120,7 +127,7 @@ class BankCardServiceTest {
         long id = 1L;
         when(bankCardRepository.findById(id)).thenReturn(Optional.empty());
 
-        bankCardService.delete(id);
+        bankCardService.deleteDto(id);
 
         verify(bankCardRepository, never()).deleteById(anyLong());
     }
