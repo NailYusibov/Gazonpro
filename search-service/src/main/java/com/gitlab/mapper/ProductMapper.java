@@ -1,10 +1,8 @@
 package com.gitlab.mapper;
 
 import com.gitlab.dto.ProductDto;
-import com.gitlab.dto.StoreDto;
 import com.gitlab.model.*;
 import com.gitlab.service.ProductImageService;
-import com.gitlab.service.StoreService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -23,10 +21,6 @@ public abstract class ProductMapper {
 
     @Autowired
     private ProductImageService productImageService;
-    @Autowired
-    private StoreService storeService;
-    @Autowired
-    private StoreMapper storeMapper;
 
     @Mapping(source = "productImages", target = "imagesId")
     @Mapping(source = "review", target = "rating")
@@ -40,15 +34,6 @@ public abstract class ProductMapper {
             return store.getId();
         }
     }
-
-    /*public Store map(Long storeId) {
-        if (storeId == null) {
-            return null;
-        } else {
-            Optional<StoreDto> storeServiceById = storeService.findById(storeId);
-            return storeMapper.toEntity(storeServiceById.orElse(null));
-        }
-    }*/
 
     public String map(ProductCategory productCategory) {
         if (productCategory == null) {
