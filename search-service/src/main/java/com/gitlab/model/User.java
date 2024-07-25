@@ -6,8 +6,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.Set;
-
 
 @Data
 @NoArgsConstructor
@@ -16,11 +14,6 @@ import java.util.Set;
 @EqualsAndHashCode(exclude = {"passport", "bankCardsSet", "shippingAddressSet"})
 @ToString
 @Table(name = "users", schema = "public", catalog = "postgres")
-/*@NamedEntityGraph(name = "userWithSets",
-        attributeNodes = {
-                @NamedAttributeNode("bankCardsSet"),
-                @NamedAttributeNode("shippingAddressSet"),
-                @NamedAttributeNode("rolesSet")})*/
 public class User {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,31 +50,6 @@ public class User {
 
     @Column(name = "phone_number")
     private String phoneNumber;
-
-    /*@OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "passport_id", referencedColumnName = "id")
-    private Passport passport;
-
-    @Column(name = "create_date")
-    private LocalDate createDate;
-
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "users_bank_cards",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "bank_card_id"))
-    private Set<BankCard> bankCardsSet;
-
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "users_shipping_address",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_shipping_address_id"))
-    private Set<ShippingAddress> shippingAddressSet;
-
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "users_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> rolesSet;*/
 
     @Column(name = "entity_status")
     @Enumerated(EnumType.STRING)

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Repository
 public interface StoreRepository extends ReadOnlyRepository<Store, Long> {
@@ -30,8 +29,4 @@ public interface StoreRepository extends ReadOnlyRepository<Store, Long> {
     @EntityGraph(value = "store")
     @Query("SELECT s FROM Store s WHERE s.entityStatus = 'ACTIVE'")
     Page<Store> findAll(Pageable pageable);
-
-    @NonNull
-    @Query(value = "SELECT managers_id FROM store_managers", nativeQuery = true)
-    Set<Long> findDistinctByManagers();
 }

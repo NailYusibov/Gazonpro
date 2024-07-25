@@ -7,10 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.Set;
 
-/*@NamedEntityGraph(name = "Review.reviewImages",
-        attributeNodes = @NamedAttributeNode("reviewImages"))*/
 @Entity
 @Data
 @NoArgsConstructor
@@ -38,12 +35,6 @@ public class Review {
     @Column(name = "comment")
     private String comment;
 
-    /*@OneToMany(mappedBy = "review", cascade = {CascadeType.DETACH,
-            CascadeType.MERGE,
-            CascadeType.REFRESH,
-            CascadeType.REMOVE})
-    private Set<ReviewImage> reviewImages;*/
-
     @Column(name = "rating")
     private Byte rating;
 
@@ -56,9 +47,4 @@ public class Review {
     @Column(name = "entity_status")
     @Enumerated(EnumType.STRING)
     private EntityStatus entityStatus;
-
-    /*@ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User user;*/
-
 }

@@ -14,11 +14,6 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Set;
 
-/*@NamedEntityGraph(name = "product",
-        attributeNodes = {
-                @NamedAttributeNode("productImages"),
-                @NamedAttributeNode("store")
-        })*/
 @Entity
 @EqualsAndHashCode(exclude = {"productImages", "selectedProducts", "review", "store"})
 @Data
@@ -71,5 +66,4 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "product_category_id")
     private ProductCategory productCategory;
-
 }

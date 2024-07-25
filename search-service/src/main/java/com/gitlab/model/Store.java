@@ -13,12 +13,6 @@ import java.util.Set;
 @Table(name = "store")
 @NoArgsConstructor
 @AllArgsConstructor
-/*@NamedEntityGraph(name = "store",
-        attributeNodes = {
-                @NamedAttributeNode("managers"),
-                @NamedAttributeNode("owner")
-        }
-)*/
 public class Store {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)

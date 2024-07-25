@@ -40,14 +40,15 @@ public abstract class ProductMapper {
             return store.getId();
         }
     }
-    public Store map(Long storeId) {
+
+    /*public Store map(Long storeId) {
         if (storeId == null) {
             return null;
         } else {
             Optional<StoreDto> storeServiceById = storeService.findById(storeId);
             return storeMapper.toEntity(storeServiceById.orElse(null));
         }
-    }
+    }*/
 
     public String map(ProductCategory productCategory) {
         if (productCategory == null) {
