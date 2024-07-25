@@ -129,7 +129,9 @@ class UserMapperTest extends AbstractIntegrationTest {
                 bankCardSet,
                 personalAddresses,
                 roleSet,
-                EntityStatus.ACTIVE);
+                EntityStatus.ACTIVE,
+                10L,
+                new HashSet<>());
     }
 
     @NotNull

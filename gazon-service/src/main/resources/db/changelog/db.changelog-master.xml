@@ -206,5 +206,15 @@
         <tagDatabase tag="v-1.39"/>
     </changeSet>
 
+    <include file="v-1.38-add_new_fields_to_user/db.changelog-v-1.38.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1.38" author="alex_zinenko">
+        <tagDatabase tag="v-1.38"/>
+    </changeSet>
+
+    <include file="v-1.39-fill_users_bank_cards/db.changelog-v-1.39.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1.39" author="aleksandr_karasev">
+        <tagDatabase tag="v-1.39"/>
+    </changeSet>
+
 
 </databaseChangeLog>

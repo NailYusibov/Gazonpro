@@ -69,7 +69,7 @@ public interface ProductRestApi {
             @ApiResponse(code = 404, message = "Product's ProductImages not found")}
     )
     ResponseEntity<long[]> getImagesIDsByProductId(@ApiParam(name = "id", value = "Product.id")
-                                                   @PathVariable (value = "id") Long id);
+                                                   @PathVariable(value = "id") Long id);
 
 
     @PostMapping("/api/product/{id}/images")
@@ -80,7 +80,7 @@ public interface ProductRestApi {
             @ApiResponse(code = 404, message = "Product not found, unable to upload images without product")}
     )
     ResponseEntity<String> uploadImagesByProductId(@RequestParam(value = "files") MultipartFile[] files,
-                                                   @PathVariable (value = "id") Long id) throws IOException;
+                                                   @PathVariable(value = "id") Long id) throws IOException;
 
 
     @DeleteMapping("/api/product/{id}/images")
@@ -90,6 +90,37 @@ public interface ProductRestApi {
             @ApiResponse(code = 204, message = "Product with such id has no images"),
             @ApiResponse(code = 404, message = "Product not found")}
     )
-    ResponseEntity<String> deleteAllImagesByProductId(@PathVariable (value = "id") Long id);
+    ResponseEntity<String> deleteAllImagesByProductId(@PathVariable(value = "id") Long id);
 
+
+    @PostMapping("/api/product/add-favourite/{productId}")
+    @ApiOperation(value = "Add favourite product")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Product added to favourites"),
+            @ApiResponse(code = 404, message = "Product not found"),
+            @ApiResponse(code = 409, message = "Product is already in favorites")
+    })
+    ResponseEntity<String> addFavouriteProduct(
+            @ApiParam(name = "productID", value = "Product ID", required = true)
+            @PathVariable(value = "productId") Long productId);
+
+
+    @DeleteMapping("/api/product/delete-favourite/{productId}")
+    @Operation(summary = "Delete a favourite product by Product.id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Favourite product deleted"),
+            @ApiResponse(code = 404, message = "Product not found"),
+
+    })
+    ResponseEntity<String> deleteFavouriteProductById(
+            @ApiParam(name = "productID", value = "Product ID", required = true)
+            @PathVariable(value = "productId") Long productId);
+
+
+    @GetMapping("/api/product/get-favourites")
+    @Operation(summary = "Get all favourite products of an authorized user")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Favourite products found")}
+    )
+    ResponseEntity<List<ProductDto>> getFavouriteProducts();
 }

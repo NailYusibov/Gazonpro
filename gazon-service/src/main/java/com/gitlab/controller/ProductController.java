@@ -7,9 +7,11 @@ import com.gitlab.model.ProductImage;
 import com.gitlab.service.ProductImageService;
 import com.gitlab.service.ProductService;
 import com.gitlab.util.ImageUtils;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,6 +22,7 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class ProductController implements ProductRestApi {
 
     private final ProductService productService;
@@ -111,5 +114,45 @@ public class ProductController implements ProductRestApi {
 
         product.get().getProductImages().stream().map(ProductImage::getId).forEach(productImageService::delete);
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<String> addFavouriteProduct(@PathVariable Long productId) {
+
+        Optional<Product> productOptional = productService.addFavouriteProduct(productId);
+        if (productOptional.isEmpty()) {
+            Optional<Product> existingProductOptional = productService.findById(productId);
+            if (existingProductOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
+            } else {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Product is already in favorites");
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @Override
+    public ResponseEntity<String> deleteFavouriteProductById(@PathVariable Long productId) {
+
+        Optional<Product> productOptional = productService.removeFavouriteProduct(productId);
+        if (productOptional.isEmpty()) {
+            Optional<Product> existingProductOptional = productService.findById(productId);
+            if (existingProductOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
+            } else {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Product is not in favorites");
+            }
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<List<ProductDto>> getFavouriteProducts() {
+
+        List<ProductDto> favouriteProducts = productService.getFavouriteProducts();
+
+        return ResponseEntity.status(HttpStatus.OK).body(favouriteProducts);
     }
 }

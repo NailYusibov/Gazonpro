@@ -3,9 +3,12 @@ package com.gitlab.model;
 import com.gitlab.enums.EntityStatus;
 import com.gitlab.enums.Gender;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Set;
 
 
@@ -86,4 +89,13 @@ public class User {
     @Column(name = "entity_status")
     @Enumerated(EnumType.STRING)
     private EntityStatus entityStatus;
+
+    @Column(name = "bonuses_count")
+    private Long bonusesCount;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "users_favourite_products",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id"))
+    private Set<Product> favouriteProducts;
 }
