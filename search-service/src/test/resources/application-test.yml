@@ -1,0 +1,46 @@
+server:
+  port: 8089
+  servlet:
+    session:
+      timeout: -1
+    encoding:
+      charset: UTF-8
+      force-response: true
+
+spring:
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/gazon_db?useUnicode=yes&characterEncoding=UTF-8&serverTimezone=Europe/Moscow
+    username: root
+    password: root
+    hikari:
+      leak-detection-threshold: 60000
+      maximum-pool-size: 20
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        search:
+          default:
+            directory_provider: filesystem
+            indexBase: fuzzy-search-indexes
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        storage_engine: innodb
+        current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+        format_sql: true
+        jdbc:
+          time_zone: Europe/Moscow
+        cache:
+          use_second_level_cache: false
+          region:
+            factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
+          ehcache:
+            missing_cache_strategy: create

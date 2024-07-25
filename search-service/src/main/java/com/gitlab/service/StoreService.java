@@ -25,9 +25,9 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final StoreMapper storeMapper;
 
-    public @NonNull List<StoreDto> findAll() {
+    /*public @NonNull List<StoreDto> findAll() {
         return storeMapper.toDtoList(storeRepository.findAll());
-    }
+    }*/
 
     public Optional<StoreDto> findById(Long id) {
         Optional<Store> optionalStore = storeRepository.findById(id);
@@ -37,7 +37,7 @@ public class StoreService {
         return optionalStore.map(storeMapper::toDto);
     }
 
-    public Page<StoreDto> getPage(Integer page, Integer size) {
+    /*public Page<StoreDto> getPage(Integer page, Integer size) {
 
         if (page == null || size == null) {
             var stores = findAll();
@@ -52,7 +52,7 @@ public class StoreService {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Store> storePage = storeRepository.findAll(pageRequest);
         return storePage.map(storeMapper::toDto);
-    }
+    }*/
 
     /*@Transactional
     public Optional<StoreDto> save(StoreDto storeDto) {
