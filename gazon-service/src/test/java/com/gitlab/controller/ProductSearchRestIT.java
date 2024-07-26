@@ -52,7 +52,7 @@ class ProductSearchRestIT extends AbstractIntegrationTest {
         List<ProductDto> productDtos = TestUtil.generateProductDtos();
         productDtos.forEach(productService::save);
 
-        mockMvc.perform(get(PRODUCT_URI + "/paginate" + "?name=" + productDtos.get(1).getName() + parameters))
+        mockMvc.perform(get(PRODUCT_URI + "?name=" + productDtos.get(1).getName() + parameters))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.[*]", hasSize(5)));
