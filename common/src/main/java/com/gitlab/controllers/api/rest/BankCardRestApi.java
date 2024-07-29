@@ -57,7 +57,7 @@ public interface BankCardRestApi {
             @ApiResponse(code = 200, message = "BankCard updated"),
             @ApiResponse(code = 400, message = "BankCard not updated")}
     )
-    ResponseEntity<BankCardDto> update(@ApiParam(name = "id", value = "BankCard.id") @PathVariable (value = "id")  Long id,
+    ResponseEntity<BankCardDto> update(@ApiParam(name = "id", value = "BankCard.id") @PathVariable (value = "id") Long id,
                                        @ApiParam(name = "bankCard", value = "BankCardDto") @Valid @RequestBody BankCardDto bankCardDto);
 
 

@@ -217,11 +217,11 @@ class PersonalAddressRestControllerIT extends AbstractIntegrationTest {
         long id = personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()).getId();
         mockMvc.perform(get(URI + "/{id}", id))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser(username = "user1", roles = "USER_LEAD")
+    @WithMockUser(username = "user1", roles = "USER")
     void should_not_update_personalAddress_by_id_with_404() throws Exception {
         PersonalAddressDto personalAddressDto = TestUtil.generatePersonalAddressDto();
         PersonalAddressDto savedPersonalAddressDto = personalAddressService.saveDto(personalAddressDto);
@@ -236,11 +236,11 @@ class PersonalAddressRestControllerIT extends AbstractIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser(username = "user1", roles = "USER_LEAD")
+    @WithMockUser(username = "user1", roles = "USER")
     void should_create_personalAddress_with_authorized_user() throws Exception {
         PersonalAddressDto personalAddressDto = TestUtil.generatePersonalAddressDto();
         String jsonPersonalAddressDto = objectMapper.writeValueAsString(personalAddressDto);
@@ -259,7 +259,7 @@ class PersonalAddressRestControllerIT extends AbstractIntegrationTest {
         long id = personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()).getId();
         mockMvc.perform(delete(URI + "/{id}", id))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isForbidden());
     }
 
 

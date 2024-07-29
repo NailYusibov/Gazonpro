@@ -2,6 +2,7 @@ package com.gitlab;
 
 import com.gitlab.dto.*;
 import com.gitlab.enums.*;
+import com.gitlab.model.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -320,4 +321,174 @@ public class TestUtil {
         ImageIO.write(image, "png", baos);
         return baos.toByteArray();
     }
+
+    public static List<User> generateUsers() {
+
+        return List.of(
+                generateUser(1L),
+                generateUser(2L),
+                generateUser(3L),
+                generateUser(4L)
+        );
+    }
+
+    public static User generateUser(Long id) {
+        User user = generateUser();
+        user.setId(id);
+        return user;
+    }
+
+    public static User generateUser() {
+        Set<Role> roleSet = new HashSet<>();
+        roleSet.add(new Role(1L, "ROLE_ADMIN", EntityStatus.ACTIVE));
+
+        Set<BankCard> bankCardSet = new HashSet<>();
+        bankCardSet.add(new BankCard(1L, "0000000000000", LocalDate.of(1900, 1, 1), 777));
+
+        Set<ShippingAddress> personalAddresses = new HashSet<>();
+
+        personalAddresses.add(new PersonalAddress(
+                1L,
+                "apartment",
+                "floor",
+                "entance",
+                "doorode",
+                "postode"));
+
+        Passport passport = new Passport(
+                1L,
+                Citizenship.RUSSIA,
+                "user",
+                "user",
+                "paonym",
+                LocalDate.of(2000, 5, 15),
+                LocalDate.of(2000, 5, 15),
+                "09865",
+                "isuer",
+                "issurN",
+                EntityStatus.ACTIVE);
+
+        return new User(1L,
+                "user",
+                "username",
+                "user",
+                "anwer",
+                "queion",
+                "user",
+                "user",
+                LocalDate.of(1900, 1, 1),
+                Gender.MALE,
+                "890077777",
+                passport,
+                LocalDate.now(),
+                bankCardSet,
+                personalAddresses,
+                roleSet,
+                EntityStatus.ACTIVE);
+    }
+
+    public static User generateUserBefore() {
+        User user = new User();
+        Set<Role> roleSet = new HashSet<>();
+        roleSet.add(new Role(1L, "ROLE_USER", EntityStatus.ACTIVE));
+
+        Set<BankCard> bankCardSet = new HashSet<>();
+        bankCardSet.add(new BankCard(1L, "1111222233444", LocalDate.of(1905, 6, 7), 888));
+
+        Set<ShippingAddress> personalAddresses = new HashSet<>();
+
+        for(ShippingAddress shippingAddress : personalAddresses){
+            for (ShippingAddress address: user.getShippingAddressSet()){
+                Long sa = address.getId();
+                shippingAddress.setId(sa);
+            }
+            personalAddresses.add(shippingAddress);
+
+        }
+
+        personalAddresses.add(new PersonalAddress(
+                1L,
+                "apmentBef",
+                "floBef",
+                "enanceBef",
+                "doooeBef",
+                "posodeBef"));
+
+        Passport passport = new Passport(
+                1L,
+                Citizenship.RUSSIA,
+                "userBef",
+                "userBef",
+                "patroBef",
+                LocalDate.of(2010, 6, 25),
+                LocalDate.of(2015, 8, 25),
+                "09466",
+                "issrS",
+                "issrP",
+                EntityStatus.ACTIVE);
+
+        return new User(1L,
+                "userBef",
+                "username",
+                "useBef",
+                "ansrBef",
+                "quesonBef",
+                "userBef",
+                "userBef",
+                LocalDate.of(2010, 4, 4),
+                Gender.MALE,
+                "89007777",
+                passport,
+                LocalDate.now(),
+                bankCardSet,
+                personalAddresses,
+                roleSet,
+                EntityStatus.ACTIVE);
+    }
+
+//    public UserDto generateUserDto() {
+//        Set<Role> roleSet = new HashSet<>();
+//        roleSet.add(new Role(1L, "ROLE_ADMIN", EntityStatus.ACTIVE));
+//
+//        Set<BankCardDto> bankCardSet = new HashSet<>();
+//        bankCardSet.add(new BankCardDto(1L, "0000000000000", LocalDate.of(1900, 1, 1), 777));
+//
+//        Set<ShippingAddressDto> personalAddresses = new HashSet<>();
+//        personalAddresses.add(new PersonalAddressDto(1L,
+//                "address",
+//                "direction",
+//                "apartment",
+//                "floor",
+//                "entance",
+//                "doorode",
+//                "postode"));
+//
+//        PassportDto passportDto = new PassportDto(
+//                1L,
+//                Citizenship.RUSSIA,
+//                "user",
+//                "user",
+//                "paonym",
+//                LocalDate.of(2000, 5, 15),
+//                LocalDate.of(2000, 5, 15),
+//                "09865",
+//                "isuer",
+//                "issurN");
+//
+//        return new UserDto(1L,
+//                "user",
+//                "username",
+//                "user",
+//                "anwer",
+//                "queion",
+//                "user",
+//                "user",
+//                LocalDate.of(1900, 1, 1),
+//                Gender.MALE,
+//                "890077777",
+//                passportDto,
+//                personalAddresses,
+//                bankCardSet,
+//                roleSet.stream().map(Role::toString).collect(Collectors.toSet()));
+//    }
 }

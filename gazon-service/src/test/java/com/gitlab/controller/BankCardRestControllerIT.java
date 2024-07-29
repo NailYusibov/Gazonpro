@@ -6,13 +6,11 @@ import com.gitlab.mapper.BankCardMapper;
 import com.gitlab.service.BankCardService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -24,13 +22,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.testcontainers.shaded.org.hamcrest.CoreMatchers.equalTo;
 import static org.testcontainers.shaded.org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
-@WithMockUser(roles="ADMIN")
+@WithMockUser(username = "admin1", roles = "ADMIN")
 class BankCardRestControllerIT extends AbstractIntegrationTest {
 
     private static final String BANK_CARD_URN = "/api/bank-card";
     private static final String BANK_CARD_URI = URL + BANK_CARD_URN;
+
     @Autowired
     private BankCardService bankCardService;
     @Autowired
@@ -52,7 +50,6 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void should_get_page() throws Exception {
-        BankCardDto testBankCardDto = bankCardService.saveDto(TestUtil.generateBankCardDto());
         int page = 0;
         int size = 2;
         String parameters = "?page=" + page + "&size=" + size;
@@ -66,10 +63,10 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(expected));
-        bankCardService.delete(testBankCardDto.getId());
     }
 
     @Test
+    @Transactional
     void should_get_page_with_incorrect_parameters() throws Exception {
         int page = 0;
         int size = -2;
@@ -81,6 +78,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_get_page_without_content() throws Exception {
         int page = 10;
         int size = 100;
@@ -92,6 +90,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_get_bankCard_by_id() throws Exception {
         long id = bankCardService.saveDto(TestUtil.generateBankCardDto()).getId();
         String expected = objectMapper.writeValueAsString(
@@ -108,6 +107,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_return_not_found_when_get_bankCard_by_non_existent_id() throws Exception {
         long id = 9999L;
         mockMvc.perform(get(BANK_CARD_URI + "/{id}", id))
@@ -116,6 +116,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_create_bankCard() throws Exception {
         BankCardDto testBankCardDto = TestUtil.generateBankCardDto();
         String jsonBankCardDto = objectMapper.writeValueAsString(testBankCardDto);
@@ -129,6 +130,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void check_null_update() throws Exception {
         BankCardDto testBankCardDto = bankCardService.saveDto(TestUtil.generateBankCardDto());
         int numberOfEntitiesExpected = bankCardService.findAll().size();
@@ -149,12 +151,13 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_update_bankCard_by_id() throws Exception {
         BankCardDto testBankCardDto = bankCardService.saveDto(TestUtil.generateBankCardDto());
         int numberOfEntitiesExpected = bankCardService.findAll().size();
 
 
-        testBankCardDto.setCardNumber("1234123412341234");
+        testBankCardDto.setCardNumber("1234123412341534");
         testBankCardDto.setSecurityCode(6969);
         testBankCardDto.setDueDate(LocalDate.now());
 
@@ -172,6 +175,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_return_not_found_when_update_bankCard_by_non_existent_id() throws Exception {
         long id = -10L;
         BankCardDto testBankCardDto = TestUtil.generateBankCardDto();
@@ -186,6 +190,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_delete_bankCard_by_id() throws Exception {
         BankCardDto testBankCardDto = bankCardService.saveDto(TestUtil.generateBankCardDto());
         long id = testBankCardDto.getId();
@@ -198,6 +203,7 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @Transactional
     void should_use_user_assigned_id_in_database() throws Exception {
         BankCardDto bankCardDto = TestUtil.generateBankCardDto();
         bankCardDto.setId(9999L);
@@ -212,5 +218,59 @@ class BankCardRestControllerIT extends AbstractIntegrationTest {
 
         BankCardDto createdBankCardDto = objectMapper.readValue(response.getContentAsString(), BankCardDto.class);
         Assertions.assertNotEquals(bankCardDto.getId(), createdBankCardDto.getId());
+    }
+
+    // @Test
+    // FIXME надо изменить тест. Сейчас создавать карты могут только аутентифицированные пользователи, поэтому 401 не будет никогда
+    @WithMockUser(username = "user1", roles = "USER")
+    void should_not_delete_bankCard_by_id_with_401() throws Exception {
+        long id = bankCardService.saveDto(TestUtil.generateBankCardDto()).getId();
+        mockMvc.perform(delete(BANK_CARD_URI + "/{id}", id))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "user1", roles = "USER")
+    void should_get_all_bankCards_with_403() throws Exception {
+        bankCardService.saveDto(TestUtil.generateBankCardDto());
+
+        mockMvc.perform(get(BANK_CARD_URI))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+
+    }
+
+    // @Test
+    // FIXME надо изменить тест. Сейчас создавать карты могут только аутентифицированные пользователи, поэтому 401 не будет никогда
+    @WithMockUser(username = "user1", roles = "USER")
+    void should_not_get_bankCard_by_id_with_401() throws Exception {
+        long id = bankCardService.saveDto(TestUtil.generateBankCardDto()).getId();
+
+        mockMvc.perform(get(BANK_CARD_URI + "/{id}", id))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    // @Test
+    // FIXME надо изменить тест. Сейчас создавать карты могут только аутентифицированные пользователи, поэтому 401 не будет никогда
+    @WithMockUser(username = "user1", roles = "USER")
+    void should_not_update_bankCard_by_id_with_401() throws Exception {
+        BankCardDto testBankCardDto = bankCardService.saveDto(TestUtil.generateBankCardDto());
+
+        testBankCardDto.setCardNumber("1234123412341234");
+        testBankCardDto.setSecurityCode(6969);
+        testBankCardDto.setDueDate(LocalDate.now());
+
+        String jsonTestBankCardDto = objectMapper.writeValueAsString(testBankCardDto);
+
+        mockMvc.perform(patch(BANK_CARD_URI + "/{id}", testBankCardDto.getId())
+                        .content(jsonTestBankCardDto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 }
