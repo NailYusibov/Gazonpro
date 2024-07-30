@@ -212,7 +212,7 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_get_order_by_non_existent_id() throws Exception {
-        long id = 10L;
+        long id = 100L;
         mockMvc.perform(get(ORDER_URI + "/{id}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound());
@@ -220,7 +220,7 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_return_not_found_when_update_order_by_non_existent_id() throws Exception {
-        long id = 10L;
+        long id = 100L;
         OrderDto orderDto = TestUtil.generateOrderDto(userService.saveDto(TestUtil.generateUserDto()).getId(),
                 personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()));
         String jsonOrderDto = objectMapper.writeValueAsString(orderDto);
