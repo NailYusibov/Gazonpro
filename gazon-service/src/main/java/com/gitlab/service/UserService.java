@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,7 +64,6 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-
     public Optional<UserDto> findById(Long id) {
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isPresent() && optionalUser.get().getEntityStatus().equals(EntityStatus.DELETED)) {
@@ -73,7 +71,6 @@ public class UserService {
         }
         return optionalUser.map(userMapper::toDto);
     }
-
 
     public Page<User> getPage(Integer page, Integer size) {
         if (page == null || size == null) {
@@ -290,5 +287,4 @@ public class UserService {
 
         return user;
     }
-
 }

@@ -2,8 +2,6 @@ package com.gitlab.controller;
 
 import com.gitlab.controllers.api.rest.PersonalAddressRestApi;
 import com.gitlab.dto.PersonalAddressDto;
-import com.gitlab.dto.ShippingAddressDto;
-import com.gitlab.model.PersonalAddress;
 import com.gitlab.model.ShippingAddress;
 import com.gitlab.model.User;
 import com.gitlab.service.PersonalAddressService;
@@ -32,7 +30,6 @@ public class PersonalAddressRestController implements PersonalAddressRestApi {
 
     private final PersonalAddressService personalAddressService;
     private final UserService userService;
-
 
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PersonalAddressDto>> getPage(Integer page, Integer size) {
@@ -97,5 +94,4 @@ public class PersonalAddressRestController implements PersonalAddressRestApi {
                 .map(ShippingAddress::getId)
                 .anyMatch(cardId -> Objects.equals(cardId, requestedPersonalAddressId));
     }
-
 }
