@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
 
 @Service
 @RequiredArgsConstructor
@@ -137,33 +138,26 @@ public class UserService {
         } else {
             savedUser = optionalSavedUser.get();
         }
-        if (user.getEmail() != null) {
-            savedUser.setEmail(user.getEmail());
-        }
-        if (user.getPassword() != null) {
-            savedUser.setPassword(user.getPassword());
-        }
-        if (user.getSecurityQuestion() != null) {
-            savedUser.setSecurityQuestion(user.getSecurityQuestion());
-        }
-        if (user.getAnswerQuestion() != null) {
-            savedUser.setAnswerQuestion(user.getAnswerQuestion());
-        }
-        if (user.getFirstName() != null) {
-            savedUser.setFirstName(user.getFirstName());
-        }
-        if (user.getLastName() != null) {
-            savedUser.setLastName(user.getLastName());
-        }
-        if (user.getBirthDate() != null) {
-            savedUser.setBirthDate(user.getBirthDate());
-        }
-        if (user.getGender() != null) {
-            savedUser.setGender(user.getGender());
-        }
-        if (user.getPhoneNumber() != null) {
-            savedUser.setPhoneNumber(user.getPhoneNumber());
-        }
+
+        updateFieldIfNotNull(savedUser::setEmail, user.getEmail());
+
+        updateFieldIfNotNull(savedUser::setPassword, user.getPassword());
+
+        updateFieldIfNotNull(savedUser::setSecurityQuestion, user.getSecurityQuestion());
+
+        updateFieldIfNotNull(savedUser::setAnswerQuestion, user.getAnswerQuestion());
+
+        updateFieldIfNotNull(savedUser::setFirstName, user.getFirstName());
+
+        updateFieldIfNotNull(savedUser::setLastName, user.getLastName());
+
+        updateFieldIfNotNull(savedUser::setBirthDate, user.getBirthDate());
+
+        updateFieldIfNotNull(savedUser::setGender, user.getGender());
+
+        updateFieldIfNotNull(savedUser::setPhoneNumber, user.getPhoneNumber());
+
+        updateFieldIfNotNull(savedUser::setRolesSet, user.getRolesSet());
 
         if (user.getPassport() != null) {
             var newPassport = user.getPassport();
@@ -204,9 +198,6 @@ public class UserService {
                 }
             }
             savedUser.setBankCardsSet(newCard);
-        }
-        if (user.getRolesSet() != null) {
-            savedUser.setRolesSet(user.getRolesSet());
         }
 
         savedUser.setEntityStatus(EntityStatus.ACTIVE);
