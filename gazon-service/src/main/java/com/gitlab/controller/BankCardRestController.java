@@ -7,7 +7,6 @@ import com.gitlab.model.BankCard;
 import com.gitlab.model.User;
 import com.gitlab.service.BankCardService;
 import com.gitlab.service.UserService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,6 @@ import static com.gitlab.util.UserUtils.isAdmin;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
 public class BankCardRestController implements BankCardRestApi {
 
     private final BankCardService bankCardService;

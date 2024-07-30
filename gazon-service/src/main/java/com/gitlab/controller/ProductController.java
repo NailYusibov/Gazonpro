@@ -7,11 +7,9 @@ import com.gitlab.model.ProductImage;
 import com.gitlab.service.ProductImageService;
 import com.gitlab.service.ProductService;
 import com.gitlab.util.ImageUtils;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,7 +20,6 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
 public class ProductController implements ProductRestApi {
 
     private final ProductService productService;
@@ -117,7 +114,7 @@ public class ProductController implements ProductRestApi {
     }
 
     @Override
-    public ResponseEntity<String> addFavouriteProduct(@PathVariable Long productId) {
+    public ResponseEntity<String> addFavouriteProduct(Long productId) {
 
         Optional<Product> productOptional = productService.addFavouriteProduct(productId);
         if (productOptional.isEmpty()) {
@@ -133,7 +130,7 @@ public class ProductController implements ProductRestApi {
     }
 
     @Override
-    public ResponseEntity<String> deleteFavouriteProductById(@PathVariable Long productId) {
+    public ResponseEntity<String> deleteFavouriteProductById(Long productId) {
 
         Optional<Product> productOptional = productService.removeFavouriteProduct(productId);
         if (productOptional.isEmpty()) {
