@@ -54,7 +54,7 @@ public class BankCardRestController implements BankCardRestApi {
             return bankCardService.findByIdDto(cardId)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
-        } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @Override
@@ -71,7 +71,7 @@ public class BankCardRestController implements BankCardRestApi {
         if (isAdmin(user) || isAuthorized(user, cardId)) {
             Optional<BankCardDto> optionalBankCardDto = bankCardService.updateDto(cardId, bankCardDto);
             return optionalBankCardDto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-        } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @Override
@@ -86,7 +86,7 @@ public class BankCardRestController implements BankCardRestApi {
         if (isAuthorized(user, cardId)) {
             return (bankCardService.deleteDto(cardId).isPresent()) ?
                     ResponseEntity.ok().build() : ResponseEntity.notFound().build();
-        } else return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     private boolean isAuthorized(User user, Long requestedCardId) {
