@@ -6,11 +6,13 @@ import com.gitlab.service.ProductImageService;
 import com.gitlab.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -22,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.testcontainers.shaded.org.hamcrest.CoreMatchers.equalTo;
 import static org.testcontainers.shaded.org.hamcrest.MatcherAssert.assertThat;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class ProductRestControllerIT extends AbstractIntegrationTest {
 
     private static final String PRODUCT_URN = "/api/product";
@@ -239,6 +242,46 @@ class ProductRestControllerIT extends AbstractIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isOk());
         mockMvc.perform(get(PRODUCT_URI + "/{id}" + "/images", id))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+    }
+
+
+    @Test
+    @WithMockUser(username = "user1", roles = "USER")
+    void should_return_favourite_products() throws Exception {
+        this.mockMvc.perform(get(PRODUCT_URI + "/get-favourites"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "user1", roles = "USER")
+    void should_add_favourite_product() throws Exception {
+
+        ProductDto productDto = TestUtil.generateProductDto();
+        productDto.setId(1L);
+        productService.save(productDto);
+
+        mockMvc.perform(post(PRODUCT_URI + "/add-favourite/{productId}", productDto.getId()))
+                .andDo(print())
+                .andExpect(status().isCreated());
+        mockMvc.perform(post(PRODUCT_URI + "/add-favourite/{productId}", productDto.getId()))
+                .andDo(print())
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    @WithMockUser(username = "user1", roles = "USER")
+    void should_delete_favourite_product_by_id() throws Exception {
+        ProductDto productDto = TestUtil.generateProductDto();
+        productDto.setId(1L);
+        productService.save(productDto);
+        productService.addFavouriteProduct(productDto.getId());
+
+        mockMvc.perform(delete(PRODUCT_URI + "/delete-favourite/{productId}", productDto.getId()))
+                .andDo(print())
+                .andExpect(status().isOk());
+        mockMvc.perform(delete(PRODUCT_URI + "/delete-favourite/{productId}", productDto.getId()))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }

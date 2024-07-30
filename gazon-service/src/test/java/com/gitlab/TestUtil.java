@@ -384,7 +384,9 @@ public class TestUtil {
                 bankCardSet,
                 personalAddresses,
                 roleSet,
-                EntityStatus.ACTIVE);
+                EntityStatus.ACTIVE,
+                10L,
+                new HashSet<>());
     }
 
     public static User generateUserBefore() {
@@ -443,7 +445,9 @@ public class TestUtil {
                 bankCardSet,
                 personalAddresses,
                 roleSet,
-                EntityStatus.ACTIVE);
+                EntityStatus.ACTIVE,
+                10L,
+                new HashSet<>());
     }
 
 //    public UserDto generateUserDto() {

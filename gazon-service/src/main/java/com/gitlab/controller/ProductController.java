@@ -112,4 +112,44 @@ public class ProductController implements ProductRestApi {
         product.get().getProductImages().stream().map(ProductImage::getId).forEach(productImageService::delete);
         return ResponseEntity.ok().build();
     }
+
+    @Override
+    public ResponseEntity<String> addFavouriteProduct(Long productId) {
+
+        Optional<Product> productOptional = productService.addFavouriteProduct(productId);
+        if (productOptional.isEmpty()) {
+            Optional<Product> existingProductOptional = productService.findById(productId);
+            if (existingProductOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
+            } else {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Product is already in favorites");
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @Override
+    public ResponseEntity<String> deleteFavouriteProductById(Long productId) {
+
+        Optional<Product> productOptional = productService.removeFavouriteProduct(productId);
+        if (productOptional.isEmpty()) {
+            Optional<Product> existingProductOptional = productService.findById(productId);
+            if (existingProductOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
+            } else {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Product is not in favorites");
+            }
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<List<ProductDto>> getFavouriteProducts() {
+
+        List<ProductDto> favouriteProducts = productService.getFavouriteProducts();
+
+        return ResponseEntity.status(HttpStatus.OK).body(favouriteProducts);
+    }
 }

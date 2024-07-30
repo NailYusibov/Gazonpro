@@ -6,7 +6,6 @@ import com.gitlab.model.ShippingAddress;
 import com.gitlab.model.User;
 import com.gitlab.service.PersonalAddressService;
 import com.gitlab.service.UserService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,7 +24,6 @@ import static com.gitlab.util.UserUtils.isAdmin;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
 public class PersonalAddressRestController implements PersonalAddressRestApi {
 
     private final PersonalAddressService personalAddressService;
