@@ -22,6 +22,7 @@ import java.util.Set;
 
 @Entity
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(exclude = {"shippingAddress", "user", "selectedProducts"})
