@@ -4,23 +4,19 @@ import com.gitlab.TestUtil;
 import com.gitlab.dto.OrderDto;
 import com.gitlab.dto.SelectedProductDto;
 import com.gitlab.dto.ShoppingCartDto;
-import com.gitlab.dto.UserDto;
 import com.gitlab.enums.OrderStatus;
 import com.gitlab.mapper.OrderMapper;
 import com.gitlab.mapper.SelectedProductMapper;
 import com.gitlab.mapper.ShoppingCartMapper;
 import com.gitlab.mapper.UserMapper;
 import com.gitlab.model.Order;
-import com.gitlab.model.SelectedProduct;
 import com.gitlab.model.ShoppingCart;
 import com.gitlab.model.User;
-import com.gitlab.repository.OrderRepository;
 import com.gitlab.repository.ShoppingCartRepository;
 import com.gitlab.service.OrderService;
 import com.gitlab.service.PersonalAddressService;
 import com.gitlab.service.ShoppingCartService;
 import com.gitlab.service.UserService;
-import org.hibernate.sql.ordering.antlr.GeneratedOrderByFragmentRenderer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,21 +32,19 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.testcontainers.shaded.org.hamcrest.CoreMatchers.equalTo;
-import static org.testcontainers.shaded.org.hamcrest.MatcherAssert.assertThat;
 
 @WithMockUser(username = "admin1", roles = "ADMIN")
 public class OrderRestControllerIT extends AbstractIntegrationTest {
@@ -207,7 +201,6 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
     void check_null_update() throws Exception {
         User user = userService.getAuthenticatedUser();
         long id = user.getId();
-        String username = user.getUsername();
 
         OrderDto orderDto = TestUtil.generateOrderDto(id,
                                                       personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()));
@@ -258,7 +251,6 @@ public class OrderRestControllerIT extends AbstractIntegrationTest {
     void should_update_order_by_id() throws Exception {
         User user = userService.getAuthenticatedUser();
         long id = user.getId();
-        String username = user.getUsername();
 
         OrderDto orderDto = TestUtil.generateOrderDto(id,
                                                       personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()));
