@@ -54,7 +54,7 @@ public class SearchResultsView extends CommonView implements HasUrlParameter<Str
 
     private void performSearch(String query) throws InterruptedException {
         if (!query.isEmpty()) {
-            ResponseEntity<List<ProductDto>> response = productSearchClient.search(query);
+            ResponseEntity<List<ProductDto>> response = productSearchClient.searchOptionalPaginate(query,null,null);
             HttpStatus statusCode = response.getStatusCode();
 
             if (statusCode.is2xxSuccessful()) {
