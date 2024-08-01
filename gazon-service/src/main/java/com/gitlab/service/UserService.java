@@ -20,7 +20,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -28,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
 
 @Service
@@ -49,7 +49,8 @@ public class UserService {
     public User getAuthenticatedUser() {
         var authenticationToken = SecurityContextHolder.getContext().getAuthentication();
         return userRepository.findByUsername(authenticationToken.getName())
-                .orElseThrow(() -> new UserNotAuthenticatedException(HttpStatus.UNAUTHORIZED, "Пользователь не аутентифицирован"));    }
+                .orElseThrow(() -> new UserNotAuthenticatedException(HttpStatus.UNAUTHORIZED, "Пользователь не аутентифицирован"));
+    }
 
     public List<User> findAll() {
         return userRepository.findAll();

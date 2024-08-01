@@ -34,21 +34,18 @@ public class GeneralExceptionHandler {
         return new ErrorResponseDto(ex.getHttpStatus().value(), ex.getMessage());
     }
 
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(value = UserNotAuthenticatedException.class)
     public ErrorResponseDto handleUserNotAuthenticatedException(UserNotAuthenticatedException ex) {
-        return new ErrorResponseDto(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
+        return new ErrorResponseDto(ex.getHttpStatus().value(), ex.getMessage());
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = UserDoesNotHaveAccessException.class)
     public ErrorResponseDto handleUserDoesNotHaveAccessException(UserDoesNotHaveAccessException ex) {
-        return new ErrorResponseDto(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return new ErrorResponseDto(ex.getHttpStatus().value(), ex.getMessage());
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = WrongSelectedProductsException.class)
     public ErrorResponseDto handleWrongSelectedProductsException(WrongSelectedProductsException ex) {
-        return new ErrorResponseDto(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return new ErrorResponseDto(ex.getHttpStatus().value(), ex.getMessage());
     }
 }

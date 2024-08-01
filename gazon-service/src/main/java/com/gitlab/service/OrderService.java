@@ -119,9 +119,9 @@ public class OrderService {
         Order order = orderMapper.toEntity(orderDto);
         order.setEntityStatus(EntityStatus.ACTIVE);
         order.setUser(userRepository.findById(orderDto.getUserId())
-                              .orElseThrow(
-                                      () -> new EntityNotFoundException(String.format("User with id %s was not found.", orderDto.getId()))
-                              )
+                .orElseThrow(
+                        () -> new EntityNotFoundException(String.format("User with id %s was not found.", orderDto.getId()))
+                )
         );
 
         User user = userService.getAuthenticatedUser();
@@ -240,13 +240,13 @@ public class OrderService {
                 .stream()
                 .filter(order -> isOverdue(order.getCreateDateTime()))
                 .forEach(order -> {
-                             order.setOrderStatus(OrderStatus.OVERDUE);
-                             orderRepository.save(order);
-                             Optional.ofNullable(order.getSelectedProducts())
-                                     .stream()
-                                     .flatMap(Collection::stream)
-                                     .forEach(this::increaseStockCount);
-                         }
+                            order.setOrderStatus(OrderStatus.OVERDUE);
+                            orderRepository.save(order);
+                            Optional.ofNullable(order.getSelectedProducts())
+                                    .stream()
+                                    .flatMap(Collection::stream)
+                                    .forEach(this::increaseStockCount);
+                        }
                 );
     }
 

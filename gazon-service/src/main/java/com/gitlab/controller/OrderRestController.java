@@ -2,7 +2,6 @@ package com.gitlab.controller;
 
 import com.gitlab.controllers.api.rest.OrderRestApi;
 import com.gitlab.dto.OrderDto;
-import com.gitlab.model.Order;
 import com.gitlab.service.OrderService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
