@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
 
@@ -159,46 +160,12 @@ public class UserService {
 
         updateFieldIfNotNull(savedUser::setRolesSet, user.getRolesSet());
 
-        if (user.getPassport() != null) {
-            var newPassport = user.getPassport();
-            var savePassport = savedUser.getPassport();
-            if (savePassport != null) {
-                newPassport.setId(savedUser.getPassport().getId());
-            }
-            savedUser.setPassport(newPassport);
-        }
+        updatePassport(user, savedUser);
 
-        if (user.getShippingAddressSet() != null) {
-            Set<ShippingAddress> newShippAddr = new HashSet<>();
-            Set<ShippingAddress> savedShippAddr = savedUser.getShippingAddressSet();
-            if (savedShippAddr != null) {
-                for (ShippingAddress address : user.getShippingAddressSet()) {
-                    for (ShippingAddress addressId : savedShippAddr) {
-                        Long shippAddress = addressId.getId();
-                        address.setId(shippAddress);
-                        address.setAddress(address.getAddress());
-                        address.setDirections(address.getDirections());
-                    }
-                    newShippAddr.add(address);
-                }
-            }
-            savedUser.setShippingAddressSet(newShippAddr);
-        }
+        updateShippingAddress(user, savedUser);
 
-        if (user.getBankCardsSet() != null) {
-            Set<BankCard> newCard = new HashSet<>();
-            Set<BankCard> savedCard = savedUser.getBankCardsSet();
-            if (savedCard != null) {
-                for (BankCard bankCard : user.getBankCardsSet()) {
-                    for (BankCard cardId : savedCard) {
-                        Long bankCardId = cardId.getId();
-                        bankCard.setId(bankCardId);
-                    }
-                    newCard.add(bankCard);
-                }
-            }
-            savedUser.setBankCardsSet(newCard);
-        }
+        updateBankCards(user, savedUser);
+
 
         savedUser.setEntityStatus(EntityStatus.ACTIVE);
         savedUser.getPassport().setEntityStatus(EntityStatus.ACTIVE);
@@ -278,4 +245,51 @@ public class UserService {
 
         return user;
     }
+
+    private void updatePassport(User user, User savedUser) {
+        updateFieldIfNotNull(newPassport -> {
+            var savePassport = savedUser.getPassport();
+            if (savePassport != null) {
+                newPassport.setId(savedUser.getPassport().getId());
+            }
+            savedUser.setPassport(newPassport);
+        }, user.getPassport());
+    }
+
+    private void updateShippingAddress(User user, User savedUser) {
+        if (user.getShippingAddressSet() != null) {
+            Set<ShippingAddress> newShippAddr = new HashSet<>();
+            Set<ShippingAddress> savedShippAddr = savedUser.getShippingAddressSet();
+            if (savedShippAddr != null) {
+                for (ShippingAddress address : user.getShippingAddressSet()) {
+                    for (ShippingAddress addressId : savedShippAddr) {
+                        Long shippAddress = addressId.getId();
+                        address.setId(shippAddress);
+                        address.setAddress(address.getAddress());
+                        address.setDirections(address.getDirections());
+                    }
+                    newShippAddr.add(address);
+                }
+            }
+            savedUser.setShippingAddressSet(newShippAddr);
+        }
+    }
+
+    private void updateBankCards(User user, User savedUser) {
+        if (user.getBankCardsSet() != null) {
+            Set<BankCard> newCard = new HashSet<>();
+            Set<BankCard> savedCard = savedUser.getBankCardsSet();
+            if (savedCard != null) {
+                for (BankCard bankCard : user.getBankCardsSet()) {
+                    for (BankCard cardId : savedCard) {
+                        Long bankCardId = cardId.getId();
+                        bankCard.setId(bankCardId);
+                    }
+                    newCard.add(bankCard);
+                }
+            }
+            savedUser.setBankCardsSet(newCard);
+        }
+    }
+
 }
