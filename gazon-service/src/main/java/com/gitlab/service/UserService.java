@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
 
@@ -141,31 +140,18 @@ public class UserService {
         }
 
         updateFieldIfNotNull(savedUser::setEmail, user.getEmail());
-
         updateFieldIfNotNull(savedUser::setPassword, user.getPassword());
-
         updateFieldIfNotNull(savedUser::setSecurityQuestion, user.getSecurityQuestion());
-
         updateFieldIfNotNull(savedUser::setAnswerQuestion, user.getAnswerQuestion());
-
         updateFieldIfNotNull(savedUser::setFirstName, user.getFirstName());
-
         updateFieldIfNotNull(savedUser::setLastName, user.getLastName());
-
         updateFieldIfNotNull(savedUser::setBirthDate, user.getBirthDate());
-
         updateFieldIfNotNull(savedUser::setGender, user.getGender());
-
         updateFieldIfNotNull(savedUser::setPhoneNumber, user.getPhoneNumber());
-
         updateFieldIfNotNull(savedUser::setRolesSet, user.getRolesSet());
-
         updatePassport(user, savedUser);
-
         updateShippingAddress(user, savedUser);
-
         updateBankCards(user, savedUser);
-
 
         savedUser.setEntityStatus(EntityStatus.ACTIVE);
         savedUser.getPassport().setEntityStatus(EntityStatus.ACTIVE);
@@ -291,5 +277,4 @@ public class UserService {
             savedUser.setBankCardsSet(newCard);
         }
     }
-
 }
