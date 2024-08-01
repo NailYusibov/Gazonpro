@@ -16,6 +16,7 @@ import java.util.Set;
 @EqualsAndHashCode(exclude = {"passport", "bankCardsSet", "shippingAddressSet"})
 @ToString
 @Table(name = "users", schema = "public", catalog = "postgres")
+@Builder
 @NamedEntityGraph(name = "userWithSets",
         attributeNodes = {
                 @NamedAttributeNode("bankCardsSet"),

@@ -2,8 +2,8 @@ package com.gitlab.controller;
 
 import com.gitlab.controllers.api.rest.OrderRestApi;
 import com.gitlab.dto.OrderDto;
-import com.gitlab.model.Order;
 import com.gitlab.service.OrderService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,6 +18,7 @@ import java.util.Optional;
 @Validated
 @RestController
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class OrderRestController implements OrderRestApi {
 
     private final OrderService orderService;
@@ -39,9 +40,9 @@ public class OrderRestController implements OrderRestApi {
 
     @Override
     public ResponseEntity<OrderDto> create(OrderDto orderDto) {
-        OrderDto savedOrderDto = orderService.saveDto(orderDto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(savedOrderDto);
+        Optional<OrderDto> savedOrderDto = orderService.saveDto(orderDto);
+        return savedOrderDto.map(dto -> ResponseEntity.status(HttpStatus.CREATED)
+                .body(dto)).orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
     @Override
@@ -50,15 +51,5 @@ public class OrderRestController implements OrderRestApi {
         return updateOrderDto
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @Override
-    public ResponseEntity<OrderDto> delete(Long id) {
-        Optional<Order> order = orderService.delete(id);
-        if (order.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        } else {
-            return ResponseEntity.ok().build();
-        }
     }
 }

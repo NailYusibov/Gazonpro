@@ -3,6 +3,7 @@ package com.gitlab.service;
 import com.gitlab.dto.ShoppingCartDto;
 import com.gitlab.dto.UserDto;
 import com.gitlab.enums.EntityStatus;
+import com.gitlab.exception.handler.UserNotAuthenticatedException;
 import com.gitlab.mapper.BankCardMapper;
 import com.gitlab.mapper.PassportMapper;
 import com.gitlab.mapper.UserMapper;
@@ -14,11 +15,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
 
 @Service
@@ -47,7 +49,7 @@ public class UserService {
     public User getAuthenticatedUser() {
         var authenticationToken = SecurityContextHolder.getContext().getAuthentication();
         return userRepository.findByUsername(authenticationToken.getName())
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь не аутентифицирован"));
+                .orElseThrow(() -> new UserNotAuthenticatedException(HttpStatus.UNAUTHORIZED, "Пользователь не аутентифицирован"));
     }
 
     public List<User> findAll() {
