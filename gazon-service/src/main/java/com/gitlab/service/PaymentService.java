@@ -104,6 +104,8 @@ public class PaymentService {
         Payment payment = paymentMapper.toEntity(paymentDto);
         Payment savedPayment = paymentRepository.save(payment);
 
+        // send request to gazon-payment
+
         return paymentMapper.toDto(savedPayment);
     }
 

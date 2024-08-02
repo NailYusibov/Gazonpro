@@ -24,6 +24,7 @@
         <module>api-gateway</module>
         <module>gazon-frontend</module>
         <module>data-generator</module>
+        <module>gazon-payment</module>
     </modules>
 
     <properties>
