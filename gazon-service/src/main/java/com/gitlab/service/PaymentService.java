@@ -1,6 +1,8 @@
 package com.gitlab.service;
 
 import com.gitlab.dto.PaymentDto;
+import com.gitlab.enums.PaymentStatus;
+import com.gitlab.exception.handler.UserDoesNotHaveAccessException;
 import com.gitlab.mapper.PaymentMapper;
 import com.gitlab.model.BankCard;
 import com.gitlab.model.Order;
@@ -10,6 +12,7 @@ import com.gitlab.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,8 +92,18 @@ public class PaymentService {
     }
 
     public PaymentDto saveDto(PaymentDto paymentDto) {
+        paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
+
+        if (!paymentDto.getUserId().equals(userService.getAuthenticatedUser().getId())) {
+            throw new UserDoesNotHaveAccessException(
+                    HttpStatus.FORBIDDEN,
+                    "Authenticated user's id and user's id present in payment don't match."
+            );
+        }
+
         Payment payment = paymentMapper.toEntity(paymentDto);
         Payment savedPayment = paymentRepository.save(payment);
+
         return paymentMapper.toDto(savedPayment);
     }
 
