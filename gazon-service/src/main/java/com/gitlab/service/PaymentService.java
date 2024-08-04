@@ -1,7 +1,9 @@
 package com.gitlab.service;
 
 import com.gitlab.client.PaymentClient;
+import com.gitlab.dto.OrderDto;
 import com.gitlab.dto.PaymentDto;
+import com.gitlab.enums.OrderStatus;
 import com.gitlab.enums.PaymentStatus;
 import com.gitlab.exception.handler.UserDoesNotHaveAccessException;
 import com.gitlab.mapper.PaymentMapper;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -110,7 +113,16 @@ public class PaymentService {
         Payment savedPayment = paymentRepository.save(payment);
 
         // send request to gazon-payment
-        paymentClient.makePayment(paymentMapper.toDto(savedPayment));
+        ResponseEntity<PaymentDto> paymentDtoResponseEntity = paymentClient.makePayment(paymentMapper.toDto(savedPayment));
+        PaymentDto paymentDtoResponse = paymentDtoResponseEntity.getBody();
+        assert paymentDtoResponse != null;
+        if (paymentDtoResponse.getPaymentStatus().equals(PaymentStatus.PAID)) {
+            OrderDto orderDto = orderService.findByIdDto(paymentDtoResponse.getOrderId())
+                    .orElseThrow(() -> new EntityNotFoundException("Order with id %s was not found".formatted(paymentDtoResponse.getOrderId())));
+            orderDto.setOrderStatus(OrderStatus.PAID);
+            orderService.saveDto(orderDto);
+        }
+        // TODO check this code. Need to create a new exception for this.
 
         return paymentMapper.toDto(savedPayment);
     }
@@ -138,7 +150,7 @@ public class PaymentService {
         }
 
         Payment savedPayment = paymentMapper.toUpdateEntity(optionalSavedPayment.get(), paymentDto, paymentBankCard.get(),
-                paymentOrder.get(), paymentUser.get());
+                                                            paymentOrder.get(), paymentUser.get());
 
         savedPayment = paymentRepository.save(savedPayment);
 
