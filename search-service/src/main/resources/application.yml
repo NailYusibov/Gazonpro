@@ -5,21 +5,12 @@ server:
       timeout: -1
 
 spring:
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8180/realms/GazonRealm
-          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
   application:
     name: gazon-service
   profiles:
     active: dev,security
   cache:
     type: SIMPLE
-
-  liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.xml
 
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -50,12 +41,6 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
-
-jwt:
-  auth:
-    converter:
-      principle-attribute: preferred_username
-      resource-id: roles
 
 logging:
   level:
