@@ -1,5 +1,6 @@
 package com.gitlab.service;
 
+import com.gitlab.client.PaymentClient;
 import com.gitlab.dto.PaymentDto;
 import com.gitlab.enums.PaymentStatus;
 import com.gitlab.exception.handler.UserDoesNotHaveAccessException;
@@ -11,6 +12,7 @@ import com.gitlab.model.User;
 import com.gitlab.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class PaymentService {
     private final PaymentMapper paymentMapper;
     private final OrderService orderService;
     private final UserService userService;
+    private final PaymentClient paymentClient;
 
     public List<Payment> findAll() {
         return paymentRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
@@ -105,6 +108,7 @@ public class PaymentService {
         Payment savedPayment = paymentRepository.save(payment);
 
         // send request to gazon-payment
+        paymentClient.makePayment(paymentMapper.toDto(savedPayment));
 
         return paymentMapper.toDto(savedPayment);
     }
