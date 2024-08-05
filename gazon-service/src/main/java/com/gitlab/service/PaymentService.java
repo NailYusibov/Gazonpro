@@ -5,6 +5,7 @@ import com.gitlab.dto.OrderDto;
 import com.gitlab.dto.PaymentDto;
 import com.gitlab.enums.OrderStatus;
 import com.gitlab.enums.PaymentStatus;
+import com.gitlab.exception.handler.NoResponseException;
 import com.gitlab.exception.handler.UserDoesNotHaveAccessException;
 import com.gitlab.mapper.PaymentMapper;
 import com.gitlab.model.BankCard;
@@ -115,16 +116,22 @@ public class PaymentService {
         // send request to gazon-payment
         ResponseEntity<PaymentDto> paymentDtoResponseEntity = paymentClient.makePayment(paymentMapper.toDto(savedPayment));
         PaymentDto paymentDtoResponse = paymentDtoResponseEntity.getBody();
-        assert paymentDtoResponse != null;
+
+        if (paymentDtoResponse == null) {
+            throw new NoResponseException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not get response from gazon-payment microservice");
+        }
+
         if (paymentDtoResponse.getPaymentStatus().equals(PaymentStatus.PAID)) {
             OrderDto orderDto = orderService.findByIdDto(paymentDtoResponse.getOrderId())
                     .orElseThrow(() -> new EntityNotFoundException("Order with id %s was not found".formatted(paymentDtoResponse.getOrderId())));
+
             orderDto.setOrderStatus(OrderStatus.PAID);
             orderService.saveDto(orderDto);
-        }
-        // TODO check this code. Need to create a new exception for this.
 
-        return paymentMapper.toDto(savedPayment);
+            paymentRepository.save(paymentMapper.toEntity(paymentDtoResponse));
+        }
+
+        return paymentDtoResponse;
     }
 
     public Optional<PaymentDto> updateDto(Long id, PaymentDto paymentDto) {

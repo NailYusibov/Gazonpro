@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.gitlab.TestUtil;
 import com.gitlab.dto.OrderDto;
 import com.gitlab.dto.PaymentDto;
+import com.gitlab.enums.OrderStatus;
+import com.gitlab.enums.PaymentStatus;
 import com.gitlab.mapper.PaymentMapper;
 import com.gitlab.mapper.SelectedProductMapper;
 import com.gitlab.repository.ShoppingCartRepository;
@@ -14,6 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +29,12 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @EnableFeignClients
@@ -129,6 +138,7 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    // If this test fails, you need to start gazon-payment microservice, because this method sends a request to it.
     @Test
     @Transactional
     void should_create_payment() throws Exception {
@@ -138,6 +148,7 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
                 userId,
                 personalAddressService.saveDto(TestUtil.generatePersonalAddressDto())
         );
+        orderDto.setOrderStatus(OrderStatus.NOT_PAID);
 
         orderDto.setSelectedProducts(shoppingCartRepository.findByUser_Id(userId)
                                              .get()
@@ -153,6 +164,7 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
                 userId,
                 bankCardService.saveDto(TestUtil.generateBankCardDto())
         );
+        paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
 
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
 
@@ -161,7 +173,16 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
+                .andExpect(jsonPath("$.paymentStatus").value(PaymentStatus.PAID.name()))
                 .andExpect(status().isCreated());
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken("admin1", null, AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
+
+        OrderDto savedOrderDto = orderService.findByIdDto(optionalOrderDto.get().getId()).orElseThrow();
+        assertEquals(OrderStatus.PAID, savedOrderDto.getOrderStatus());
     }
 
     @Test
