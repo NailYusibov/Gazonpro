@@ -30,6 +30,7 @@ public class SecurityConfig {
         http
                 .authorizeRequests(authorizeRequests -> authorizeRequests
                         .antMatchers("/api/bank-card/**").authenticated()
+                        .antMatchers("api/personal-address/**").authenticated()
                         .anyRequest().permitAll())
                 .oauth2ResourceServer()
                 .jwt()

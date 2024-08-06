@@ -19,16 +19,8 @@ public interface ProductSearchRestApi {
             @ApiResponse(code = 200, message = "Products found"),
             @ApiResponse(code = 204, message = "Products not present")}
     )
-    ResponseEntity<List<ProductDto>> search(
-            @RequestParam("name") String name) throws InterruptedException;
 
-    @GetMapping("/api/search/paginate")
-    @ApiOperation(value = "Search products by Product.name with pagination")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Products found"),
-            @ApiResponse(code = 204, message = "Products not present")}
-    )
-    ResponseEntity<List<ProductDto>> searchPaginate(
+    ResponseEntity<List<ProductDto>> searchOptionalPaginate(
             @ApiParam(name = "name") @RequestParam(required = false, defaultValue = "", value = "name") String name,
             @ApiParam(name = "page") @RequestParam(required = false, defaultValue = "0", value = "page") Integer page,
             @ApiParam(name = "size") @RequestParam(required = false, defaultValue = "10", value = "size") Integer size)

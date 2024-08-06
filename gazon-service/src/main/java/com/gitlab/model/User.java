@@ -16,6 +16,7 @@ import java.util.Set;
 @EqualsAndHashCode(exclude = {"passport", "bankCardsSet", "shippingAddressSet"})
 @ToString
 @Table(name = "users", schema = "public", catalog = "postgres")
+@Builder
 @NamedEntityGraph(name = "userWithSets",
         attributeNodes = {
                 @NamedAttributeNode("bankCardsSet"),
@@ -86,4 +87,13 @@ public class User {
     @Column(name = "entity_status")
     @Enumerated(EnumType.STRING)
     private EntityStatus entityStatus;
+
+    @Column(name = "bonuses_count")
+    private Long bonusesCount;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name = "users_favourite_products",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id"))
+    private Set<Product> favouriteProducts;
 }

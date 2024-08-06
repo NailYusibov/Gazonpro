@@ -4,6 +4,7 @@ import com.gitlab.dto.ProductDto;
 import com.gitlab.enums.EntityStatus;
 import com.gitlab.mapper.ProductMapper;
 import com.gitlab.model.Product;
+import com.gitlab.model.User;
 import com.gitlab.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.search.jpa.FullTextQuery;
@@ -14,9 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 
 
 @Service
@@ -27,6 +27,7 @@ public class ProductService {
     private final FuzzySearchService fuzzySearchService;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final UserService userService;
 
     @Transactional(readOnly = true)
     public List<ProductDto> findAll() {
@@ -166,8 +167,8 @@ public class ProductService {
         mergedList.addAll(secondList);
 
         return mergedList.stream().filter(mergedList1 -> mergedList1
-                .getEntityStatus()
-                .equals(EntityStatus.ACTIVE))
+                        .getEntityStatus()
+                        .equals(EntityStatus.ACTIVE))
                 .map(productMapper::toDto).toList();
     }
 
@@ -180,5 +181,51 @@ public class ProductService {
         Page<Product> fuzzyPage = new PageImpl<>(jpaQuery.getResultList(), pageable, jpaQuery.getResultSize());
 
         return fuzzyPage.map(productMapper::toDto);
+    }
+
+
+    public Optional<Product> addFavouriteProduct(Long productId) {
+
+        User user = userService.getAuthenticatedUser();
+        Optional<Product> productOptional = productRepository.findById(productId);
+
+        if (productOptional.isEmpty()) {
+            return Optional.empty();
+        }
+        Product product = productOptional.get();
+
+        if (!user.getFavouriteProducts().add(product)) {
+            return Optional.empty();
+        }
+
+        userService.save(user);
+        return Optional.of(product);
+    }
+
+    public Optional<Product> removeFavouriteProduct(Long productId) {
+
+        User user = userService.getAuthenticatedUser();
+        Optional<Product> productOptional = productRepository.findById(productId);
+
+        if (productOptional.isEmpty()) {
+            return Optional.empty();
+        }
+        Product product = productOptional.get();
+
+        if (!user.getFavouriteProducts().remove(product)) {
+            return Optional.empty();
+        }
+        userService.save(user);
+        return Optional.of(product);
+    }
+
+    public List<ProductDto> getFavouriteProducts() {
+
+        User user = userService.getAuthenticatedUser();
+
+        Set<Product> productSet = user.getFavouriteProducts();
+        List<Product> productList = new ArrayList<>(productSet);
+
+        return productMapper.toDtoList(productList);
     }
 }

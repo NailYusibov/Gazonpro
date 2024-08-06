@@ -1,9 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [Unreleased] 
 - #task_number - short task description
 - #200 - move search logic to search-service
 - #196 - Add User to Review
+- #182 - Add security in PersonalAddressRestApi
 - #173 - Add pagination to ProductSearchController
 - #194 - Add User to Review
 - #136 - Checking functionality ReviewImage Rest
@@ -16,6 +17,7 @@
 - #175 - Updated security
 - #204 - Add a Central Bank client
 - #183 - Add Security BankCard
+- #24 - Add new fields to User
 
 ## [1.4.0] - 2.04.2024
 - #167 - Testing the conversion of Product review to productDTO rating

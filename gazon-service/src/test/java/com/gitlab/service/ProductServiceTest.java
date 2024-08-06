@@ -3,8 +3,9 @@ package com.gitlab.service;
 import com.gitlab.dto.ProductDto;
 import com.gitlab.enums.EntityStatus;
 import com.gitlab.mapper.ProductMapper;
-import com.gitlab.model.Product;
+import com.gitlab.model.*;
 import com.gitlab.repository.ProductRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,10 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -32,8 +30,26 @@ class ProductServiceTest {
     @Mock
     private ProductMapper productMapper;
 
+    @Mock
+    private UserService userService;
+
     @InjectMocks
     private ProductService productService;
+
+    private User user;
+    private Product product;
+    private ProductDto productDto;
+
+    @BeforeEach
+    void setUp() {
+        user = new User();
+        user.setId(1L);
+        user.setFavouriteProducts(new HashSet<>());
+        product = new Product();
+        product.setId(1L);
+        productDto = new ProductDto();
+        productDto.setId(1L);
+    }
 
     @Test
     void should_find_all_products() {
@@ -277,6 +293,46 @@ class ProductServiceTest {
 
         verify(productRepository).save(productBeforeUpdate);
         assertNotNull(actualResult.orElse(productToUpdateWith).getDescription());
+    }
+
+    @Test
+    void shouldAddFavouriteProductWhenProductExistsAndNotAlreadyFavourite() {
+        when(userService.getAuthenticatedUser()).thenReturn(user);
+        when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
+
+        Optional<Product> result = productService.addFavouriteProduct(1L);
+
+        assertTrue(result.isPresent());
+        assertEquals(product, result.get());
+        assertTrue(user.getFavouriteProducts().contains(product));
+        verify(userService).save(user);
+    }
+
+    @Test
+    void shouldDeleteFavouriteProductWhenProductExists() {
+        when(userService.getAuthenticatedUser()).thenReturn(user);
+        when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
+        user.getFavouriteProducts().add(product);
+
+        Optional<Product> result = productService.removeFavouriteProduct(product.getId());
+
+        assertTrue(result.isPresent());
+        assertFalse(user.getFavouriteProducts().contains(product));
+        verify(userService).save(user);
+    }
+
+    @Test
+    public void should_get_all_favourite_products() {
+
+        when(userService.getAuthenticatedUser()).thenReturn(user);
+        when(productMapper.toDtoList(anyList())).thenReturn(Collections.singletonList(productDto));
+
+        List<ProductDto> result = productService.getFavouriteProducts();
+
+        assertEquals(1, result.size());
+        assertEquals(productDto.getId(), result.get(0).getId());
+
+        verify(productMapper).toDtoList(anyList());
     }
 
     private Product generateProduct() {

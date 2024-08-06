@@ -31,13 +31,12 @@ public interface OrderRestApi {
 
     @ApiOperation(value = "Create a new order")
     @PostMapping("/api/order")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Order created")}
+    )
     ResponseEntity<OrderDto> create(@ApiParam(name = "orderDto", value = "Order details") @RequestBody OrderDto orderDto);
 
     @ApiOperation(value = "Update order by ID")
     @PatchMapping("/api/order/{id}")
     ResponseEntity<OrderDto> update(@ApiParam(name = "id", value = "Order ID") @PathVariable (value = "id") Long id, @ApiParam(name = "OrderDto", value = "Update Order details") @RequestBody OrderDto orderDto);
-
-    @ApiOperation(value = "Delete order by ID")
-    @DeleteMapping("/api/order/{id}")
-    ResponseEntity<OrderDto> delete(@ApiParam(name = "id", value = "Order Id") @PathVariable (value ="id") Long id);
 }

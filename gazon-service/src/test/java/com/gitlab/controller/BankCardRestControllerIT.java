@@ -7,6 +7,7 @@ import com.gitlab.service.BankCardService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.testcontainers.shaded.org.hamcrest.CoreMatchers.equalTo;
 import static org.testcontainers.shaded.org.hamcrest.MatcherAssert.assertThat;
 
+@SpringBootTest
 @WithMockUser(username = "admin1", roles = "ADMIN")
 class BankCardRestControllerIT extends AbstractIntegrationTest {
 
