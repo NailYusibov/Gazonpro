@@ -2,6 +2,7 @@ package com.gitlab.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gitlab.TestUtil;
+import com.gitlab.client.PaymentClient;
 import com.gitlab.dto.OrderDto;
 import com.gitlab.dto.PaymentDto;
 import com.gitlab.enums.OrderStatus;
@@ -12,9 +13,14 @@ import com.gitlab.repository.ShoppingCartRepository;
 import com.gitlab.service.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,6 +37,8 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -59,6 +67,11 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
     private ShoppingCartRepository shoppingCartRepository;
     @Autowired
     private SelectedProductMapper selectedProductMapper;
+
+    @MockBean
+    private PaymentClient paymentClient;
+    @InjectMocks
+    private PaymentService paymentServiceWithMocks;
 
     @Test
     @Transactional(readOnly = true)
@@ -138,10 +151,11 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    // If this test fails, you need to start gazon-payment microservice, because this method sends a request to it.
     @Test
     @Transactional
     void should_create_payment() throws Exception {
+        MockitoAnnotations.openMocks(this);
+
         long userId = userService.getAuthenticatedUser().getId();
 
         OrderDto orderDto = TestUtil.generateOrderDto(
@@ -166,6 +180,17 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
         );
         paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
 
+        PaymentDto mockPaymentDtoResponse = new PaymentDto();
+        mockPaymentDtoResponse.setId(paymentDto.getId());
+        mockPaymentDtoResponse.setUserId(paymentDto.getUserId());
+        mockPaymentDtoResponse.setSum(paymentDto.getSum());
+        mockPaymentDtoResponse.setCreateDateTime(paymentDto.getCreateDateTime());
+        mockPaymentDtoResponse.setBankCardDto(paymentDto.getBankCardDto());
+        mockPaymentDtoResponse.setPaymentStatus(PaymentStatus.PAID);
+        mockPaymentDtoResponse.setOrderId(optionalOrderDto.get().getId());
+        ResponseEntity<PaymentDto> mockResponseEntity = ResponseEntity.ok(mockPaymentDtoResponse);
+        when(paymentClient.makePayment(any(PaymentDto.class))).thenReturn(mockResponseEntity);
+
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
 
         mockMvc.perform(post(PAYMENT_URI)
@@ -187,6 +212,8 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void should_update_payment_by_id() throws Exception {
+        MockitoAnnotations.openMocks(this);
+
         long userId = userService.getAuthenticatedUser().getId();
 
         OrderDto orderDto = TestUtil.generateOrderDto(
@@ -208,6 +235,17 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
                 userId,
                 bankCardService.saveDto(TestUtil.generateBankCardDto())
         );
+
+        PaymentDto mockPaymentDtoResponse = new PaymentDto();
+        mockPaymentDtoResponse.setId(paymentDto.getId());
+        mockPaymentDtoResponse.setUserId(paymentDto.getUserId());
+        mockPaymentDtoResponse.setSum(paymentDto.getSum());
+        mockPaymentDtoResponse.setCreateDateTime(paymentDto.getCreateDateTime());
+        mockPaymentDtoResponse.setBankCardDto(paymentDto.getBankCardDto());
+        mockPaymentDtoResponse.setPaymentStatus(PaymentStatus.PAID);
+        mockPaymentDtoResponse.setOrderId(optionalOrderDto.get().getId());
+        ResponseEntity<PaymentDto> mockResponseEntity = ResponseEntity.ok(mockPaymentDtoResponse);
+        when(paymentClient.makePayment(any(PaymentDto.class))).thenReturn(mockResponseEntity);
 
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
 
@@ -262,6 +300,8 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void should_use_user_assigned_id_in_database_for_payment() throws Exception {
+        MockitoAnnotations.openMocks(this);
+
         long userId = userService.getAuthenticatedUser().getId();
 
         OrderDto orderDto = TestUtil.generateOrderDto(
@@ -285,6 +325,16 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
         );
 
         paymentDto.setId(9999L);
+
+        PaymentDto mockPaymentDtoResponse = new PaymentDto();
+        mockPaymentDtoResponse.setUserId(paymentDto.getUserId());
+        mockPaymentDtoResponse.setSum(paymentDto.getSum());
+        mockPaymentDtoResponse.setCreateDateTime(paymentDto.getCreateDateTime());
+        mockPaymentDtoResponse.setBankCardDto(paymentDto.getBankCardDto());
+        mockPaymentDtoResponse.setPaymentStatus(PaymentStatus.PAID);
+        mockPaymentDtoResponse.setOrderId(optionalOrderDto.get().getId());
+        ResponseEntity<PaymentDto> mockResponseEntity = ResponseEntity.ok(mockPaymentDtoResponse);
+        when(paymentClient.makePayment(any(PaymentDto.class))).thenReturn(mockResponseEntity);
 
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
         MockHttpServletResponse response = mockMvc.perform(post(PAYMENT_URI)

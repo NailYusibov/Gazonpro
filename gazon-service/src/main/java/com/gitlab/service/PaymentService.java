@@ -128,7 +128,8 @@ public class PaymentService {
             orderDto.setOrderStatus(OrderStatus.PAID);
             orderService.saveDto(orderDto);
 
-            paymentRepository.save(paymentMapper.toEntity(paymentDtoResponse));
+            Payment savedDtoResponsePayment = paymentRepository.save(paymentMapper.toEntity(paymentDtoResponse));
+            paymentDtoResponse.setId(savedDtoResponsePayment.getId());
         }
 
         return paymentDtoResponse;
