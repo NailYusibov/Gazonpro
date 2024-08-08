@@ -104,6 +104,9 @@ class PaymentServiceTest {
         when(userService.getAuthenticatedUser()).thenReturn(user);
         when(paymentMapper.toEntity(paymentDto)).thenReturn(payment);
         when(paymentRepository.save(payment)).thenReturn(savedPayment);
+        Payment savedDtoResponseEntity = new Payment();
+        savedDtoResponseEntity.setId(1L);
+        when(paymentRepository.save(paymentMapper.toEntity(paymentDtoResponse))).thenReturn(savedDtoResponseEntity);
         when(paymentMapper.toDto(savedPayment)).thenReturn(savedPaymentDto);
         when(paymentClient.makePayment(any(PaymentDto.class))).thenReturn(paymentDtoResponseEntity);
         when(orderService.findByIdDto(1L)).thenReturn(Optional.of(orderDto));
