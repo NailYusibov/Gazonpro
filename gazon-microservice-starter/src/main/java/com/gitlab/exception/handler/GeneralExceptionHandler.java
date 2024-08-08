@@ -33,4 +33,19 @@ public class GeneralExceptionHandler {
     public ErrorResponseDto handleForbiddenException(ForbiddenException ex) {
         return new ErrorResponseDto(ex.getHttpStatus().value(), ex.getMessage());
     }
+
+    @ExceptionHandler(value = UserNotAuthenticatedException.class)
+    public ErrorResponseDto handleUserNotAuthenticatedException(UserNotAuthenticatedException ex) {
+        return new ErrorResponseDto(ex.getHttpStatus().value(), ex.getMessage());
+    }
+
+    @ExceptionHandler(value = UserDoesNotHaveAccessException.class)
+    public ErrorResponseDto handleUserDoesNotHaveAccessException(UserDoesNotHaveAccessException ex) {
+        return new ErrorResponseDto(ex.getHttpStatus().value(), ex.getMessage());
+    }
+
+    @ExceptionHandler(value = WrongSelectedProductsException.class)
+    public ErrorResponseDto handleWrongSelectedProductsException(WrongSelectedProductsException ex) {
+        return new ErrorResponseDto(ex.getHttpStatus().value(), ex.getMessage());
+    }
 }

@@ -3,6 +3,7 @@ package com.gitlab.service;
 import com.gitlab.dto.ShoppingCartDto;
 import com.gitlab.dto.UserDto;
 import com.gitlab.enums.EntityStatus;
+import com.gitlab.exception.handler.UserNotAuthenticatedException;
 import com.gitlab.mapper.BankCardMapper;
 import com.gitlab.mapper.PassportMapper;
 import com.gitlab.mapper.UserMapper;
@@ -14,11 +15,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +49,7 @@ public class UserService {
     public User getAuthenticatedUser() {
         var authenticationToken = SecurityContextHolder.getContext().getAuthentication();
         return userRepository.findByUsername(authenticationToken.getName())
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь не аутентифицирован"));
+                .orElseThrow(() -> new UserNotAuthenticatedException(HttpStatus.UNAUTHORIZED, "Пользователь не аутентифицирован"));
     }
 
     public List<User> findAll() {
@@ -137,77 +140,20 @@ public class UserService {
         } else {
             savedUser = optionalSavedUser.get();
         }
-        if (user.getEmail() != null) {
-            savedUser.setEmail(user.getEmail());
-        }
-        if (user.getPassword() != null) {
-            savedUser.setPassword(user.getPassword());
-        }
-        if (user.getSecurityQuestion() != null) {
-            savedUser.setSecurityQuestion(user.getSecurityQuestion());
-        }
-        if (user.getAnswerQuestion() != null) {
-            savedUser.setAnswerQuestion(user.getAnswerQuestion());
-        }
-        if (user.getFirstName() != null) {
-            savedUser.setFirstName(user.getFirstName());
-        }
-        if (user.getLastName() != null) {
-            savedUser.setLastName(user.getLastName());
-        }
-        if (user.getBirthDate() != null) {
-            savedUser.setBirthDate(user.getBirthDate());
-        }
-        if (user.getGender() != null) {
-            savedUser.setGender(user.getGender());
-        }
-        if (user.getPhoneNumber() != null) {
-            savedUser.setPhoneNumber(user.getPhoneNumber());
-        }
 
-        if (user.getPassport() != null) {
-            var newPassport = user.getPassport();
-            var savePassport = savedUser.getPassport();
-            if (savePassport != null) {
-                newPassport.setId(savedUser.getPassport().getId());
-            }
-            savedUser.setPassport(newPassport);
-        }
-
-        if (user.getShippingAddressSet() != null) {
-            Set<ShippingAddress> newShippAddr = new HashSet<>();
-            Set<ShippingAddress> savedShippAddr = savedUser.getShippingAddressSet();
-            if (savedShippAddr != null) {
-                for (ShippingAddress address : user.getShippingAddressSet()) {
-                    for (ShippingAddress addressId : savedShippAddr) {
-                        Long shippAddress = addressId.getId();
-                        address.setId(shippAddress);
-                        address.setAddress(address.getAddress());
-                        address.setDirections(address.getDirections());
-                    }
-                    newShippAddr.add(address);
-                }
-            }
-            savedUser.setShippingAddressSet(newShippAddr);
-        }
-
-        if (user.getBankCardsSet() != null) {
-            Set<BankCard> newCard = new HashSet<>();
-            Set<BankCard> savedCard = savedUser.getBankCardsSet();
-            if (savedCard != null) {
-                for (BankCard bankCard : user.getBankCardsSet()) {
-                    for (BankCard cardId : savedCard) {
-                        Long bankCardId = cardId.getId();
-                        bankCard.setId(bankCardId);
-                    }
-                    newCard.add(bankCard);
-                }
-            }
-            savedUser.setBankCardsSet(newCard);
-        }
-        if (user.getRolesSet() != null) {
-            savedUser.setRolesSet(user.getRolesSet());
-        }
+        updateFieldIfNotNull(savedUser::setEmail, user.getEmail());
+        updateFieldIfNotNull(savedUser::setPassword, user.getPassword());
+        updateFieldIfNotNull(savedUser::setSecurityQuestion, user.getSecurityQuestion());
+        updateFieldIfNotNull(savedUser::setAnswerQuestion, user.getAnswerQuestion());
+        updateFieldIfNotNull(savedUser::setFirstName, user.getFirstName());
+        updateFieldIfNotNull(savedUser::setLastName, user.getLastName());
+        updateFieldIfNotNull(savedUser::setBirthDate, user.getBirthDate());
+        updateFieldIfNotNull(savedUser::setGender, user.getGender());
+        updateFieldIfNotNull(savedUser::setPhoneNumber, user.getPhoneNumber());
+        updateFieldIfNotNull(savedUser::setRolesSet, user.getRolesSet());
+        updatePassport(user, savedUser);
+        updateShippingAddress(user, savedUser);
+        updateBankCards(user, savedUser);
 
         savedUser.setEntityStatus(EntityStatus.ACTIVE);
         savedUser.getPassport().setEntityStatus(EntityStatus.ACTIVE);
@@ -288,4 +234,49 @@ public class UserService {
         return user;
     }
 
+    private void updatePassport(User user, User savedUser) {
+        updateFieldIfNotNull(newPassport -> {
+            var savePassport = savedUser.getPassport();
+            if (savePassport != null) {
+                newPassport.setId(savedUser.getPassport().getId());
+            }
+            savedUser.setPassport(newPassport);
+        }, user.getPassport());
+    }
+
+    private void updateShippingAddress(User user, User savedUser) {
+        if (user.getShippingAddressSet() != null) {
+            Set<ShippingAddress> newShippAddr = new HashSet<>();
+            Set<ShippingAddress> savedShippAddr = savedUser.getShippingAddressSet();
+            if (savedShippAddr != null) {
+                for (ShippingAddress address : user.getShippingAddressSet()) {
+                    for (ShippingAddress addressId : savedShippAddr) {
+                        Long shippAddress = addressId.getId();
+                        address.setId(shippAddress);
+                        address.setAddress(address.getAddress());
+                        address.setDirections(address.getDirections());
+                    }
+                    newShippAddr.add(address);
+                }
+            }
+            savedUser.setShippingAddressSet(newShippAddr);
+        }
+    }
+
+    private void updateBankCards(User user, User savedUser) {
+        if (user.getBankCardsSet() != null) {
+            Set<BankCard> newCard = new HashSet<>();
+            Set<BankCard> savedCard = savedUser.getBankCardsSet();
+            if (savedCard != null) {
+                for (BankCard bankCard : user.getBankCardsSet()) {
+                    for (BankCard cardId : savedCard) {
+                        Long bankCardId = cardId.getId();
+                        bankCard.setId(bankCardId);
+                    }
+                    newCard.add(bankCard);
+                }
+            }
+            savedUser.setBankCardsSet(newCard);
+        }
+    }
 }

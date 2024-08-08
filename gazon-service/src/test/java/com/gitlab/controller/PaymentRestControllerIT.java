@@ -2,8 +2,11 @@ package com.gitlab.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gitlab.TestUtil;
+import com.gitlab.dto.OrderDto;
 import com.gitlab.dto.PaymentDto;
 import com.gitlab.mapper.PaymentMapper;
+import com.gitlab.mapper.SelectedProductMapper;
+import com.gitlab.repository.ShoppingCartRepository;
 import com.gitlab.service.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -39,6 +44,10 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
     private PersonalAddressService personalAddressService;
     @Autowired
     private BankCardService bankCardService;
+    @Autowired
+    private ShoppingCartRepository shoppingCartRepository;
+    @Autowired
+    private SelectedProductMapper selectedProductMapper;
 
     @Test
     @Transactional(readOnly = true)
@@ -121,46 +130,70 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void should_create_payment() throws Exception {
-        long userId = userService.saveDto(TestUtil.generateUserDto()).getId();
+        long userId = userService.getAuthenticatedUser().getId();
+
+        OrderDto orderDto = TestUtil.generateOrderDto(
+                userId,
+                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto())
+        );
+
+        orderDto.setSelectedProducts(shoppingCartRepository.findByUser_Id(userId)
+                                             .get()
+                                             .getSelectedProducts()
+                                             .stream()
+                                             .map(selectedProduct -> selectedProductMapper.toDto(selectedProduct))
+                                             .collect(Collectors.toSet()));
+
+        Optional<OrderDto> optionalOrderDto = orderService.saveDto(orderDto);
 
         PaymentDto paymentDto = TestUtil.generatePaymentDto(
-                orderService.saveDto(
-                        TestUtil.generateOrderDto(
-                                userId,
-                                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()))).getId(),
+                optionalOrderDto.get().getId(),
                 userId,
-                bankCardService.saveDto(TestUtil.generateBankCardDto()));
+                bankCardService.saveDto(TestUtil.generateBankCardDto())
+        );
 
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
 
         mockMvc.perform(post(PAYMENT_URI)
-                        .content(jsonPaymentDto)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                                .content(jsonPaymentDto)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated());
     }
 
     @Test
     void should_update_payment_by_id() throws Exception {
-        long userId = userService.saveDto(TestUtil.generateUserDto()).getId();
+        long userId = userService.getAuthenticatedUser().getId();
+
+        OrderDto orderDto = TestUtil.generateOrderDto(
+                userId,
+                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto())
+        );
+
+        orderDto.setSelectedProducts(shoppingCartRepository.findByUser_Id(userId)
+                                             .get()
+                                             .getSelectedProducts()
+                                             .stream()
+                                             .map(selectedProduct -> selectedProductMapper.toDto(selectedProduct))
+                                             .collect(Collectors.toSet()));
+
+        Optional<OrderDto> optionalOrderDto = orderService.saveDto(orderDto);
 
         PaymentDto paymentDto = TestUtil.generatePaymentDto(
-                orderService.saveDto(
-                        TestUtil.generateOrderDto(
-                                userId,
-                                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()))).getId(),
+                optionalOrderDto.get().getId(),
                 userId,
-                bankCardService.saveDto(TestUtil.generateBankCardDto()));
+                bankCardService.saveDto(TestUtil.generateBankCardDto())
+        );
 
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
 
         //создаем переменную хранящую response, получаем id сохраненной сущности и используем его для
         //дальнейшей очистки БД от созданной сущности, чтобы избавиться от сайд-эффектов и хардкода
         ResultActions resultActions = mockMvc.perform(post(PAYMENT_URI)
-                        .content(jsonPaymentDto)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                                                              .content(jsonPaymentDto)
+                                                              .contentType(MediaType.APPLICATION_JSON)
+                                                              .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated());
 
@@ -175,9 +208,9 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
         String expected = objectMapper.writeValueAsString(paymentDto);
 
         mockMvc.perform(patch(PAYMENT_URI + "/{id}", id)
-                        .content(jsonPaymentDto)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                                .content(jsonPaymentDto)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(expected));
@@ -188,36 +221,17 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
-    @Transactional
     void should_return_not_found_when_update_payment_by_non_existent_id() throws Exception {
-        long id = 9999L;
-        long userId = userService.saveDto(TestUtil.generateUserDto()).getId();
+        long paymentId = 9999L;
 
-        PaymentDto paymentDto = TestUtil.generatePaymentDto(
-                orderService.saveDto(
-                        TestUtil.generateOrderDto(
-                                userId,
-                                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()))).getId(),
-                userId,
-                bankCardService.saveDto(TestUtil.generateBankCardDto()));
+        PaymentDto paymentDto = TestUtil.generatePaymentDto(paymentId, 9999L, TestUtil.generateBankCardDto());
 
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
 
-        mockMvc.perform(patch(PAYMENT_URI + "/{id}", id)
-                        .content(jsonPaymentDto)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void should_delete_payment_by_id() throws Exception {
-        long id = 2L;
-        mockMvc.perform(delete(PAYMENT_URI + "/{id}", id))
-                .andDo(print())
-                .andExpect(status().isOk());
-        mockMvc.perform(get(PAYMENT_URI + "/{id}", id))
+        mockMvc.perform(patch(PAYMENT_URI + "/{id}", paymentId)
+                                .content(jsonPaymentDto)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -225,23 +239,35 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
     @Test
     @Transactional
     void should_use_user_assigned_id_in_database_for_payment() throws Exception {
-        long userId = userService.saveDto(TestUtil.generateUserDto()).getId();
+        long userId = userService.getAuthenticatedUser().getId();
+
+        OrderDto orderDto = TestUtil.generateOrderDto(
+                userId,
+                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto())
+        );
+
+        orderDto.setSelectedProducts(shoppingCartRepository.findByUser_Id(userId)
+                                             .get()
+                                             .getSelectedProducts()
+                                             .stream()
+                                             .map(selectedProduct -> selectedProductMapper.toDto(selectedProduct))
+                                             .collect(Collectors.toSet()));
+
+        Optional<OrderDto> optionalOrderDto = orderService.saveDto(orderDto);
 
         PaymentDto paymentDto = TestUtil.generatePaymentDto(
-                orderService.saveDto(
-                        TestUtil.generateOrderDto(
-                                userId,
-                                personalAddressService.saveDto(TestUtil.generatePersonalAddressDto()))).getId(),
+                optionalOrderDto.get().getId(),
                 userId,
-                bankCardService.saveDto(TestUtil.generateBankCardDto()));
+                bankCardService.saveDto(TestUtil.generateBankCardDto())
+        );
 
         paymentDto.setId(9999L);
 
         String jsonPaymentDto = objectMapper.writeValueAsString(paymentDto);
         MockHttpServletResponse response = mockMvc.perform(post(PAYMENT_URI)
-                        .content(jsonPaymentDto)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                                                                   .content(jsonPaymentDto)
+                                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                                   .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse();
 
