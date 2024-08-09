@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "gazonPaymentService", url = "http://localhost:6969")
+@FeignClient(name = "gazonPaymentService", url = "${client_PaymentClient.url}")
 public interface PaymentClient {
 
     @PostMapping("/api/payment/make-payment")
