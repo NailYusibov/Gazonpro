@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
+
 
 @Service
 @Transactional
@@ -114,27 +116,19 @@ public class ProductService {
 
         Product currentProduct = currentOptionalProduct.get();
 
-        if (productDto.getName() != null) {
-            currentProduct.setName(productDto.getName());
-        }
-        if (productDto.getStockCount() != null) {
-            currentProduct.setStockCount(productDto.getStockCount());
-        }
-        if (productDto.getDescription() != null) {
-            currentProduct.setDescription(productDto.getDescription());
-        }
-        if (productDto.getIsAdult() != null) {
-            currentProduct.setIsAdult(productDto.getIsAdult());
-        }
-        if (productDto.getCode() != null) {
-            currentProduct.setCode(productDto.getCode());
-        }
-        if (productDto.getWeight() != null) {
-            currentProduct.setWeight(productDto.getWeight());
-        }
-        if (productDto.getPrice() != null) {
-            currentProduct.setPrice(productDto.getPrice());
-        }
+        updateFieldIfNotNull(currentProduct::setName, productDto.getName());
+
+        updateFieldIfNotNull(currentProduct::setStockCount, productDto.getStockCount());
+
+        updateFieldIfNotNull(currentProduct::setDescription, productDto.getDescription());
+
+        updateFieldIfNotNull(currentProduct::setIsAdult, productDto.getIsAdult());
+
+        updateFieldIfNotNull(currentProduct::setCode, productDto.getCode());
+
+        updateFieldIfNotNull(currentProduct::setWeight, productDto.getWeight());
+
+        updateFieldIfNotNull(currentProduct::setPrice, productDto.getPrice());
 
         return Optional.of(productMapper.toDto(productRepository.save(currentProduct)));
     }
