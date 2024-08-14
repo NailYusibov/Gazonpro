@@ -16,6 +16,7 @@
 - #204 - Add a Central Bank client
 - #183 - Add Security BankCard
 - #24 - Add new fields to User
+- #162 - Add payment microservice
 
 ## [1.4.0] - 2.04.2024
 - #167 - Testing the conversion of Product review to productDTO rating

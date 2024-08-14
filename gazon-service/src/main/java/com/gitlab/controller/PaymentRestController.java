@@ -4,6 +4,7 @@ import com.gitlab.controllers.api.rest.PaymentRestApi;
 import com.gitlab.dto.PaymentDto;
 import com.gitlab.model.Payment;
 import com.gitlab.service.PaymentService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import java.util.Optional;
 @Validated
 @RestController
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class PaymentRestController implements PaymentRestApi {
 
     private final PaymentService paymentService;

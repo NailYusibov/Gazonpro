@@ -65,3 +65,6 @@ logging:
 
 client_CentralBank:
   url: https://www.cbr.ru
+
+client_PaymentClient:
+  url: http://localhost:6969

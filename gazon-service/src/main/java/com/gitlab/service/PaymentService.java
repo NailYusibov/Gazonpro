@@ -1,6 +1,12 @@
 package com.gitlab.service;
 
+import com.gitlab.client.PaymentClient;
+import com.gitlab.dto.OrderDto;
 import com.gitlab.dto.PaymentDto;
+import com.gitlab.enums.OrderStatus;
+import com.gitlab.enums.PaymentStatus;
+import com.gitlab.exception.handler.NoResponseException;
+import com.gitlab.exception.handler.UserDoesNotHaveAccessException;
 import com.gitlab.mapper.PaymentMapper;
 import com.gitlab.model.BankCard;
 import com.gitlab.model.Order;
@@ -9,7 +15,12 @@ import com.gitlab.model.User;
 import com.gitlab.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +40,7 @@ public class PaymentService {
     private final PaymentMapper paymentMapper;
     private final OrderService orderService;
     private final UserService userService;
+    private final PaymentClient paymentClient;
 
     public List<Payment> findAll() {
         return paymentRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
@@ -89,9 +101,38 @@ public class PaymentService {
     }
 
     public PaymentDto saveDto(PaymentDto paymentDto) {
+        paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
+
+        if (!paymentDto.getUserId().equals(userService.getAuthenticatedUser().getId())) {
+            throw new UserDoesNotHaveAccessException(
+                    HttpStatus.FORBIDDEN,
+                    "Authenticated user's id and user's id present in payment don't match."
+            );
+        }
+
         Payment payment = paymentMapper.toEntity(paymentDto);
         Payment savedPayment = paymentRepository.save(payment);
-        return paymentMapper.toDto(savedPayment);
+
+        // send request to gazon-payment
+        ResponseEntity<PaymentDto> paymentDtoResponseEntity = paymentClient.makePayment(paymentMapper.toDto(savedPayment));
+        PaymentDto paymentDtoResponse = paymentDtoResponseEntity.getBody();
+
+        if (paymentDtoResponse == null) {
+            throw new NoResponseException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not get response from gazon-payment microservice");
+        }
+
+        if (paymentDtoResponse.getPaymentStatus().equals(PaymentStatus.PAID)) {
+            OrderDto orderDto = orderService.findByIdDto(paymentDtoResponse.getOrderId())
+                    .orElseThrow(() -> new EntityNotFoundException("Order with id %s was not found".formatted(paymentDtoResponse.getOrderId())));
+
+            orderDto.setOrderStatus(OrderStatus.PAID);
+            orderService.saveDto(orderDto);
+
+            Payment savedDtoResponsePayment = paymentRepository.save(paymentMapper.toEntity(paymentDtoResponse));
+            paymentDtoResponse.setId(savedDtoResponsePayment.getId());
+        }
+
+        return paymentDtoResponse;
     }
 
     public Optional<PaymentDto> updateDto(Long id, PaymentDto paymentDto) {
@@ -117,7 +158,7 @@ public class PaymentService {
         }
 
         Payment savedPayment = paymentMapper.toUpdateEntity(optionalSavedPayment.get(), paymentDto, paymentBankCard.get(),
-                paymentOrder.get(), paymentUser.get());
+                                                            paymentOrder.get(), paymentUser.get());
 
         savedPayment = paymentRepository.save(savedPayment);
 

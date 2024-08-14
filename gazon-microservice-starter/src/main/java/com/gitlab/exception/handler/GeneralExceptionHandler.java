@@ -48,4 +48,9 @@ public class GeneralExceptionHandler {
     public ErrorResponseDto handleWrongSelectedProductsException(WrongSelectedProductsException ex) {
         return new ErrorResponseDto(ex.getHttpStatus().value(), ex.getMessage());
     }
+
+    @ExceptionHandler(value = TechnicalException.class)
+    public ErrorResponseDto handleTechnicalException(TechnicalException ex) {
+        return new ErrorResponseDto(ex.getHttpStatus().value(), ex.getMessage());
+    }
 }
