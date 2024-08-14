@@ -19,12 +19,12 @@
         <module>common</module>
         <module>gazon-microservice-starter</module>
         <module>gazon-service</module>
+        <module>gazon-payment</module>
         <module>order-service</module>
         <module>search-service</module>
         <module>api-gateway</module>
         <module>gazon-frontend</module>
         <module>data-generator</module>
-        <module>gazon-payment</module>
     </modules>
 
     <properties>
