@@ -101,7 +101,7 @@ public class TestUtil {
         paymentDto.setCreateDateTime(LocalDateTime.now());
         paymentDto.setOrderId(orderId);
         paymentDto.setSum(new BigDecimal(500));
-        paymentDto.setUserId(userId);
+        paymentDto.setShouldSaveCard(false);
 
         return paymentDto;
     }

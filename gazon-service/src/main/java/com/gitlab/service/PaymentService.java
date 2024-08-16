@@ -103,15 +103,14 @@ public class PaymentService {
     public PaymentDto saveDto(PaymentDto paymentDto) {
         paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
 
-        if (!paymentDto.getUserId().equals(userService.getAuthenticatedUser().getId())) {
-            throw new UserDoesNotHaveAccessException(
-                    HttpStatus.FORBIDDEN,
-                    "Authenticated user's id and user's id present in payment don't match."
-            );
-        }
-
         Payment payment = paymentMapper.toEntity(paymentDto);
         Payment savedPayment = paymentRepository.save(payment);
+
+        if (userService.getAuthenticatedUser().getBankCardsSet()
+                .contains(payment.getBankCard().getId())) {
+            userService.getAuthenticatedUser().getBankCardsSet().add(payment.getBankCard());
+            paymentDto.setShouldSaveCard(true);
+        }
 
         // send request to gazon-payment
         ResponseEntity<PaymentDto> paymentDtoResponseEntity = paymentClient.makePayment(paymentMapper.toDto(savedPayment));
@@ -147,7 +146,7 @@ public class PaymentService {
             throw new EntityNotFoundException("Банковская карта не найдена");
         }
 
-        Optional<User> paymentUser = userService.findUserById(paymentDto.getUserId());
+        Optional<User> paymentUser = userService.findUserById(userService.getAuthenticatedUser().getId());
         if (paymentUser.isEmpty()) {
             throw new EntityNotFoundException("Пользователь не найден");
         }
