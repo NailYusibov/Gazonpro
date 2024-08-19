@@ -26,7 +26,7 @@ public class TestUtil {
         long max = 1000000000L;
 
         BankCardDto bankCardDto = new BankCardDto();
-
+        bankCardDto.setId(random.nextLong(random.nextLong(max - min + 1L) + min));
         bankCardDto.setCardNumber(String.valueOf(random.nextLong(max - min + 1L) + min));
         bankCardDto.setDueDate(LocalDate.now());
         bankCardDto.setSecurityCode(123);

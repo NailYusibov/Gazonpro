@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,9 +81,9 @@ class PaymentServiceTest {
     public void testSaveDto_Success() {
         User user = new User();
         user.setId(123L);
+        user.setBankCardsSet(new HashSet<>());
 
         PaymentDto paymentDto = new PaymentDto();
-        paymentDto.setUserId(123L);
         paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
 
         Payment payment = new Payment();

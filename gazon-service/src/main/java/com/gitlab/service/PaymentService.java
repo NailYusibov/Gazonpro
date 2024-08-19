@@ -6,7 +6,6 @@ import com.gitlab.dto.PaymentDto;
 import com.gitlab.enums.OrderStatus;
 import com.gitlab.enums.PaymentStatus;
 import com.gitlab.exception.handler.NoResponseException;
-import com.gitlab.exception.handler.UserDoesNotHaveAccessException;
 import com.gitlab.mapper.PaymentMapper;
 import com.gitlab.model.BankCard;
 import com.gitlab.model.Order;
@@ -107,7 +106,7 @@ public class PaymentService {
         Payment savedPayment = paymentRepository.save(payment);
 
         if (userService.getAuthenticatedUser().getBankCardsSet()
-                .contains(payment.getBankCard().getId())) {
+                .contains(payment.getBankCard())) {
             userService.getAuthenticatedUser().getBankCardsSet().add(payment.getBankCard());
             paymentDto.setShouldSaveCard(true);
         }
