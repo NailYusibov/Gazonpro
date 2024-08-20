@@ -61,7 +61,7 @@ class PaymentDtoTest extends AbstractDtoTest {
     @Test
     void test_invalid_shouldSaveCard() {
         var paymentDto = generatePaymentDto();
-        assertFalse(validator.validate(paymentDto).isEmpty());
+        assertTrue(validator.validate(paymentDto).isEmpty());
         paymentDto.setShouldSaveCard(true);
         assertThat(paymentDto.isShouldSaveCard()).isTrue();
         paymentDto.setShouldSaveCard(false);

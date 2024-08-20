@@ -108,7 +108,7 @@ public class PaymentService {
         if (userService.getAuthenticatedUser().getBankCardsSet()
                 .contains(payment.getBankCard())) {
             userService.getAuthenticatedUser().getBankCardsSet().add(payment.getBankCard());
-            paymentDto.setShouldSaveCard(true);
+            paymentDto.setShouldSaveCard(false);
         }
 
         // send request to gazon-payment
