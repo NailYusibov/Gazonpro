@@ -274,6 +274,7 @@ public class TestUtil {
         long max = 100000;
 
         UserDto userDto = new UserDto();
+        userDto.setId(random.nextLong(max - min + 1L) + min);
         userDto.setEmail((random.nextLong(max - min + 1L) + min) + email);
         userDto.setUsername("username" + (random.nextLong(max - min + 1L) + min));
         userDto.setPassword("user");
