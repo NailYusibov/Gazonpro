@@ -174,17 +174,22 @@ public class OrderService {
         }
         Order savedOrder = optionalSavedOrder.get();
         savedOrder.setEntityStatus(EntityStatus.ACTIVE);
-        updateFieldIfNotNull(savedOrder::setShippingAddress, shippingAddressMapper.toEntity(orderDto.getShippingAddressDto()));
+        if (orderDto.getShippingAddressDto() != null) {
+            savedOrder.setShippingAddress(shippingAddressMapper.toEntity(orderDto.getShippingAddressDto()));
+        }
+        if (orderDto.getUserId() != null) {
+            savedOrder.setUser(userMapper.toEntity(userService.findById(orderDto.getUserId()).get()));
+        }
+        if (orderDto.getSelectedProducts() != null) {
+            savedOrder.setSelectedProducts(orderDto.getSelectedProducts().stream().map(selectedProductMapper::toEntity).collect(Collectors.toSet()));
+        }
         updateFieldIfNotNull(savedOrder::setShippingDate, orderDto.getShippingDate());
         updateFieldIfNotNull(savedOrder::setOrderCode, orderDto.getOrderCode());
         updateFieldIfNotNull(savedOrder::setCreateDateTime, orderDto.getCreateDateTime());
         updateFieldIfNotNull(savedOrder::setSum, orderDto.getSum());
         updateFieldIfNotNull(savedOrder::setDiscount, orderDto.getDiscount());
         updateFieldIfNotNull(savedOrder::setBagCounter, orderDto.getBagCounter());
-        updateFieldIfNotNull(savedOrder::setUser, userMapper.toEntity(userService.findById(orderDto.getUserId()).get()));
-        updateFieldIfNotNull(savedOrder::setSelectedProducts, orderDto.getSelectedProducts().stream().map(selectedProductMapper::toEntity).collect(Collectors.toSet()));
         updateFieldIfNotNull(savedOrder::setOrderStatus, orderDto.getOrderStatus());
-
 
         savedOrder = orderRepository.save(savedOrder);
         return Optional.of(orderMapper.toDto(savedOrder));
