@@ -32,7 +32,7 @@ import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements Cloneable{
 
     private final UserRepository userRepository;
 
@@ -277,6 +277,15 @@ public class UserService {
                 }
             }
             savedUser.setBankCardsSet(newCard);
+        }
+    }
+
+    @Override
+    public UserService clone() {
+        try {
+            return (UserService) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
         }
     }
 }
