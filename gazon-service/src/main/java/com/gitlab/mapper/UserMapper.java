@@ -68,11 +68,11 @@ public abstract class UserMapper {
 
     @Named("createShippingAddress")
     public ShippingAddress createShippingAddress(ShippingAddressDto dto) {
-        if (dto.getClass() == PersonalAddressDto.class) {
+        if (dto instanceof PersonalAddressDto) {
             return createPersonalAddressEntity((PersonalAddressDto) dto);
-        } else if (dto.getClass() == PostomatDto.class) {
+        } else if (dto instanceof PostomatDto) {
             return createPostomatEntity((PostomatDto) dto);
-        } else if (dto.getClass() == PickupPointDto.class) {
+        } else if (dto instanceof PickupPointDto) {
             return createPickupPointEntity((PickupPointDto) dto);
         } else {
             throw new IllegalArgumentException("Unknown ShippingAddressDto subtype");
@@ -81,11 +81,11 @@ public abstract class UserMapper {
 
     @Named("createShippingAddressDto")
     public ShippingAddressDto createShippingAddressDto(ShippingAddress shippingAddress) {
-        if (shippingAddress.getClass() == PersonalAddress.class) {
+        if (shippingAddress instanceof PersonalAddress) {
             return createPersonalAddressDto((PersonalAddress) shippingAddress);
-        } else if (shippingAddress.getClass() == Postomat.class) {
+        } else if (shippingAddress instanceof Postomat) {
             return createPostomatDto((Postomat) shippingAddress);
-        } else if (shippingAddress.getClass() == PickupPoint.class) {
+        } else if (shippingAddress instanceof PickupPoint) {
             return createPickupPointDto((PickupPoint) shippingAddress);
         } else {
             throw new IllegalArgumentException("Unknown ShippingAddress subtype");
