@@ -18,7 +18,7 @@ import java.util.Optional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class PassportService {
+public class PassportService implements Cloneable{
 
     private final PassportRepository passportRepository;
 
@@ -198,4 +198,12 @@ public class PassportService {
         return Optional.ofNullable(passportMapper.toDto(optionalDeletedPassport.get()));
     }
 
+    @Override
+    public PassportService clone() {
+        try {
+            return (PassportService) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

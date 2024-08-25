@@ -3,7 +3,6 @@ package com.gitlab.controller;
 import com.gitlab.controllers.api.rest.PassportRestApi;
 import com.gitlab.dto.PassportDto;
 import com.gitlab.service.PassportService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +15,15 @@ import java.util.Optional;
 @Slf4j
 @Validated
 @RestController
-@RequiredArgsConstructor
 public class PassportRestController implements PassportRestApi {
 
     private final PassportService passportService;
 
-       public ResponseEntity<List<PassportDto>> getPage(Integer page, Integer size) {
+    public PassportRestController(PassportService passportService) {
+        this.passportService = passportService.clone();
+    }
+
+    public ResponseEntity<List<PassportDto>> getPage(Integer page, Integer size) {
         var passportPage = passportService.getPageDto(page, size);
         if (passportPage == null || passportPage.getContent().isEmpty()) {
             return ResponseEntity.noContent().build();

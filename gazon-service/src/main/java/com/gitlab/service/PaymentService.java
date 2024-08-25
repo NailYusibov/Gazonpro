@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class PaymentService {
+public class PaymentService implements Cloneable{
 
     private final PaymentRepository paymentRepository;
     private final BankCardService bankCardService;
@@ -173,5 +173,14 @@ public class PaymentService {
         }
 
         return optionalSavedPayment;
+    }
+
+    @Override
+    public PaymentService clone() {
+        try {
+            return (PaymentService) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }
