@@ -3,7 +3,8 @@
 ## [Unreleased] 
 - #task_number - short task description
 - #245 - Add User logs
-- #216 - Refactor if in ProductService
+- #200 - move search logic to search-service
+- #196 - Add User to Review
 - #182 - Add security in PersonalAddressRestApi
 - #173 - Add pagination to ProductSearchController
 - #194 - Add User to Review

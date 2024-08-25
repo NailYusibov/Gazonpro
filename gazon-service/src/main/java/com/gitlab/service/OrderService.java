@@ -36,6 +36,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -175,33 +177,19 @@ public class OrderService {
         if (orderDto.getShippingAddressDto() != null) {
             savedOrder.setShippingAddress(shippingAddressMapper.toEntity(orderDto.getShippingAddressDto()));
         }
-        if (orderDto.getShippingDate() != null) {
-            savedOrder.setShippingDate(orderDto.getShippingDate());
-        }
-        if (orderDto.getOrderCode() != null) {
-            savedOrder.setOrderCode(orderDto.getOrderCode());
-        }
-        if (orderDto.getCreateDateTime() != null) {
-            savedOrder.setCreateDateTime(orderDto.getCreateDateTime());
-        }
-        if (orderDto.getSum() != null) {
-            savedOrder.setSum(orderDto.getSum());
-        }
-        if (orderDto.getDiscount() != null) {
-            savedOrder.setDiscount(orderDto.getDiscount());
-        }
-        if (orderDto.getBagCounter() != null) {
-            savedOrder.setBagCounter(orderDto.getBagCounter());
-        }
         if (orderDto.getUserId() != null) {
             savedOrder.setUser(userMapper.toEntity(userService.findById(orderDto.getUserId()).get()));
         }
         if (orderDto.getSelectedProducts() != null) {
             savedOrder.setSelectedProducts(orderDto.getSelectedProducts().stream().map(selectedProductMapper::toEntity).collect(Collectors.toSet()));
         }
-        if (orderDto.getOrderStatus() != null) {
-            savedOrder.setOrderStatus(orderDto.getOrderStatus());
-        }
+        updateFieldIfNotNull(savedOrder::setShippingDate, orderDto.getShippingDate());
+        updateFieldIfNotNull(savedOrder::setOrderCode, orderDto.getOrderCode());
+        updateFieldIfNotNull(savedOrder::setCreateDateTime, orderDto.getCreateDateTime());
+        updateFieldIfNotNull(savedOrder::setSum, orderDto.getSum());
+        updateFieldIfNotNull(savedOrder::setDiscount, orderDto.getDiscount());
+        updateFieldIfNotNull(savedOrder::setBagCounter, orderDto.getBagCounter());
+        updateFieldIfNotNull(savedOrder::setOrderStatus, orderDto.getOrderStatus());
 
         savedOrder = orderRepository.save(savedOrder);
         return Optional.of(orderMapper.toDto(savedOrder));
