@@ -26,10 +26,10 @@ public class UserRestController implements UserRestApi {
         log.info("getPage: Received GET request with page: {} and size: {}", page, size);
         var userPage = userService.getPageDto(page, size);
         if (userPage == null || userPage.getContent().isEmpty()) {
-            log.warn("Page is empty");
+            log.warn("getPage: Page is empty");
             return ResponseEntity.noContent().build();
         }
-        log.info("Returning {} users for page number: {}, page size: {}", userPage.getContent().size(), page, size);
+        log.info("getPage: Returning {} users for page number: {}, page size: {}", userPage.getContent().size(), page, size);
         return ResponseEntity.ok(userPage.getContent());
     }
 
@@ -38,7 +38,7 @@ public class UserRestController implements UserRestApi {
         log.info("get: Received GET request with id: {}", id);
         Optional<UserDto> optionalUser = userService.findById(id);
 
-        log.info("Returning user with id: {}", id);
+        log.info("get: Returning user with id: {}", id);
         return optionalUser
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -56,7 +56,7 @@ public class UserRestController implements UserRestApi {
         log.info("update: Received PUT request with id: {} and user: {}", id, userDto);
         Optional<UserDto> updatedUser = userService.updateDto(id, userDto);
 
-        log.info("Returning user with id: {}", id);
+        log.info("update: Returning user with id: {}", id);
         return updatedUser
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -68,10 +68,10 @@ public class UserRestController implements UserRestApi {
         log.info("delete: Received DELETE request with id: {}", id);
         Optional<User> user = userService.delete(id);
         if (user.isEmpty()) {
-            log.warn("User with id: {} not found", id);
+            log.warn("delete: User with id: {} not found", id);
             return ResponseEntity.notFound().build();
         } else {
-            log.info("User with id: {} deleted", id);
+            log.info("delete: User with id: {} deleted", id);
             return ResponseEntity.ok().build();
         }
     }
