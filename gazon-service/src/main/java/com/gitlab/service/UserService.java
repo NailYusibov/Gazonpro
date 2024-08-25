@@ -10,6 +10,7 @@ import com.gitlab.mapper.UserMapper;
 import com.gitlab.model.*;
 import com.gitlab.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -47,16 +49,22 @@ public class UserService {
     }
 
     public User getAuthenticatedUser() {
+        log.info("getAuthenticatedUser");
         var authenticationToken = SecurityContextHolder.getContext().getAuthentication();
+        log.info("getAuthenticatedUser: Returning user with username: {}", authenticationToken.getName());
         return userRepository.findByUsername(authenticationToken.getName())
                 .orElseThrow(() -> new UserNotAuthenticatedException(HttpStatus.UNAUTHORIZED, "Пользователь не аутентифицирован"));
     }
 
     public List<User> findAll() {
-        return userRepository.findAll();
+        var allUsers = userRepository.findAll();
+        log.info("findAll: Returning {} users", allUsers.size());
+        return allUsers;
     }
 
     public List<UserDto> findAllDto() {
+        var allUsers = findAll();
+        log.info("findAllDto: Returning {} users", allUsers.size());
         return findAll()
                 .stream()
                 .map(userMapper::toDto)
@@ -64,59 +72,75 @@ public class UserService {
     }
 
     public Optional<User> findUserById(Long id) {
+        log.info("findUserById: Returning user with id: {}", id);
         return userRepository.findById(id);
     }
 
     public Optional<UserDto> findById(Long id) {
+        log.info("findById: id: {}", id);
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isPresent() && optionalUser.get().getEntityStatus().equals(EntityStatus.DELETED)) {
+            log.warn("findById: User with id: {} is deleted", id);
             return Optional.empty();
         }
+        log.info("findById: Returning user with id: {}", id);
         return optionalUser.map(userMapper::toDto);
     }
 
     public Page<User> getPage(Integer page, Integer size) {
+        log.info("getPage: Page: {} Size: {}", page, size);
         if (page == null || size == null) {
             var users = findAll();
             if (users.isEmpty()) {
+                log.warn("getPage: Page is empty");
                 return Page.empty();
             }
+            log.warn("getPage: Returning {} users for page number: {}, page size: {}", users.size(), page, size);
             return new PageImpl<>(users);
         }
         if (page < 0 || size < 1) {
+            log.warn("getPage: Page or size is not valid");
             return Page.empty();
         }
         PageRequest pageRequest = PageRequest.of(page, size);
+        log.info("getPage: Returning {} users for page number: {}, page size: {}", userRepository.count(), page, size);
         return userRepository.findAll(pageRequest);
     }
 
     public Page<UserDto> getPageDto(Integer page, Integer size) {
-
+        log.info("getPageDto: Page: {} Size: {}", page, size);
         if (page == null || size == null) {
             var users = findAllDto();
             if (users.isEmpty()) {
+                log.warn("getPageDto: Page is empty");
                 return Page.empty();
             }
+            log.warn("getPageDto: Returning {} users for page number: {}, page size: {}", users.size(), page, size);
             return new PageImpl<>(users);
         }
         if (page < 0 || size < 1) {
+            log.warn("getPageDto: Page or size is not valid");
             return Page.empty();
         }
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<User> userPage = userRepository.findAll(pageRequest);
+        log.info("getPageDto: Returning {} users for page number: {}, page size: {}", userPage.getContent().size(), page, size);
         return userPage.map(userMapper::toDto);
     }
 
     @Transactional
     public User save(User user) {
+        log.info("save: User: {}", user);
         user.setCreateDate(LocalDate.from(LocalDateTime.now()));
         user.setEntityStatus(EntityStatus.ACTIVE);
         user.getPassport().setEntityStatus(EntityStatus.ACTIVE);
+        log.info("save: Returning user with id: {}", user.getId());
         return userRepository.save(user);
     }
 
     @Transactional
     public UserDto saveDto(UserDto userDto) {
+        log.info("saveDto: UserDto: {}", userDto);
         User user = userMapper.toEntity(userDto);
         user.setCreateDate(LocalDate.from(LocalDateTime.now()));
         user.setEntityStatus(EntityStatus.ACTIVE);
@@ -128,14 +152,17 @@ public class UserService {
         shoppingCartDto.setUserId(newUserDto.getId());
         shoppingCartService.saveDto(shoppingCartDto);
 
+        log.info("saveDto: Returning user with id: {}", user.getId());
         return newUserDto;
     }
 
     @Transactional
     public Optional<User> update(Long id, User user) {
+        log.info("update: id: {} User: {}", id, user);
         Optional<User> optionalSavedUser = userRepository.findById(id);
         User savedUser;
         if (optionalSavedUser.isEmpty() || optionalSavedUser.get().getEntityStatus().equals(EntityStatus.DELETED)) {
+            log.warn("update: User with id: {} is deleted", id);
             return Optional.empty();
         } else {
             savedUser = optionalSavedUser.get();
@@ -157,52 +184,60 @@ public class UserService {
 
         savedUser.setEntityStatus(EntityStatus.ACTIVE);
         savedUser.getPassport().setEntityStatus(EntityStatus.ACTIVE);
-
+        log.info("update: Returning user with id: {}", savedUser.getId());
         return Optional.of(userRepository.save(savedUser));
     }
 
     @Transactional
     public Optional<User> delete(Long id) {
+        log.info("delete: id: {}", id);
         Optional<User> optionalDeletedUser = userRepository.findById(id);
         if (optionalDeletedUser.isEmpty() || optionalDeletedUser.get().getEntityStatus().equals(EntityStatus.DELETED)) {
+            log.info("delete: User with id: {} is deleted", id);
             return Optional.empty();
         }
 
         User deletedUser = optionalDeletedUser.get();
         deletedUser.setEntityStatus(EntityStatus.DELETED);
         userRepository.save(deletedUser);
-
+        log.info("delete: User with id: {} is deleted", id);
         return optionalDeletedUser;
     }
 
     @Transactional
     public Optional<UserDto> updateDto(Long id, UserDto userDto) {
+        log.info("updateDto: UserDto: {}", userDto);
         Optional<User> optionalSavedUser = userRepository.findById(id);
         if (optionalSavedUser.isEmpty() || optionalSavedUser.get().getEntityStatus().equals(EntityStatus.DELETED)) {
+            log.info("updateDto: User with id: {} is deleted", id);
             return Optional.empty();
         }
         User savedUser = optionalSavedUser.get();
 
         updateUserFields(savedUser, userDto, bankCardMapper);
         User updatedUser = userRepository.save(savedUser);
+        log.info("updateDto: Returning user with id: {}", id);
         return Optional.of(userMapper.toDto(updatedUser));
     }
 
     @Transactional
     public UserDto deleteDto(Long id) {
+        log.info("deleteDto: id: {}", id);
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isEmpty() || optionalUser.get().getEntityStatus().equals(EntityStatus.DELETED)) {
+            log.info("deleteDto: User with id: {} is deleted", id);
             return null;
         }
 
         User deletedUser = optionalUser.get();
         deletedUser.setEntityStatus(EntityStatus.DELETED);
         userRepository.save(deletedUser);
-
+        log.info("deleteDto: User with id: {} is deleted", id);
         return userMapper.toDto(optionalUser.get());
     }
 
     private User updateUserFields(User user, UserDto userDto, BankCardMapper bankCardMapper) {
+        log.info("updateUserFields: user: {} userDto: {} bankCardMapper: {}", user, userDto, bankCardMapper);
         user.setEmail(userDto.getEmail());
         user.setPassword(userDto.getPassword());
         user.setSecurityQuestion(userDto.getSecurityQuestion());
@@ -230,11 +265,12 @@ public class UserService {
         user.setRolesSet(roles);
 
         user.getPassport().setEntityStatus(EntityStatus.ACTIVE);
-
+        log.info("updateUserFields: User {} fields updated", user);
         return user;
     }
 
     private void updatePassport(User user, User savedUser) {
+        log.info("updatePassport: user: {}", user);
         updateFieldIfNotNull(newPassport -> {
             var savePassport = savedUser.getPassport();
             if (savePassport != null) {
@@ -245,6 +281,7 @@ public class UserService {
     }
 
     private void updateShippingAddress(User user, User savedUser) {
+        log.info("updateShippingAddress: user: {}", user);
         if (user.getShippingAddressSet() != null) {
             Set<ShippingAddress> newShippAddr = new HashSet<>();
             Set<ShippingAddress> savedShippAddr = savedUser.getShippingAddressSet();
@@ -264,6 +301,7 @@ public class UserService {
     }
 
     private void updateBankCards(User user, User savedUser) {
+        log.info("updateBankCards: user: {}", user);
         if (user.getBankCardsSet() != null) {
             Set<BankCard> newCard = new HashSet<>();
             Set<BankCard> savedCard = savedUser.getBankCardsSet();
