@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -105,10 +106,14 @@ public class PaymentService {
         Payment payment = paymentMapper.toEntity(paymentDto);
         Payment savedPayment = paymentRepository.save(payment);
 
-        if (userService.getAuthenticatedUser().getBankCardsSet()
+        if (!userService.getAuthenticatedUser().getBankCardsSet()
                 .contains(payment.getBankCard())) {
-            userService.getAuthenticatedUser().getBankCardsSet().add(payment.getBankCard());
-            paymentDto.setShouldSaveCard(false);
+            Set<BankCard> newUserCards = userService.getAuthenticatedUser().getBankCardsSet();
+            newUserCards.add(payment.getBankCard());
+            userService.getAuthenticatedUser().setBankCardsSet(newUserCards);
+            bankCardService.saveDto(paymentDto.getBankCardDto());
+
+            paymentDto.setShouldSaveCard(true);
         }
 
         // send request to gazon-payment
