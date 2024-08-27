@@ -6,6 +6,7 @@ import com.gitlab.dto.PaymentDto;
 import com.gitlab.enums.OrderStatus;
 import com.gitlab.enums.PaymentStatus;
 import com.gitlab.mapper.PaymentMapper;
+import com.gitlab.model.BankCard;
 import com.gitlab.model.Payment;
 import com.gitlab.model.User;
 import com.gitlab.repository.PaymentRepository;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -81,7 +83,9 @@ class PaymentServiceTest {
     public void testSaveDto_Success() {
         User user = new User();
         user.setId(123L);
-        user.setBankCardsSet(new HashSet<>());
+        Set<BankCard> userCard = new HashSet<>();
+        userCard.add(generatePayment().getBankCard());
+        user.setBankCardsSet(userCard);
 
         PaymentDto paymentDto = new PaymentDto();
         paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
