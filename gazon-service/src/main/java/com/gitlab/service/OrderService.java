@@ -42,7 +42,7 @@ import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class OrderService {
+public class OrderService implements Cloneable{
 
     private final OrderRepository orderRepository;
     private final UserService userService;
@@ -248,5 +248,14 @@ public class OrderService {
         var product = selectedProduct.getProduct();
         product.setStockCount(product.getStockCount() + selectedProduct.getCount());
         productRepository.save(product);
+    }
+
+    @Override
+    public OrderService clone() {
+        try {
+            return (OrderService) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

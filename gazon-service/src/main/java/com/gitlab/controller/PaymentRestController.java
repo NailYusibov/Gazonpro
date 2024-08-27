@@ -5,7 +5,6 @@ import com.gitlab.dto.PaymentDto;
 import com.gitlab.model.Payment;
 import com.gitlab.service.PaymentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +17,14 @@ import java.util.Optional;
 @Slf4j
 @Validated
 @RestController
-@RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 public class PaymentRestController implements PaymentRestApi {
 
     private final PaymentService paymentService;
+
+    public PaymentRestController(PaymentService paymentService) {
+        this.paymentService = paymentService.clone();
+    }
 
     @Override
     public ResponseEntity<List<PaymentDto>> getPage(Integer page, Integer size) {

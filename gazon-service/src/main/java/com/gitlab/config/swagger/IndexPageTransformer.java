@@ -8,6 +8,7 @@ import org.springframework.web.servlet.resource.TransformedResource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public class IndexPageTransformer implements ResourceTransformer {
     @Override
@@ -16,7 +17,7 @@ public class IndexPageTransformer implements ResourceTransformer {
         if (resource.getURL().toString().endsWith("/index.html")) {
             String html = getHtmlContent(resource);
             html = overwritePetStore(html);
-            return new TransformedResource(resource, html.getBytes());
+            return new TransformedResource(resource, html.getBytes(StandardCharsets.UTF_8));
         } else {
             return resource;
         }
@@ -25,7 +26,7 @@ public class IndexPageTransformer implements ResourceTransformer {
     private String getHtmlContent(Resource resource) {
         try {
             InputStream inputStream = resource.getInputStream();
-            java.util.Scanner s = new java.util.Scanner(inputStream).useDelimiter("\\A");
+            java.util.Scanner s = new java.util.Scanner(inputStream, StandardCharsets.UTF_8).useDelimiter("\\A");
             String content = s.next();
             inputStream.close();
             return content;

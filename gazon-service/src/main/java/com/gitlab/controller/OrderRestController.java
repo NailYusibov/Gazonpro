@@ -4,7 +4,6 @@ import com.gitlab.controllers.api.rest.OrderRestApi;
 import com.gitlab.dto.OrderDto;
 import com.gitlab.service.OrderService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +16,14 @@ import java.util.Optional;
 @Slf4j
 @Validated
 @RestController
-@RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 public class OrderRestController implements OrderRestApi {
 
     private final OrderService orderService;
+
+    public OrderRestController(OrderService orderService) {
+        this.orderService = orderService.clone();
+    }
 
     public ResponseEntity<List<OrderDto>> getPage(Integer page, Integer size) {
         var orderPage = orderService.getPageDto(page, size);

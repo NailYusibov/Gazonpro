@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ExampleService {
+public class ExampleService implements Cloneable{
 
     private final ExampleRepository exampleRepository;
 
@@ -141,4 +141,12 @@ public class ExampleService {
         return optionalDeletedExample;
     }
 
+    @Override
+    public ExampleService clone() {
+        try {
+            return (ExampleService) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

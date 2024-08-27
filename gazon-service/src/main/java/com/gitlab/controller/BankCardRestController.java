@@ -7,7 +7,6 @@ import com.gitlab.model.BankCard;
 import com.gitlab.model.User;
 import com.gitlab.service.BankCardService;
 import com.gitlab.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,12 +21,19 @@ import static com.gitlab.util.UserUtils.isAdmin;
 
 @Validated
 @RestController
-@RequiredArgsConstructor
 public class BankCardRestController implements BankCardRestApi {
 
     private final BankCardService bankCardService;
     private final UserService userService;
     private final BankCardMapper bankCardMapper;
+
+    public BankCardRestController(BankCardService bankCardService,
+                                  UserService userService,
+                                  BankCardMapper bankCardMapper) {
+        this.bankCardService = bankCardService.clone();
+        this.userService = userService.clone();
+        this.bankCardMapper = bankCardMapper;
+    }
 
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<BankCardDto>> getPage(Integer page, Integer size) {

@@ -23,11 +23,15 @@ import static com.gitlab.util.UserUtils.isAdmin;
 @Slf4j
 @Validated
 @RestController
-@RequiredArgsConstructor
 public class PersonalAddressRestController implements PersonalAddressRestApi {
 
     private final PersonalAddressService personalAddressService;
     private final UserService userService;
+
+    public PersonalAddressRestController(PersonalAddressService personalAddressService, UserService userService) {
+        this.personalAddressService = personalAddressService.clone();
+        this.userService = userService.clone();
+    }
 
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PersonalAddressDto>> getPage(Integer page, Integer size) {
