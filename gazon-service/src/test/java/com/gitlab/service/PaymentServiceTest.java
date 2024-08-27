@@ -83,9 +83,9 @@ class PaymentServiceTest {
     public void testSaveDto_Success() {
         User user = new User();
         user.setId(123L);
-        Set<BankCard> userCard = new HashSet<>();
-        userCard.add(generatePayment().getBankCard());
-        user.setBankCardsSet(userCard);
+        Set<BankCard> userCards = new HashSet<>();
+        userCards.add(generatePayment().getBankCard());
+        user.setBankCardsSet(userCards);
 
         PaymentDto paymentDto = new PaymentDto();
         paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
