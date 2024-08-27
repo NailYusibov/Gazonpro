@@ -4,7 +4,6 @@ import com.gitlab.controllers.api.rest.ExampleRestApi;
 import com.gitlab.dto.ExampleDto;
 import com.gitlab.model.Example;
 import com.gitlab.service.ExampleService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +16,13 @@ import java.util.Optional;
 @Slf4j
 @Validated
 @RestController
-@RequiredArgsConstructor
 public class ExampleRestController implements ExampleRestApi {
 
     private final ExampleService exampleService;
+
+    public ExampleRestController(ExampleService exampleService) {
+        this.exampleService = exampleService.clone();
+    }
 
     @Override
     public ResponseEntity<List<ExampleDto>> getPage(Integer page, Integer size) {

@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class BankCardService {
+public class BankCardService implements Cloneable{
 
     private final UserService userService;
     private final BankCardRepository bankCardRepository;
@@ -132,6 +132,15 @@ public class BankCardService {
             return Optional.of(deletedDto);
         } else {
             return Optional.empty();
+        }
+    }
+
+    @Override
+    public BankCardService clone() {
+        try {
+            return (BankCardService) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
         }
     }
 }
