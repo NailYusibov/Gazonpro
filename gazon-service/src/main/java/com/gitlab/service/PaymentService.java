@@ -102,18 +102,14 @@ public class PaymentService implements Cloneable{
 
     public PaymentDto saveDto(PaymentDto paymentDto) {
         paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
-
         Payment payment = paymentMapper.toEntity(paymentDto);
         Payment savedPayment = paymentRepository.save(payment);
-
-        if (!userService.getAuthenticatedUser().getBankCardsSet()
-                .contains(payment.getBankCard())) {
-            Set<BankCard> newUserCards = userService.getAuthenticatedUser().getBankCardsSet();
+        User paymentUser = userService.getAuthenticatedUser();
+        if (paymentDto.isShouldSaveCard()) {
+            Set<BankCard> newUserCards = paymentUser.getBankCardsSet();
             newUserCards.add(payment.getBankCard());
-            userService.getAuthenticatedUser().setBankCardsSet(newUserCards);
+            paymentUser.setBankCardsSet(newUserCards);
             bankCardService.saveDto(paymentDto.getBankCardDto());
-
-            paymentDto.setShouldSaveCard(true);
         }
 
         // send request to gazon-payment
