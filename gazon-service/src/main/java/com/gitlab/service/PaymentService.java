@@ -104,11 +104,9 @@ public class PaymentService implements Cloneable{
         paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
         Payment payment = paymentMapper.toEntity(paymentDto);
         Payment savedPayment = paymentRepository.save(payment);
-        User paymentUser = userService.getAuthenticatedUser();
+        Set<BankCard> userCards = userService.getAuthenticatedUser().getBankCardsSet();
         if (paymentDto.isShouldSaveCard()) {
-            Set<BankCard> newUserCards = paymentUser.getBankCardsSet();
-            newUserCards.add(payment.getBankCard());
-            paymentUser.setBankCardsSet(newUserCards);
+            userCards.add(payment.getBankCard());
             bankCardService.saveDto(paymentDto.getBankCardDto());
         }
 
