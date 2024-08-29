@@ -78,12 +78,21 @@
 
     <build>
         <plugins>
+            <!--<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <configLocation>src/main/resources/com/google_checks_but_it_idea.xml</configLocation>
+                </configuration>
+            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>3.2.1</version>
                 <configuration>
-                    <configLocation>google_checks.xml</configLocation>
+                    <!--<configLocation>google_checks.xml</configLocation>-->
+                    <configLocation>src/main/resources/com/google_checks_but_it_idea.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>false</failsOnError>
                     <linkXRef>false</linkXRef>

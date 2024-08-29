@@ -29,8 +29,10 @@ public interface BankCardRestApi {
             @ApiResponse(code = 200, message = "BankCards found"),
             @ApiResponse(code = 204, message = "BankCards not present")}
     )
-    ResponseEntity<List<BankCardDto>> getPage(@ApiParam(name = "page") @RequestParam(required = false, value = "page") Integer page,
-                                              @ApiParam(name = "size") @RequestParam(required = false, value = "size") Integer size);
+    ResponseEntity<List<BankCardDto>> getPage(@ApiParam(name = "page")
+                                              @RequestParam(required = false, value = "page") Integer page,
+                                              @ApiParam(name = "size")
+                                              @RequestParam(required = false, value = "size") Integer size);
 
     @GetMapping("/api/bank-card/{id}")
     @ApiOperation(value = "Get BankCard by id")
@@ -38,8 +40,7 @@ public interface BankCardRestApi {
             @ApiResponse(code = 200, message = "BankCard found"),
             @ApiResponse(code = 404, message = "BankCard not found")}
     )
-    ResponseEntity<BankCardDto> get(@ApiParam(name = "id", value = "BankCard.id") @PathVariable (value = "id") Long id);
-
+    ResponseEntity<BankCardDto> get(@ApiParam(name = "id", value = "BankCard.id") @PathVariable(value = "id") Long id);
 
 
     @PostMapping("/api/bank-card")
@@ -48,7 +49,8 @@ public interface BankCardRestApi {
             @ApiResponse(code = 201, message = "BankCard created"),
             @ApiResponse(code = 400, message = "BankCard not created")}
     )
-    ResponseEntity<BankCardDto> create(@ApiParam(name = "bankCard", value = "BankCardDto") @Valid @RequestBody BankCardDto bankCardDto);
+    ResponseEntity<BankCardDto> create(@ApiParam(name = "bankCard", value = "BankCardDto")
+                                       @Valid @RequestBody BankCardDto bankCardDto);
 
 
     @PatchMapping("/api/bank-card/{id}")
@@ -57,8 +59,10 @@ public interface BankCardRestApi {
             @ApiResponse(code = 200, message = "BankCard updated"),
             @ApiResponse(code = 400, message = "BankCard not updated")}
     )
-    ResponseEntity<BankCardDto> update(@ApiParam(name = "id", value = "BankCard.id") @PathVariable (value = "id") Long id,
-                                       @ApiParam(name = "bankCard", value = "BankCardDto") @Valid @RequestBody BankCardDto bankCardDto);
+    ResponseEntity<BankCardDto> update(@ApiParam(name = "id", value = "BankCard.id")
+                                       @PathVariable(value = "id") Long id,
+                                       @ApiParam(name = "bankCard", value = "BankCardDto")
+                                       @Valid @RequestBody BankCardDto bankCardDto);
 
 
     @DeleteMapping("/api/bank-card/{id}")
@@ -67,6 +71,6 @@ public interface BankCardRestApi {
             @ApiResponse(code = 200, message = "BankCard deleted"),
             @ApiResponse(code = 404, message = "BankCard not found")}
     )
-    ResponseEntity<Void> delete(@ApiParam(name = "id", value = "BankCard.id") @PathVariable (value = "id") Long id);
+    ResponseEntity<Void> delete(@ApiParam(name = "id", value = "BankCard.id") @PathVariable(value = "id") Long id);
 
 }
