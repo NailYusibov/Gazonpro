@@ -6,7 +6,6 @@ import com.gitlab.dto.PaymentDto;
 import com.gitlab.enums.OrderStatus;
 import com.gitlab.enums.PaymentStatus;
 import com.gitlab.exception.handler.NoResponseException;
-import com.gitlab.exception.handler.UserDoesNotHaveAccessException;
 import com.gitlab.mapper.PaymentMapper;
 import com.gitlab.model.BankCard;
 import com.gitlab.model.Order;
@@ -27,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -102,16 +102,13 @@ public class PaymentService implements Cloneable{
 
     public PaymentDto saveDto(PaymentDto paymentDto) {
         paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
-
-        if (!paymentDto.getUserId().equals(userService.getAuthenticatedUser().getId())) {
-            throw new UserDoesNotHaveAccessException(
-                    HttpStatus.FORBIDDEN,
-                    "Authenticated user's id and user's id present in payment don't match."
-            );
-        }
-
         Payment payment = paymentMapper.toEntity(paymentDto);
         Payment savedPayment = paymentRepository.save(payment);
+        Set<BankCard> userCards = userService.getAuthenticatedUser().getBankCardsSet();
+        if (paymentDto.isShouldSaveCard() && !userCards.contains(payment.getBankCard())) {
+            userCards.add(payment.getBankCard());
+            bankCardService.saveDto(paymentDto.getBankCardDto());
+        }
 
         // send request to gazon-payment
         ResponseEntity<PaymentDto> paymentDtoResponseEntity = paymentClient.makePayment(paymentMapper.toDto(savedPayment));
@@ -147,7 +144,7 @@ public class PaymentService implements Cloneable{
             throw new EntityNotFoundException("Банковская карта не найдена");
         }
 
-        Optional<User> paymentUser = userService.findUserById(paymentDto.getUserId());
+        Optional<User> paymentUser = userService.findUserById(userService.getAuthenticatedUser().getId());
         if (paymentUser.isEmpty()) {
             throw new EntityNotFoundException("Пользователь не найден");
         }

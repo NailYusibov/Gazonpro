@@ -47,8 +47,4 @@ public class Payment {
     @Column(name = "sum")
     private BigDecimal sum;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
 }

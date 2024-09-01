@@ -26,7 +26,7 @@ public class TestUtil {
         long max = 1000000000L;
 
         BankCardDto bankCardDto = new BankCardDto();
-
+        bankCardDto.setId(random.nextLong(random.nextLong(max - min + 1L) + min));
         bankCardDto.setCardNumber(String.valueOf(random.nextLong(max - min + 1L) + min));
         bankCardDto.setDueDate(LocalDate.now());
         bankCardDto.setSecurityCode(123);
@@ -101,7 +101,7 @@ public class TestUtil {
         paymentDto.setCreateDateTime(LocalDateTime.now());
         paymentDto.setOrderId(orderId);
         paymentDto.setSum(new BigDecimal(500));
-        paymentDto.setUserId(userId);
+        paymentDto.setShouldSaveCard(false);
 
         return paymentDto;
     }
@@ -274,6 +274,7 @@ public class TestUtil {
         long max = 100000;
 
         UserDto userDto = new UserDto();
+        userDto.setId(random.nextLong(max - min + 1L) + min);
         userDto.setEmail((random.nextLong(max - min + 1L) + min) + email);
         userDto.setUsername("username" + (random.nextLong(max - min + 1L) + min));
         userDto.setPassword("user");

@@ -37,7 +37,5 @@ public class PaymentDto {
     @NotNull(message = "Sum should not be null. Please provide a valid sum")
     private BigDecimal sum;
 
-    @Range(min = 1, max = 2147483333, message = "User Id should be between 1 and 2147483333")
-    @NotNull(message = "User ID should not be null. Please provide a valid user ID")
-    private Long userId;
+    private boolean shouldSaveCard;
 }
