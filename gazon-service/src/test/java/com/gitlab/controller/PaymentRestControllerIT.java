@@ -179,7 +179,6 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
 
         PaymentDto mockPaymentDtoResponse = new PaymentDto();
         mockPaymentDtoResponse.setId(paymentDto.getId());
-        mockPaymentDtoResponse.setUserId(paymentDto.getUserId());
         mockPaymentDtoResponse.setSum(paymentDto.getSum());
         mockPaymentDtoResponse.setCreateDateTime(paymentDto.getCreateDateTime());
         mockPaymentDtoResponse.setBankCardDto(paymentDto.getBankCardDto());
@@ -235,7 +234,6 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
 
         PaymentDto mockPaymentDtoResponse = new PaymentDto();
         mockPaymentDtoResponse.setId(paymentDto.getId());
-        mockPaymentDtoResponse.setUserId(paymentDto.getUserId());
         mockPaymentDtoResponse.setSum(paymentDto.getSum());
         mockPaymentDtoResponse.setCreateDateTime(paymentDto.getCreateDateTime());
         mockPaymentDtoResponse.setBankCardDto(paymentDto.getBankCardDto());
@@ -324,7 +322,6 @@ class PaymentRestControllerIT extends AbstractIntegrationTest {
         paymentDto.setId(9999L);
 
         PaymentDto mockPaymentDtoResponse = new PaymentDto();
-        mockPaymentDtoResponse.setUserId(paymentDto.getUserId());
         mockPaymentDtoResponse.setSum(paymentDto.getSum());
         mockPaymentDtoResponse.setCreateDateTime(paymentDto.getCreateDateTime());
         mockPaymentDtoResponse.setBankCardDto(paymentDto.getBankCardDto());
