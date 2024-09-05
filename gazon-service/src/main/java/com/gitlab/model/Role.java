@@ -20,7 +20,7 @@ public class Role {
     @Id
     private Long id;
 
-    @Column(name="name")
+    @Column(name = "name")
     private String name;
 
     @Column(name = "entity_status")
