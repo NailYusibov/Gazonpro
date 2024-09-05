@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class PaymentService implements Cloneable{
+public class PaymentService implements Cloneable {
 
     private final PaymentRepository paymentRepository;
     private final BankCardService bankCardService;

@@ -10,8 +10,7 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Set;
 
-@NamedEntityGraph(name = "Review.reviewImages",
-        attributeNodes = @NamedAttributeNode("reviewImages"))
+@NamedEntityGraph(name = "Review.reviewImages", attributeNodes = @NamedAttributeNode("reviewImages"))
 @Entity
 @Data
 @NoArgsConstructor

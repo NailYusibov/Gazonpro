@@ -83,13 +83,13 @@ public class BankCardRestController implements BankCardRestApi {
         User user = userService.getAuthenticatedUser();
 
         if (isAdmin(user)) {
-            return (bankCardService.deleteDto(cardId).isPresent()) ?
-                    ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+            return (bankCardService.deleteDto(cardId).isPresent())
+                    ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
         }
 
         if (isAuthorized(user, cardId)) {
-            return (bankCardService.deleteDto(cardId).isPresent()) ?
-                    ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+            return (bankCardService.deleteDto(cardId).isPresent())
+                    ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
         } else return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ExampleService implements Cloneable{
+public class ExampleService implements Cloneable {
 
     private final ExampleRepository exampleRepository;
 

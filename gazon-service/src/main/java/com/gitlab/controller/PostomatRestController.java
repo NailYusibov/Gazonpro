@@ -52,8 +52,8 @@ public class PostomatRestController implements PostomatRestApi {
 
     @Override
     public ResponseEntity<Void> delete(Long id) {
-        return postomatService.deleteDto(id).isEmpty() ?
-                ResponseEntity.notFound().build() :
+        return postomatService.deleteDto(id).isEmpty()
+                ? ResponseEntity.notFound().build() :
                 ResponseEntity.ok().build();
     }
 }
