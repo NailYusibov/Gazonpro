@@ -2,6 +2,7 @@
 
 ## [Unreleased] 
 - #task_number - short task description
+- #236 - Add Product logs
 - #245 - Add User logs
 - #200 - move search logic to search-service
 - #196 - Add User to Review
