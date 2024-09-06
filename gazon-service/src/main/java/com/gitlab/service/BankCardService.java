@@ -11,12 +11,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BankCardService implements Cloneable{
@@ -62,7 +63,7 @@ public class BankCardService implements Cloneable{
     }
 
     public Page<BankCardDto> getPageDto(Integer page, Integer size) {
-
+        log.info("Запрос попал в метод сервиса getPageDto с параметрами: page={}, size={}", page, size);
         if (page == null || size == null) {
             var bankCards = findAllDto();
             if (bankCards.isEmpty()) {
