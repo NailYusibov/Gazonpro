@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class BankCardService implements Cloneable{
+public class BankCardService implements Cloneable {
 
     private final UserService userService;
     private final BankCardRepository bankCardRepository;

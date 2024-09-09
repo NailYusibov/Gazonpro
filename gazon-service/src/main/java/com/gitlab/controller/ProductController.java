@@ -60,8 +60,8 @@ public class ProductController implements ProductRestApi {
     @Override
     public ResponseEntity<Void> delete(Long id) {
         Optional<ProductDto> product = productService.delete(id);
-        return product.isEmpty() ?
-                ResponseEntity.notFound().build() :
+        return product.isEmpty()
+                ? ResponseEntity.notFound().build() :
                 ResponseEntity.ok().build();
     }
 

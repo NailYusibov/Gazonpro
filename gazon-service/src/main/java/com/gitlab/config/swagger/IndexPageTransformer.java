@@ -26,8 +26,8 @@ public class IndexPageTransformer implements ResourceTransformer {
     private String getHtmlContent(Resource resource) {
         try {
             InputStream inputStream = resource.getInputStream();
-            java.util.Scanner s = new java.util.Scanner(inputStream, StandardCharsets.UTF_8).useDelimiter("\\A");
-            String content = s.next();
+            java.util.Scanner scanner = new java.util.Scanner(inputStream, StandardCharsets.UTF_8).useDelimiter("\\A");
+            String content = scanner.next();
             inputStream.close();
             return content;
         } catch (IOException e) {
