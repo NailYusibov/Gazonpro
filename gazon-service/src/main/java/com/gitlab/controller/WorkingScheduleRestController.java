@@ -43,9 +43,9 @@ public class WorkingScheduleRestController implements WorkingScheduleRestApi {
         List<WorkingScheduleDto> workingScheduleDtoList = workingScheduleService.findAllDto();
         for (WorkingScheduleDto dto : workingScheduleDtoList) {
             if ( /* workingScheduleDto.getId().equals(dto.getId()) && */ // Избыточная проверка, с ним не работало добавление нового расписания
-                workingScheduleDto.getDayOfWeek().equals(dto.getDayOfWeek()) &&
-                workingScheduleDto.getFrom().equals(dto.getFrom()) &&
-                workingScheduleDto.getTo().equals(dto.getTo())) {
+                workingScheduleDto.getDayOfWeek().equals(dto.getDayOfWeek())
+                        && workingScheduleDto.getFrom().equals(dto.getFrom())
+                        && workingScheduleDto.getTo().equals(dto.getTo())) {
                 Optional<WorkingScheduleDto> oldWorkingScheduleDto = workingScheduleService.findByIdDto(dto.getId());
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(oldWorkingScheduleDto.get());

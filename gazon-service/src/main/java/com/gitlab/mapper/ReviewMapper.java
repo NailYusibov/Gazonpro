@@ -74,16 +74,16 @@ public abstract class ReviewMapper {
         if (productId == null) {
             return null;
         }
-        return productService.findById(productId).
-                orElseThrow(() -> new RuntimeException("Product wasn't found"));
+        return productService.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product wasn't found"));
     }
 
     public User mapUserIdToUser(Long userId) {
         if (userId == null) {
             return null;
         }
-        return userRepository.findById(userId).
-                orElseThrow(() -> new RuntimeException("User wasn't found"));
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User wasn't found"));
     }
 
     public abstract List<ReviewDto> toDtoList(List<Review> reviewList);

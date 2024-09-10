@@ -41,7 +41,6 @@ class PaymentMapperTest extends AbstractIntegrationTest {
         assertEquals(payment.getCreateDateTime(), actualResult.getCreateDateTime());
         assertEquals(payment.getOrder().getId(), actualResult.getOrderId());
         assertEquals(payment.getSum(), actualResult.getSum());
-        assertEquals(payment.getUser().getId(), actualResult.getUserId());
     }
 
     @Test
@@ -55,7 +54,6 @@ class PaymentMapperTest extends AbstractIntegrationTest {
         assertEquals(paymentDto.getCreateDateTime(), actualResult.getCreateDateTime());
         assertEquals(paymentDto.getOrderId(), actualResult.getOrder().getId());
         assertEquals(paymentDto.getSum(), actualResult.getSum());
-        assertEquals(paymentDto.getUserId(), actualResult.getUser().getId());
     }
 
     @Test
@@ -74,7 +72,6 @@ class PaymentMapperTest extends AbstractIntegrationTest {
             assertEquals(dto.getCreateDateTime(), entity.getCreateDateTime());
             assertEquals(dto.getOrder().getId(), entity.getOrderId());
             assertEquals(dto.getSum(), entity.getSum());
-            assertEquals(dto.getUser().getId(), entity.getUserId());
         }
     }
 
@@ -93,7 +90,6 @@ class PaymentMapperTest extends AbstractIntegrationTest {
             assertEquals(dto.getCreateDateTime(), entity.getCreateDateTime());
             assertEquals(dto.getOrder().getId(), entity.getOrderId());
             assertEquals(dto.getSum(), entity.getSum());
-            assertEquals(dto.getUser().getId(), entity.getUserId());
         }
     }
 
@@ -115,7 +111,6 @@ class PaymentMapperTest extends AbstractIntegrationTest {
         payment.setSum(new BigDecimal(500));
         User user = new User();
         user.setId(id);
-        payment.setUser(user);
         return payment;
     }
 
@@ -134,7 +129,6 @@ class PaymentMapperTest extends AbstractIntegrationTest {
         paymentDto.setCreateDateTime(LocalDateTime.now());
         paymentDto.setOrderId(id);
         paymentDto.setSum(new BigDecimal(500));
-        paymentDto.setUserId(id);
         return paymentDto;
     }
 }

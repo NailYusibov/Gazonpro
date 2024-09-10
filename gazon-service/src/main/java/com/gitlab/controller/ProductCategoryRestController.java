@@ -56,8 +56,8 @@ public class ProductCategoryRestController implements ProductCategoryRestApi {
     @Override
     public ResponseEntity<Void> delete(Long id) {
         Optional<ProductCategory> product = productCategoryService.delete(id);
-        return product.isEmpty() ?
-                ResponseEntity.notFound().build() :
+        return product.isEmpty()
+                ? ResponseEntity.notFound().build() :
                 ResponseEntity.ok().build();
     }
 }

@@ -49,8 +49,8 @@ public class ProductImageController implements ProductImageRestApi {
     @Override
     public ResponseEntity<List<ProductImageDto>> getAllByProductId(Long id) {
         List<ProductImageDto> productImageDtos = productImageService.findAllByProductIdDto(id);
-        return productImageDtos.isEmpty() ?
-                ResponseEntity.noContent().build() :
+        return productImageDtos.isEmpty()
+                ? ResponseEntity.noContent().build() :
                 ResponseEntity.ok(productImageDtos);
     }
 
@@ -73,8 +73,8 @@ public class ProductImageController implements ProductImageRestApi {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         Optional<ProductImage> productImage = productImageService.delete(id);
 
-        return productImage.isEmpty() ?
-                ResponseEntity.notFound().build() :
+        return productImage.isEmpty()
+                ? ResponseEntity.notFound().build() :
                 ResponseEntity.ok().build();
     }
 }

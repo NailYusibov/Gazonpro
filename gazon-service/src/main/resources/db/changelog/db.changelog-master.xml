@@ -211,4 +211,8 @@
         <tagDatabase tag="v-1.39"/>
     </changeSet>
 
+    <include file="v-1.40-update-payment-table/db.changelog-v-1.40.xml" relativeToChangelogFile="true"/>
+    <changeSet id="1.40" author="aleksandr_likhanov">
+        <tagDatabase tag="v-1.40"/>
+    </changeSet>
 </databaseChangeLog>
