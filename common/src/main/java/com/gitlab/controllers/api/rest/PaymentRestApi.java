@@ -3,6 +3,7 @@ package com.gitlab.controllers.api.rest;
 import com.gitlab.dto.PaymentDto;
 import io.swagger.annotations.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,12 +47,4 @@ public interface PaymentRestApi {
             @ApiResponse(code = 404, message = "Payment not found")}
     )
     ResponseEntity<PaymentDto> update(@ApiParam(name = "id", value = "Payment Id") @PathVariable Long id, @ApiParam(name = "PaymentDto", value = "Update Payment details") @RequestBody PaymentDto paymentDto);
-
-    @ApiOperation(value = "Delete payment by ID")
-    @DeleteMapping("/{id}")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Payment deleted"),
-            @ApiResponse(code = 404, message = "Payment not found")}
-    )
-    ResponseEntity<PaymentDto> delete(@ApiParam(name = "id", value = "Payment Id") @PathVariable Long id);
 }

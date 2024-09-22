@@ -2,7 +2,6 @@ package com.gitlab.controller;
 
 import com.gitlab.controllers.api.rest.PaymentRestApi;
 import com.gitlab.dto.PaymentDto;
-import com.gitlab.model.Payment;
 import com.gitlab.service.PaymentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
@@ -29,16 +28,16 @@ public class PaymentRestController implements PaymentRestApi {
     @Override
     public ResponseEntity<List<PaymentDto>> getPage(Integer page, Integer size) {
         var paymentPage = paymentService.getPageDto(page, size);
-        if (paymentPage == null || paymentPage.getContent().isEmpty()) {
+        if (paymentPage == null || paymentPage.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(paymentPage.getContent());
-    }
+        return ResponseEntity.ok(paymentPage);
 
+    }
 
     @Override
     public ResponseEntity<PaymentDto> get(Long id) {
-        return paymentService.findByIdDto(id)
+        return paymentService.findPaymentByIdDto(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -56,15 +55,5 @@ public class PaymentRestController implements PaymentRestApi {
         return updatePaymentDto
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @Override
-    public ResponseEntity<PaymentDto> delete(Long id) {
-        Optional<Payment> payment = paymentService.delete(id);
-        if (payment.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        } else {
-            return ResponseEntity.ok().build();
-        }
     }
 }

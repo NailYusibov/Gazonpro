@@ -20,7 +20,7 @@ public class PaymentDto {
     private Long id;
 
     @NotNull(message = "Bank card should not be null. Please provide a valid bank card")
-    private BankCardDto bankCardDto;
+    private Long bankCardDto;
 
     @NotNull(message = "Payment status should not be null. Please provide a valid payment status")
     private PaymentStatus paymentStatus;
