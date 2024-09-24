@@ -101,13 +101,9 @@ public class PickupPointService {
         }
 
         PickupPoint savedPickupPoint = optionalSavedPickupPoint.get();
-
         updateFieldIfNotNull(savedPickupPoint::setDirections, pickupPointDto.getDirections());
-
         updateFieldIfNotNull(savedPickupPoint::setPickupPointFeatures, pickupPointDto.getPickupPointFeatures());
-
         updateFieldIfNotNull(savedPickupPoint::setAddress, pickupPointDto.getAddress());
-
         updateFieldIfNotNull(savedPickupPoint::setShelfLifeDays, pickupPointDto.getShelfLifeDays());
 
         return pickupPointMapper.toDto(pickupPointRepository.save(savedPickupPoint));
