@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -99,18 +101,10 @@ public class PickupPointService {
         }
 
         PickupPoint savedPickupPoint = optionalSavedPickupPoint.get();
-        if (pickupPointDto.getDirections() != null) {
-            savedPickupPoint.setDirections(pickupPointDto.getDirections());
-        }
-        if (pickupPointDto.getPickupPointFeatures() != null) {
-            savedPickupPoint.setPickupPointFeatures(pickupPointDto.getPickupPointFeatures());
-        }
-        if (pickupPointDto.getAddress() != null) {
-            savedPickupPoint.setAddress(pickupPointDto.getAddress());
-        }
-        if (pickupPointDto.getShelfLifeDays() != null) {
-            savedPickupPoint.setShelfLifeDays(pickupPointDto.getShelfLifeDays());
-        }
+        updateFieldIfNotNull(savedPickupPoint::setDirections, pickupPointDto.getDirections());
+        updateFieldIfNotNull(savedPickupPoint::setPickupPointFeatures, pickupPointDto.getPickupPointFeatures());
+        updateFieldIfNotNull(savedPickupPoint::setAddress, pickupPointDto.getAddress());
+        updateFieldIfNotNull(savedPickupPoint::setShelfLifeDays, pickupPointDto.getShelfLifeDays());
 
         return pickupPointMapper.toDto(pickupPointRepository.save(savedPickupPoint));
     }
