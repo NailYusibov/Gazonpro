@@ -10,9 +10,6 @@ import com.gitlab.model.Order;
 import com.gitlab.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -37,7 +34,6 @@ public class PaymentService implements Cloneable {
 
     public List<PaymentDto> findAllDto() {
         ResponseEntity<List<PaymentDto>> responseEntity = paymentClient.getPaymentsPage(null, null);
-
         List<PaymentDto> paymentDtoList = responseEntity.getBody();
         if (paymentDtoList == null || paymentDtoList.isEmpty()) {
             return Collections.emptyList();
@@ -78,13 +74,7 @@ public class PaymentService implements Cloneable {
                 .toList();
     }
 
-
-
-
     public PaymentDto saveDto(PaymentDto paymentDto) {
-        // Устанавливаем начальный статус платежа
-        paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
-
         // Отправляем запрос на создание платежа в другой микросервис
         ResponseEntity<PaymentDto> paymentDtoResponseEntity = paymentClient.makePayment(paymentDto);
         PaymentDto paymentDtoResponse = paymentDtoResponseEntity.getBody();

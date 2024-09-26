@@ -3,7 +3,6 @@ package com.gitlab.controllers.api.rest;
 import com.gitlab.dto.PaymentDto;
 import io.swagger.annotations.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

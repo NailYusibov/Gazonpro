@@ -32,7 +32,6 @@ public class PaymentRestController implements PaymentRestApi {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(paymentPage);
-
     }
 
     @Override

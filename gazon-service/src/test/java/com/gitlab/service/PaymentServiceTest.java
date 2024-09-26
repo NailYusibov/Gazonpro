@@ -66,6 +66,7 @@ class PaymentServiceTest {
     @Test
     void should_save_payment() {
         PaymentDto expectedResult = generatePaymentDto();
+        expectedResult.setPaymentStatus(PaymentStatus.NOT_PAID);
         when(paymentClient.makePayment(expectedResult)).thenReturn(new ResponseEntity<>(expectedResult, HttpStatus.OK));
 
         PaymentDto actualResult = paymentService.saveDto(expectedResult);
