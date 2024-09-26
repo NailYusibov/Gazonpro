@@ -96,7 +96,6 @@ public class TestUtil {
     public static PaymentDto generatePaymentDto(long orderId, long userId, BankCardDto bankCardDtoInBD) {
         PaymentDto paymentDto = new PaymentDto();
 
-        paymentDto.setBankCardDto(bankCardDtoInBD);
         paymentDto.setPaymentStatus(PaymentStatus.PAID);
         paymentDto.setCreateDateTime(LocalDateTime.now());
         paymentDto.setOrderId(orderId);

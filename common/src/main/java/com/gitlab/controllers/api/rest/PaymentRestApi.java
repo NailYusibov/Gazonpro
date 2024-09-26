@@ -46,12 +46,4 @@ public interface PaymentRestApi {
             @ApiResponse(code = 404, message = "Payment not found")}
     )
     ResponseEntity<PaymentDto> update(@ApiParam(name = "id", value = "Payment Id") @PathVariable Long id, @ApiParam(name = "PaymentDto", value = "Update Payment details") @RequestBody PaymentDto paymentDto);
-
-    @ApiOperation(value = "Delete payment by ID")
-    @DeleteMapping("/{id}")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Payment deleted"),
-            @ApiResponse(code = 404, message = "Payment not found")}
-    )
-    ResponseEntity<PaymentDto> delete(@ApiParam(name = "id", value = "Payment Id") @PathVariable Long id);
 }
