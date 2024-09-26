@@ -59,8 +59,8 @@ public class SelectedProductRestController implements SelectedProductRestAPI {
     @Override
     public ResponseEntity<Void> delete(Long id) {
         Optional<SelectedProduct> selectedProduct = selectedProductService.delete(id);
-        return selectedProduct.isEmpty() ?
-                ResponseEntity.notFound().build() :
+        return selectedProduct.isEmpty()
+                ? ResponseEntity.notFound().build() :
                 ResponseEntity.ok().build();
 
     }

@@ -14,20 +14,17 @@ public interface PaymentMapper {
 
     @Mapping(source = "bankCard", target = "bankCardDto")
     @Mapping(source = "order.id", target = "orderId")
-    @Mapping(source = "user.id", target = "userId")
     PaymentDto toDto(Payment payment);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(source = "bankCardDto", target = "bankCard")
     @Mapping(source = "orderId", target = "order.id")
-    @Mapping(source = "userId", target = "user.id")
     Payment toEntity(PaymentDto paymentDto);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(source = "paymentDto.sum", target = "sum")
     @Mapping(source = "paymentDto.createDateTime", target = "createDateTime")
     @Mapping(source = "order", target = "order")
-    @Mapping(source = "user", target = "user")
     Payment toUpdateEntity(@MappingTarget Payment payment,
                                            PaymentDto paymentDto,
                                            BankCard bankCard,

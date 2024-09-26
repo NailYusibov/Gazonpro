@@ -63,8 +63,8 @@ public class ReviewController implements ReviewRestApi {
     @Override
     public ResponseEntity<Void> delete(Long id) {
         Optional<Review> reviewOptional = reviewService.delete(id);
-        return reviewOptional.isEmpty() ?
-                ResponseEntity.notFound().build() :
+        return reviewOptional.isEmpty()
+                ? ResponseEntity.notFound().build() :
                 ResponseEntity.ok().build();
     }
 }

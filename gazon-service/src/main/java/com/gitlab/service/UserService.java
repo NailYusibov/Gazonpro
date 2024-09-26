@@ -34,7 +34,7 @@ import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserService implements Cloneable{
+public class UserService implements Cloneable {
 
     private final UserRepository userRepository;
 

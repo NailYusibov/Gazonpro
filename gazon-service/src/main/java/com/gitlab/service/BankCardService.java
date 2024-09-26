@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class BankCardService implements Cloneable{
+public class BankCardService implements Cloneable {
 
     private final UserService userService;
     private final BankCardRepository bankCardRepository;

@@ -41,7 +41,7 @@ public abstract class StoreMapper {
         return userById.orElse(null);
     }
 
-    public Set<User> mapUserToLong(Set<Long> managersId){
+    public Set<User> mapUserToLong(Set<Long> managersId) {
         if (managersId == null) {
             return Collections.emptySet();
         }
@@ -50,7 +50,7 @@ public abstract class StoreMapper {
                 .filter(Optional::isPresent)
                 .map(Optional::get).collect(Collectors.toSet());
     }
-    public Set<Long> mapLongToUser(Set<User> managers){
+    public Set<Long> mapLongToUser(Set<User> managers) {
         if (managers == null) {
             return Collections.emptySet();
         } else {

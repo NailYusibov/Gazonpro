@@ -42,7 +42,7 @@ import static com.gitlab.util.ServiceUtils.updateFieldIfNotNull;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class OrderService implements Cloneable{
+public class OrderService implements Cloneable {
 
     private final OrderRepository orderRepository;
     private final UserService userService;
