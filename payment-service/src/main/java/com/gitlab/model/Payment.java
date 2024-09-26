@@ -29,9 +29,8 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
     @JoinColumn(name = "bank_card_id")
-    private BankCard bankCard;
+    private Long bankCardId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
@@ -40,9 +39,8 @@ public class Payment {
     @Column(name = "create_date_time")
     private LocalDateTime createDateTime;
 
-    @OneToOne
     @JoinColumn(name = "order_id")
-    private Order order;
+    private Long orderId;
 
     @Column(name = "sum")
     private BigDecimal sum;

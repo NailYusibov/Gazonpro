@@ -6,28 +6,20 @@ import com.gitlab.dto.PaymentDto;
 import com.gitlab.enums.OrderStatus;
 import com.gitlab.enums.PaymentStatus;
 import com.gitlab.exception.handler.NoResponseException;
-import com.gitlab.mapper.PaymentMapper;
-import com.gitlab.model.BankCard;
 import com.gitlab.model.Order;
-import com.gitlab.model.Payment;
 import com.gitlab.model.User;
-import com.gitlab.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,113 +27,81 @@ import java.util.stream.Collectors;
 @Transactional
 public class PaymentService implements Cloneable {
 
-    private final PaymentRepository paymentRepository;
-    private final BankCardService bankCardService;
-    private final PaymentMapper paymentMapper;
     private final OrderService orderService;
     private final UserService userService;
     private final PaymentClient paymentClient;
 
-    public List<Payment> findAll() {
-        return paymentRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
-    }
 
     public List<PaymentDto> findAllDto() {
-        List<Payment> payments = findAll();
-        return payments.stream()
-                .map(paymentMapper::toDto)
-                .collect(Collectors.toList());
+        ResponseEntity<List<PaymentDto>> responseEntity = paymentClient.getPaymentsPage(null, null);
+        List<PaymentDto> paymentDtoList = responseEntity.getBody();
+        if (paymentDtoList == null || paymentDtoList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return paymentDtoList;
     }
 
-    public Optional<Payment> findById(Long id) {
-        return paymentRepository.findById(id);
+
+    public Optional<PaymentDto> findPaymentByIdDto(Long id) {
+
+        ResponseEntity<Optional<PaymentDto>> responseEntity = paymentClient.getPaymentById(id);
+
+        Optional<PaymentDto> paymentDto = responseEntity.getBody();
+        return paymentDto != null ? paymentDto : Optional.empty();
     }
 
-    public Optional<PaymentDto> findByIdDto(Long id) {
-        return paymentRepository.findById(id)
-                .map(paymentMapper::toDto);
-    }
-
-    public Page<Payment> getPage(Integer page, Integer size) {
+    public List<PaymentDto> getPageDto(Integer page, Integer size) {
         if (page == null || size == null) {
-            var payments = findAll();
-            if (payments.isEmpty()) {
-                return Page.empty();
-            }
-            return new PageImpl<>(payments);
-        }
-        if (page < 0 || size < 1) {
-            return Page.empty();
-        }
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
-        return paymentRepository.findAll(pageRequest);
-    }
-
-    public Page<PaymentDto> getPageDto(Integer page, Integer size) {
-
-        if (page == null || size == null) {
-            var payments = findAllDto();
-            if (payments.isEmpty()) {
-                return Page.empty();
-            }
-            return new PageImpl<>(payments);
-        }
-        if (page < 0 || size < 1) {
-            return Page.empty();
+            return findAllDto()
+                    .stream()
+                    .sorted(Comparator.comparing(PaymentDto::getId))
+                    .toList();
         }
 
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
-        Page<Payment> paymentPage = paymentRepository.findAll(pageRequest);
-        return paymentPage.map(paymentMapper::toDto);
-    }
+        ResponseEntity<List<PaymentDto>> responseEntity = paymentClient.getPaymentsPage(page, size);
+        if (responseEntity == null) {
+            return List.of();
+        }
 
+        List<PaymentDto> paymentDtos = responseEntity.getBody();
+        if (paymentDtos == null || paymentDtos.isEmpty()) {
+            return List.of();
+        }
 
-    public Payment save(Payment payment) {
-        return paymentRepository.save(payment);
+        return findAllDto()
+                .stream()
+                .sorted(Comparator.comparing(PaymentDto::getId))
+                .toList();
     }
 
     public PaymentDto saveDto(PaymentDto paymentDto) {
-        paymentDto.setPaymentStatus(PaymentStatus.NOT_PAID);
-        Payment payment = paymentMapper.toEntity(paymentDto);
-        Payment savedPayment = paymentRepository.save(payment);
-        Set<BankCard> userCards = userService.getAuthenticatedUser().getBankCardsSet();
-        if (paymentDto.isShouldSaveCard() && !userCards.contains(payment.getBankCard())) {
-            userCards.add(payment.getBankCard());
-            bankCardService.saveDto(paymentDto.getBankCardDto());
-        }
-
-        // send request to gazon-payment
-        ResponseEntity<PaymentDto> paymentDtoResponseEntity = paymentClient.makePayment(paymentMapper.toDto(savedPayment));
+        // Отправляем запрос на создание платежа в другой микросервис
+        ResponseEntity<PaymentDto> paymentDtoResponseEntity = paymentClient.makePayment(paymentDto);
         PaymentDto paymentDtoResponse = paymentDtoResponseEntity.getBody();
 
+        // Проверка на получение ответа от микросервиса
         if (paymentDtoResponse == null) {
             throw new NoResponseException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not get response from gazon-payment microservice");
         }
 
+        // Если платеж проведен успешно, обновляем статус заказа
         if (paymentDtoResponse.getPaymentStatus().equals(PaymentStatus.PAID)) {
             OrderDto orderDto = orderService.findByIdDto(paymentDtoResponse.getOrderId())
                     .orElseThrow(() -> new EntityNotFoundException("Order with id %s was not found".formatted(paymentDtoResponse.getOrderId())));
 
             orderDto.setOrderStatus(OrderStatus.PAID);
             orderService.saveDto(orderDto);
-
-            Payment savedDtoResponsePayment = paymentRepository.save(paymentMapper.toEntity(paymentDtoResponse));
-            paymentDtoResponse.setId(savedDtoResponsePayment.getId());
         }
 
         return paymentDtoResponse;
     }
 
     public Optional<PaymentDto> updateDto(Long id, PaymentDto paymentDto) {
-        Optional<Payment> optionalSavedPayment = findById(id);
+        ResponseEntity<Optional<PaymentDto>> responseEntity = paymentClient.getPaymentById(id);
+        Optional<PaymentDto> optionalSavedPayment = responseEntity.getBody();
 
         if (optionalSavedPayment.isEmpty()) {
             return Optional.empty();
-        }
-
-        Optional<BankCard> paymentBankCard = bankCardService.findById(paymentDto.getBankCardDto().getId());
-        if (paymentBankCard.isEmpty()) {
-            throw new EntityNotFoundException("Банковская карта не найдена");
         }
 
         Optional<User> paymentUser = userService.findUserById(userService.getAuthenticatedUser().getId());
@@ -154,22 +114,10 @@ public class PaymentService implements Cloneable {
             throw new EntityNotFoundException("Заказ не найден");
         }
 
-        Payment savedPayment = paymentMapper.toUpdateEntity(optionalSavedPayment.get(), paymentDto, paymentBankCard.get(),
-                                                            paymentOrder.get(), paymentUser.get());
+        ResponseEntity<PaymentDto> updatedPaymentResponse = paymentClient.updatePayment(id, paymentDto);
+        PaymentDto updatedPaymentDto = updatedPaymentResponse.getBody();
 
-        savedPayment = paymentRepository.save(savedPayment);
-
-        return Optional.of(paymentMapper.toDto(savedPayment));
-    }
-
-    public Optional<Payment> delete(Long id) {
-        Optional<Payment> optionalSavedPayment = findById(id);
-
-        if (optionalSavedPayment.isPresent()) {
-            paymentRepository.deleteById(id);
-        }
-
-        return optionalSavedPayment;
+        return Optional.ofNullable(updatedPaymentDto);
     }
 
     @Override

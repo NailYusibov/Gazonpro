@@ -2,6 +2,7 @@
 
 ## [Unreleased] 
 - #task_number - short task description
+- #248 - Add saveDto into Payment-Service
 - #212 - Has been refactored method update PickupPointService
 - #184 - Add shouldSaveCard into PaymentDto
 - #245 - Add User logs

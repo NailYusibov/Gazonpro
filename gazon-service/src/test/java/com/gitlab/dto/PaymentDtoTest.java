@@ -73,7 +73,7 @@ class PaymentDtoTest extends AbstractDtoTest {
         BankCardDto bankCardDto = new BankCardDto();
         bankCardDto.setId(1L);
 
-        paymentDto.setBankCardDto(bankCardDto);
+        paymentDto.setBankCardDto(bankCardDto.getId());
         paymentDto.setPaymentStatus(PaymentStatus.PAID);
         paymentDto.setCreateDateTime(LocalDateTime.now());
 
