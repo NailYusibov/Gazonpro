@@ -119,7 +119,7 @@ public class UserService implements Cloneable {
             return new PageImpl<>(users);
         }
         if (page < 0 || size < 1) {
-            log.warn("getPageDto: Page or size is not valid");
+            log.warn("getPageDto: page or size is not valid");
             return Page.empty();
         }
         PageRequest pageRequest = PageRequest.of(page, size);
