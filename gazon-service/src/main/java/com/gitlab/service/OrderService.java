@@ -54,57 +54,65 @@ public class OrderService implements Cloneable {
     private final ShoppingCartRepository shoppingCartRepository;
     private final UserRepository userRepository;
 
-
     public List<Order> findAll() {
         User user = userService.getAuthenticatedUser();
-        return isAdmin(user)
+        log.info("User {} requested to find all orders", user.getUsername());
+
+        List<Order> orders = isAdmin(user)
                 ? orderRepository.findAll()
                 : orderRepository.findAll(user.getUsername());
+
+        log.info("Found {} orders for user {}", orders.size(), user.getUsername());
+        return orders;
     }
 
     public List<OrderDto> findAllDto() {
+        log.info("Converting orders to DTO");
         List<Order> orders = findAll();
         return orders.stream().map(orderMapper::toDto).toList();
     }
 
     public Optional<Order> findById(Long id) {
         User user = userService.getAuthenticatedUser();
-        String username = user.getUsername();
+        log.info("User {} requested to find order by id {}", user.getUsername(), id);
 
         Optional<Order> orderOptional = isAdmin(user)
                 ? orderRepository.findById(id)
-                : orderRepository.findById(id, username);
+                : orderRepository.findById(id, user.getUsername());
 
-        return orderOptional.isPresent() && !orderOptional.get().getEntityStatus().equals(EntityStatus.DELETED)
-                ? orderOptional
-                : Optional.empty();
+        if (orderOptional.isEmpty() || orderOptional.get().getEntityStatus().equals(EntityStatus.DELETED)) {
+            log.warn("Order with id {} not found or deleted", id);
+            return Optional.empty();
+        }
+
+        log.info("Order found: {}", orderOptional.get());
+        return orderOptional;
     }
 
     public Optional<OrderDto> findByIdDto(Long id) {
+        log.info("Converting order with id {} to DTO", id);
         return findById(id).map(orderMapper::toDto);
     }
 
     public Page<Order> getPage(Integer page, Integer size) {
-        if (page == null || size == null) {
-            List<Order> orders = findAll();
-            if (orders.isEmpty()) {
-                return Page.empty();
-            }
-            return new PageImpl<>(orders);
-        }
-
-        if (page < 0 || size < 1) {
+        log.info("User requested order page: page={}, size={}", page, size);
+        if (page == null || size == null || page < 0 || size < 1) {
+            log.warn("Invalid page or size values: page={}, size={}", page, size);
             return Page.empty();
         }
 
         PageRequest pageRequest = PageRequest.of(page, size);
         User user = userService.getAuthenticatedUser();
-        return isAdmin(user)
+        Page<Order> orders = isAdmin(user)
                 ? orderRepository.findAll(pageRequest)
                 : orderRepository.findAll(pageRequest, user.getUsername());
+
+        log.info("Found {} orders on page {}", orders.getTotalElements(), page);
+        return orders;
     }
 
     public Page<OrderDto> getPageDto(Integer page, Integer size) {
+        log.info("Converting page of orders to DTOs: page={}, size={}", page, size);
         return getPage(page, size).map(orderMapper::toDto);
     }
 
@@ -118,6 +126,7 @@ public class OrderService implements Cloneable {
     }
 
     public Optional<OrderDto> saveDto(OrderDto orderDto) {
+        log.info("Saving order: {}", orderDto);
         Order order = orderMapper.toEntity(orderDto);
         order.setEntityStatus(EntityStatus.ACTIVE);
         order.setUser(userRepository.findById(orderDto.getUserId())
@@ -159,6 +168,7 @@ public class OrderService implements Cloneable {
         }
 
         Order savedOrder = orderRepository.save(order);
+        log.info("Order saved successfully: {}", savedOrder);
         return Optional.of(orderMapper.toDto(savedOrder));
     }
 
@@ -192,6 +202,7 @@ public class OrderService implements Cloneable {
         updateFieldIfNotNull(savedOrder::setOrderStatus, orderDto.getOrderStatus());
 
         savedOrder = orderRepository.save(savedOrder);
+        log.info("Order updated successfully: {}", savedOrder);
         return Optional.of(orderMapper.toDto(savedOrder));
     }
 
@@ -203,12 +214,13 @@ public class OrderService implements Cloneable {
         Order deletedOrder = optionalSavedOrder.get();
         deletedOrder.setEntityStatus(EntityStatus.DELETED);
         orderRepository.save(deletedOrder);
+        log.info("Order with id {} marked as deleted", id);
         return optionalSavedOrder;
     }
 
     /**
      * Данный метод по расписанию - раз в минуту (60000 = 1 минута) ходит в базу и проверяет
-     * нет ли там заказов, которые офрмили и не оплатили более чем 15 минут назад,
+     * нет ли там заказов, которые оформили и не оплатили более чем 15 минут назад,
      * если такие имеются, тогда:
      *
      * @List<Order>notPaidOrders собирает все ордера статус которых - NOT_PAID;
@@ -223,19 +235,24 @@ public class OrderService implements Cloneable {
     @Transactional
     @Scheduled(fixedDelay = 60000)
     public void updateOverdueOrders() {
+        log.info("Checking for overdue orders...");
         orderRepository
                 .findOrdersWithNotPaidStatus()
                 .stream()
                 .filter(order -> isOverdue(order.getCreateDateTime()))
                 .forEach(order -> {
-                            order.setOrderStatus(OrderStatus.OVERDUE);
-                            orderRepository.save(order);
-                            Optional.ofNullable(order.getSelectedProducts())
-                                    .stream()
-                                    .flatMap(Collection::stream)
-                                    .forEach(this::increaseStockCount);
-                        }
-                );
+                    log.info("Updating order {} to OVERDUE status", order.getId());
+                    order.setOrderStatus(OrderStatus.OVERDUE);
+                    orderRepository.save(order);
+                    Optional.ofNullable(order.getSelectedProducts())
+                            .stream()
+                            .flatMap(Collection::stream)
+                            .forEach(selectedProduct -> {
+                                log.info("Increasing stock count for product {}", selectedProduct.getProduct().getId());
+                                increaseStockCount(selectedProduct);
+                            });
+                });
+        log.info("Overdue orders check completed.");
     }
 
     private boolean isOverdue(LocalDateTime creationTime) {
@@ -248,6 +265,7 @@ public class OrderService implements Cloneable {
         var product = selectedProduct.getProduct();
         product.setStockCount(product.getStockCount() + selectedProduct.getCount());
         productRepository.save(product);
+        log.info("Stock count for product {} increased to {}", product.getId(), product.getStockCount());
     }
 
     @Override

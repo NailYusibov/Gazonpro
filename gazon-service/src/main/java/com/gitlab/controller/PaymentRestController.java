@@ -27,32 +27,51 @@ public class PaymentRestController implements PaymentRestApi {
 
     @Override
     public ResponseEntity<List<PaymentDto>> getPage(Integer page, Integer size) {
+        log.info("Request to get payment page - page: {}, size: {}", page, size);
         var paymentPage = paymentService.getPageDto(page, size);
         if (paymentPage == null || paymentPage.isEmpty()) {
+            log.warn("No payments found for page: {}, size: {}", page, size);
             return ResponseEntity.noContent().build();
         }
+        log.info("Returning {} payments for page: {}, size: {}", paymentPage.size(), page, size);
         return ResponseEntity.ok(paymentPage);
     }
 
     @Override
     public ResponseEntity<PaymentDto> get(Long id) {
+        log.info("Request to get payment with id: {}", id);
         return paymentService.findPaymentByIdDto(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(paymentDto -> {
+                    log.info("Payment found with id: {}", id);
+                    return ResponseEntity.ok(paymentDto);
+                })
+                .orElseGet(() -> {
+                    log.warn("Payment not found with id: {}", id);
+                    return ResponseEntity.notFound().build();
+                });
     }
 
     @Override
     public ResponseEntity<PaymentDto> create(PaymentDto paymentDto) {
+        log.info("Request to create payment: {}", paymentDto);
         PaymentDto savedPaymentDto = paymentService.saveDto(paymentDto);
+        log.info("Payment created with id: {}", savedPaymentDto.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(savedPaymentDto);
     }
 
     @Override
     public ResponseEntity<PaymentDto> update(Long id, PaymentDto paymentDto) {
+        log.info("Request to update payment with id: {}", id);
         Optional<PaymentDto> updatePaymentDto = paymentService.updateDto(id, paymentDto);
         return updatePaymentDto
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(updatedPayment -> {
+                    log.info("Payment updated with id: {}", id);
+                    return ResponseEntity.ok(updatedPayment);
+                })
+                .orElseGet(() -> {
+                    log.warn("Payment not found for update with id: {}", id);
+                    return ResponseEntity.notFound().build();
+                });
     }
 }
