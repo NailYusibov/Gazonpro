@@ -27,62 +27,52 @@ public class BankCardService implements Cloneable {
     private final BankCardMapper bankCardMapper;
 
     public List<BankCard> findAll() {
+        log.info("Вызван метод findAll");
         return bankCardRepository.findAll();
     }
 
     public List<BankCardDto> findAllDto() {
+        log.info("Вызван метод findAllDto");
         List<BankCard> bankCards = bankCardRepository.findAll();
+        log.info("Найдено {} карт", bankCards.size());
         return bankCards.stream()
                 .map(bankCardMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     public Optional<BankCard> findById(Long id) {
+        log.info("Вызван метод findById с id={}", id);
         return bankCardRepository.findById(id);
     }
 
     public Optional<BankCardDto> findByIdDto(Long id) {
+        log.info("Вызван метод findByIdDto с id={}", id);
         return bankCardRepository.findById(id)
                 .map(bankCardMapper::toDto);
     }
 
     public Page<BankCard> getPage(Integer page, Integer size) {
-
-        if (page == null || size == null) {
-            var bankCards = findAll();
-            if (bankCards.isEmpty()) {
-                return Page.empty();
-            }
-            return new PageImpl<>(bankCards);
-        }
-        if (page < 0 || size < 1) {
-            return Page.empty();
-        }
-        PageRequest pageRequest = PageRequest.of(page, size);
-        return bankCardRepository.findAll(pageRequest);
-    }
-
-    public Page<BankCardDto> getPageDto(Integer page, Integer size) {
-        log.info("Запрос попал в метод сервиса getPageDto с параметрами: page={}, size={}", page, size);
-        if (page == null || size == null) {
-            var bankCards = findAllDto();
-            if (bankCards.isEmpty()) {
-                return Page.empty();
-            }
-            return new PageImpl<>(bankCards);
-        }
-        if (page < 0 || size < 1) {
+        log.info("Вызван метод getPage с параметрами: page={}, size={}", page, size);
+        if (page == null || size == null || page < 0 || size < 1) {
+            log.warn("Неверные параметры для страницы: page={}, size={}", page, size);
             return Page.empty();
         }
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<BankCard> bankCardPage = bankCardRepository.findAll(pageRequest);
+        log.info("Возвращена страница с {} картами", bankCardPage.getTotalElements());
+        return bankCardPage;
+    }
+
+    public Page<BankCardDto> getPageDto(Integer page, Integer size) {
+        log.info("Вызван метод getPageDto с параметрами: page={}, size={}", page, size);
+        Page<BankCard> bankCardPage = getPage(page, size);
         return bankCardPage.map(bankCardMapper::toDto);
     }
 
     @Transactional
     public BankCardDto saveDto(BankCardDto bankCardDto) {
+        log.info("Вызван метод saveDto с объектом BankCardDto: {}", bankCardDto);
         User user = userService.getAuthenticatedUser();
-
         BankCard savedBankCard = bankCardRepository.save(bankCardMapper.toEntity(bankCardDto));
 
         Set<BankCard> userBankCardSet = user.getBankCardsSet();
@@ -90,39 +80,42 @@ public class BankCardService implements Cloneable {
         user.setBankCardsSet(userBankCardSet);
         userService.update(user.getId(), user);
 
+        log.info("Карта сохранена: {}", savedBankCard);
         return bankCardMapper.toDto(savedBankCard);
     }
 
-
     public Optional<BankCardDto> updateDto(Long id, BankCardDto bankCardDto) {
+        log.info("Вызван метод updateDto с id={} и объектом BankCardDto: {}", id, bankCardDto);
         Optional<BankCard> optionalSavedCard = findById(id);
         if (optionalSavedCard.isEmpty()) {
+            log.warn("Карта с id={} не найдена", id);
             return Optional.empty();
-        } else {
-            BankCard savedCard = optionalSavedCard.get();
-
-            if (bankCardDto.getCardNumber() != null) {
-                savedCard.setCardNumber(bankCardDto.getCardNumber());
-            }
-            if (bankCardDto.getDueDate() != null) {
-                savedCard.setDueDate(bankCardDto.getDueDate());
-            }
-            if (bankCardDto.getSecurityCode() != null) {
-                savedCard.setSecurityCode(bankCardDto.getSecurityCode());
-            }
-
-            BankCard updatedCard = bankCardRepository.save(savedCard);
-            return Optional.ofNullable(bankCardMapper.toDto(updatedCard));
         }
+
+        BankCard savedCard = optionalSavedCard.get();
+
+        if (bankCardDto.getCardNumber() != null) {
+            savedCard.setCardNumber(bankCardDto.getCardNumber());
+        }
+        if (bankCardDto.getDueDate() != null) {
+            savedCard.setDueDate(bankCardDto.getDueDate());
+        }
+        if (bankCardDto.getSecurityCode() != null) {
+            savedCard.setSecurityCode(bankCardDto.getSecurityCode());
+        }
+
+        BankCard updatedCard = bankCardRepository.save(savedCard);
+        log.info("Карта обновлена: {}", updatedCard);
+        return Optional.ofNullable(bankCardMapper.toDto(updatedCard));
     }
 
     @Transactional
     public Optional<BankCardDto> deleteDto(Long id) {
+        log.info("Вызван метод deleteDto с id={}", id);
         Optional<BankCard> optionalSavedCard = findById(id);
         if (optionalSavedCard.isPresent()) {
             BankCardDto deletedDto = bankCardMapper.toDto(optionalSavedCard.get());
 
-            // fixme отрефакторить - надо каскады нормальные использовать
             User user = userService.getAuthenticatedUser();
             Set<BankCard> userBankCardSet = user.getBankCardsSet();
             userBankCardSet.remove(optionalSavedCard.get());
@@ -130,8 +123,10 @@ public class BankCardService implements Cloneable {
             userService.update(user.getId(), user);
 
             bankCardRepository.deleteById(id);
+            log.info("Карта удалена: {}", deletedDto);
             return Optional.of(deletedDto);
         } else {
+            log.warn("Карта с id={} не найдена", id);
             return Optional.empty();
         }
     }
@@ -141,6 +136,7 @@ public class BankCardService implements Cloneable {
         try {
             return (BankCardService) super.clone();
         } catch (CloneNotSupportedException e) {
+            log.error("Ошибка клонирования BankCardService", e);
             throw new AssertionError();
         }
     }
